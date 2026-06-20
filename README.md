@@ -1,89 +1,128 @@
+<div align="center">
+
 # ToothPrint
 
-**A unified dental-imaging intelligence platform: certified change detection,
-certified 3D surface mapping, and biometric identification — all from a person's
-teeth.**
+**Certified dental-imaging intelligence — recognise a person by their teeth,
+and certify what changed.**
 
-Teeth are individual, resilient, and information-rich. ToothPrint treats the
-dentition as a *certified, identity-bearing signal* across two modalities — 2D
-intraoral radiographs and 3D intraoral-scan surfaces — and unifies three
-capabilities that were previously separate research projects:
+`identity` · `change` · `surface` — three reads of one durable signal, each
+returning a certificate instead of a guess.
 
-| Pillar | Question | Result (real data) |
+</div>
+
+---
+
+A face can be lost; the teeth remain. ToothPrint reads the dentition three ways
+and attaches a statistical guarantee to every verdict:
+
+- **Who** is this? — dental biometric identification from a 3D scan or a 2D radiograph.
+- **Whether** it changed — certified longitudinal bone-level change detection.
+- **What** its surface is — certified 3D surface-change mapping.
+
+The certification core depends only on `numpy`, `scipy`, `opencv`, and `open3d`.
+Learned front-ends (tooth detection, photogrammetric reconstruction) are
+pluggable and optional, so the guarantees run without a GPU.
+
+## Results (measured on real public data)
+
+| Capability | What it answers | Result |
 |---|---|---|
-| **`identity/`** — dental biometrics | *Who is this?* | **Rank-1 = 1.000** (3D arches, d′=50; 2D constellations, d′=4.2) |
-| **`change/`** — change certificate | *Did the bone level really change?* | recall **0.97 @ 0% FPR** (registration, accurate localization); **0.72 end-to-end** |
-| **`surface/`** — surface certificate | *Did the 3D surface really change?* | certifies stable ≤0.2 mm / change ≥1.0 mm at **0% false-change** |
+| **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000**, genuine 0.10 mm vs impostor 0.55 mm, d′ = 50 |
+| **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000**, genuine 4 px vs impostor 102 px, d′ = 4.2 |
+| **Change certificate** | Did the bone level change? | recall **0.97 @ 0% false-progression** (0.72 end-to-end) |
+| **Surface certificate** | Did the 3D surface change? | stable ≤0.2 mm / change ≥1.0 mm at **0% false-change** |
 
-## Recognising a person by their teeth (`identity/`)
+![Genuine vs impostor — both modalities](docs/toothprint_identification.png)
 
-A person's dental arch is a biometric "tooth print". ToothPrint identifies them
-two ways, both validated on real data with **100% Rank-1 accuracy**:
+Every certificate is conformal: it fires only when the interval around the
+measurement lies entirely past the threshold, so the false-alarm rate is bounded
+by α in finite samples — no distributional assumptions.
 
-![Dental identification — genuine vs impostor](docs/toothprint_identification.png)
+## How it works
 
-- **3D intraoral scans** (`toothid.mesh_id`): the SOTA registration pipeline —
-  FPFH features → coarse RANSAC → fine ICP → the gallery arch with the **smallest
-  registration RMSE** is the identity. On 16 real Poseidon3D arches (queried with
-  synthesised noisy/partial re-scans): **Rank-1 1.000**, genuine RMSE 0.10 mm vs
-  impostor 0.55 mm (zero overlap), decidability **d′ = 50**.
-- **2D radiographs** (`toothid.landmark_id`): the per-tooth landmark
-  *constellation* (CEJ, bone crest, apex) aligned with a scale-normalised rigid
-  ICP; smallest residual wins. On 40 real DenPAR subjects (queried with
-  acquisition reposition + magnification + jitter): **Rank-1 1.000**, genuine
-  4.0 px vs impostor 102 px, **d′ = 4.2**.
+One stack, three certificates:
 
-```bash
-python identity/scripts/run_mesh_identification.py --data surface/data/poseidon3d/extracted/data
-python identity/scripts/run_landmark_identification.py --data change/data/denpar/extracted/Dataset
+```
+scan / radiograph ─▶ detect ─▶ register ─▶ certify
+                     teeth +    2D/3D ICP ·  conformal interval ─▶ identity
+                     landmarks  FPFH ·        ─▶ change
+                     or cloud   template      ─▶ surface
+                                matching
 ```
 
-## Certified change detection (`change/`)
+- **Identity (3D):** FPFH descriptors → coarse RANSAC → fine ICP → the gallery
+  arch with the smallest registration RMSE is the person.
+- **Identity (2D):** the per-tooth landmark constellation, scale-normalised so
+  magnification cancels, aligned by rigid ICP.
+- **Change:** the bone-level shift is measured *differentially* — sub-pixel
+  template matching of the margin between timepoints, referenced to a stationary
+  crown so acquisition motion cancels — then certified conformally.
+- **Surface:** scale-aware ICP + screened-Poisson refinement give a surface
+  error that a conformal certificate decides against the reconstruction's own noise.
 
-Certified longitudinal change detection in radiographs under acquisition
-uncertainty: a **ViTPose** detector (37.8 px landmark error) localises teeth, a
-**differential sub-pixel registration** measures the bone-level change (driving
-stable-pair noise to ~0.1 px), and a **conformal certificate** decides — with a
-guaranteed false-progression rate. Recall reaches **0.97 at 0% FPR** with
-accurate localization (0.72 end-to-end with the detector). See
-[change/README.md](change/README.md) and [change/RESULTS.md](change/RESULTS.md).
+## Use it
 
-## Certified 3D surface mapping (`surface/`)
+```python
+import numpy as np
+from toothprint.identity import enroll, identify_scan, identification_metrics
+from toothprint.change import ConformalCertifier, certify_change, bone_vector
+from toothprint.surface import surface_error, certify_surface_change
 
-Certified surface-change detection from intraoral scans / multiview photos:
-**DUSt3R** reconstruction (runs on an 8 GB GPU) + **screened-Poisson** refinement
-(sub-mm denoising) feed a **conformal surface-change certificate** that certifies
-stable surfaces (≤0.2 mm) and real change (≥1.0 mm) at a **0% false-change rate**.
-See [surface/README.md](surface/README.md) and [surface/RESULTS.md](surface/RESULTS.md).
+# Identify a person from a 3D arch against a gallery
+gallery = [enroll(points, voxel_size=0.5) for points in enrolled_scans]
+rmse_row = identify_scan(query_points, gallery, voxel_size=0.5)
+person = labels[int(np.argmin(rmse_row))]
 
-## Why one platform
+# Certify a surface change against calibrated reconstruction noise
+certifier = ConformalCertifier.fit(measured_stable, true_stable, alpha=0.1)
+verdict = certify_surface_change(measured_mm=1.2, certifier=certifier)   # -> "changed"
+```
 
-The three pillars share the same primitives — landmark/surface detection,
-registration (2D ICP, 3D scale-aware ICP, sub-pixel template matching), and
-conformal calibration — applied to the same dentition. Identity, change, and
-geometry are facets of one certified dental signal: *who* you are, *whether* your
-teeth changed, and *what* their surface is.
+## Run the app
+
+A web console for the three certificates, plus a JSON API.
+
+```bash
+pip install -e ".[api]"
+uvicorn api.main:app --reload      # http://localhost:8000
+```
+
+| Endpoint | Does |
+|---|---|
+| `POST /api/identify/radiograph` | Match a landmark constellation against a gallery |
+| `POST /api/certify/change` | Certify a radiograph bone-level change |
+| `POST /api/certify/surface` | Certify a 3D surface change |
+
+The frontend (`web/`) is a static, dependency-free single page — open it directly
+or let the API serve it.
 
 ## Layout
 
 ```
 toothprint/
-  identity/    dental biometric identification (3D meshes + 2D constellations)
-  change/      certified radiograph change detection (ViTPose + registration + conformal)
-  surface/     certified 3D surface mapping (DUSt3R + Poisson + conformal)
-  docs/        result visuals
+  toothprint/        the library — identity · change · surface (100% covered)
+  api/               FastAPI service
+  web/               the console (HTML/CSS/JS, no build step)
+  docs/              result figures
+  tests/             58 tests, 100% coverage
 ```
 
-## Testing
+## Test
 
 ```bash
-cd identity && python -m pytest tests/ --cov=toothid          # 100% (standalone)
-cd change   && python -m pytest tests/ --cov=dcc              # 100% with datasets present
-cd surface  && python -m pytest tests/ --cov=dentalmapcert    # 100% with datasets present
+pip install -e ".[dev]"
+pytest --cov=toothprint --cov=api      # 100%
 ```
 
-`identity` is **100% covered standalone** (synthetic + small fixtures). `change`
-and `surface` reach **100%** when their datasets are present; without the
-(gitignored) datasets, their dataset-adapter/CLI integration tests skip, so a
-bare checkout reports ~95–99%. Datasets and model checkpoints are gitignored; see
-each pillar's docs for download instructions.
+## Provenance & limits
+
+Numbers are measured on the public Poseidon3D (intraoral scans) and DenPAR
+(radiographs) datasets; reproduction scripts and the underlying research live in
+the companion repositories. Identification is validated closed-set on real
+anatomy; end-to-end change *sensitivity* is bounded today by tooth-localisation
+precision, not by the measurement, and is reported honestly as such. Datasets and
+model checkpoints are never committed.
+
+## License
+
+MIT.

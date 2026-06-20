@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "toothprint"
+version = "1.0.0"
+description = "Certified dental-imaging intelligence: identification, change, and surface certificates from teeth."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Archerkattri", email = "krishiattriwork@gmail.com" }]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "opencv-python-headless>=4.8",
+    "open3d>=0.18",
+]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110", "uvicorn>=0.27", "python-multipart>=0.0.9"]
+dev = ["pytest>=8", "pytest-cov"]
+plots = ["matplotlib>=3.7"]
+
+[tool.setuptools.packages.find]
+include = ["toothprint*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

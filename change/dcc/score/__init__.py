@@ -1,1 +1,0 @@
-"""DentalChangeCert scoring functions."""
