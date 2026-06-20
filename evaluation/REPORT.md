@@ -24,7 +24,7 @@ harness in the companion repositories.
 
 | Mechanism | Metric | Result | Caveat |
 |---|---|---|---|
-| Identity — 3D scans (**N=80**) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan; Rank-1 1.0 holds under non-rigid deformation ≤0.2 mm |
+| Identity — 3D scans (**N=50**, best-fit aligned) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | realistic *different-sample* re-scan; genuine ≤0.89 mm vs impostor ≥1.20 mm (**no overlap**); robust to non-rigid deform ≤0.2 mm |
 | Identity — 2D radiographs (**N=400**, both splits, ≥4 teeth) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robust to 20 px jitter (0.985) & 50 % magnification; partly by-design invariance |
 | Surface certificate — global change (de-biased) | recall @1 mm (σ≤0.4 mm) / FPR | **1.000 / 0.000** | usable recon-noise **0.1 → 0.4 mm** (de-biasing, was 0.1); 0.84 mm photo-recon still too noisy |
 | Surface certificate — **localized** change (regional) | recall @1 mm (σ=0.2 mm) / FPR | **0.99 / 0.000** | global average gets **0.00** (dilutes); regional max localizes it; FPR ≤ α via max-calibration |
@@ -53,12 +53,19 @@ landmark labels than the dataset provides, not better code.
    {0.05, 0.1, 0.2} and all noise levels, the false-progression / false-change
    rate stayed at or below α (change: 0.000–0.005; surface: 0.000). This is a
    distribution-free, finite-sample property — the *specificity* is trustworthy.
-2. **Identification separates cleanly** on the available data: every query's
-   genuine match was its nearest gallery entry (Rank-1 = 1.0, EER = 0), and 3D
-   identity was **robust to tooth loss** (Rank-1 = 1.0 down to 30 % arch
-   coverage) — consistent with the forensic literature.
+2. **Identification separates cleanly — and the separation is real, not an
+   alignment artifact.** Every query's genuine match was its nearest gallery entry
+   (Rank-1 = 1.0, EER = 0), and 3D identity was **robust to tooth loss** (Rank-1 =
+   1.0 to 30 % arch coverage). Crucially, the 3D result was **re-validated with a
+   fair alignment**: each query is a *different-sample* re-scan (not the same points
+   transformed) and is given its **best rigid fit** to *every* gallery arch
+   (`identity.align_rigid`: PCA-axis init + ICP, no scale collapse) before scoring
+   by mean surface distance. Even at its best alignment the nearest impostor stays
+   at **≥1.20 mm** while the genuine sits at **≤0.89 mm** — *no overlap* (N=50, EER
+   0). The earlier FPFH + inlier-RMSE path could be fooled by a poor alignment; this
+   one cannot.
 3. **Engineering is production-grade**: the integrated library is at 100 % test
-   coverage (97 tests), with a clean API and a finite-sample-correct certifier.
+   coverage (100 tests), with a clean API and a finite-sample-correct certifier.
 
 ## The limitations that block clinical use (quantified)
 
@@ -170,7 +177,7 @@ deployment-grade *engineering* (not clinical validation):
   (`clinical.AuditLog`) for full traceability.
 - **Governance docs**: [MODEL_CARD](../MODEL_CARD.md), [RISK](../RISK.md),
   [CLINICAL_READINESS](../CLINICAL_READINESS.md).
-- 100 % test coverage maintained (97 tests).
+- 100 % test coverage maintained (100 tests).
 
 What this does **not** change: there is still no real longitudinal/cross-session
 data, no prospective study, and no regulatory clearance. Those are the gate.

@@ -58,6 +58,63 @@ def register_rmse(query, query_fpfh, gallery, gallery_fpfh, voxel_size: float = 
     return float(fine.inlier_rmse), float(fine.fitness)
 
 
+def align_rigid(query_points: np.ndarray, gallery_points: np.ndarray, voxel_size: float = 0.5):
+    """Deterministic robust **rigid** best-fit of a query scan onto a gallery scan.
+
+    PCA-axis initialisation — the four proper-rotation sign hypotheses of the arch's
+    principal axes — followed by multi-threshold point-to-plane ICP, keeping the
+    alignment with the smallest mean surface distance. Rigid (no scale, so the query
+    can't collapse onto an arbitrary cloud) and deterministic (no RANSAC randomness),
+    so the residual is a *fair* biometric: ~scan noise for a genuine re-scan, the
+    morphological gap for an impostor — and an impostor that reads high does so
+    because the shape differs, not because the pose was mis-estimated.
+
+    Returns ``(aligned_query_points, mean_surface_distance_mm)``.
+    """
+    import open3d as o3d
+
+    q = np.asarray(query_points, float)
+    g = np.asarray(gallery_points, float)
+    if q.ndim != 2 or q.shape[1] != 3 or g.ndim != 2 or g.shape[1] != 3:
+        raise ValueError("query and gallery points must be (N, 3) arrays")
+    reg = o3d.pipelines.registration
+    qc, gc = q.mean(0), g.mean(0)
+    _, _, Vq = np.linalg.svd(q - qc, full_matrices=False)
+    _, _, Vg = np.linalg.svd(g - gc, full_matrices=False)
+    dG, dQ = np.linalg.det(Vg), np.linalg.det(Vq)
+    gp = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(g))
+    gp.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 3, max_nn=30))
+    qo = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(q))
+    qo.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 3, max_nn=30))
+    best_T, best_md = np.eye(4), np.inf
+    for sx, sy in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
+        sz = sx * sy * dG * dQ                          # forces a proper rotation (det +1)
+        Rr = Vg.T @ np.diag([sx, sy, sz]) @ Vq
+        T = np.eye(4); T[:3, :3] = Rr; T[:3, 3] = gc - Rr @ qc
+        for thr in (3.0, 1.2, 0.5):
+            T = reg.registration_icp(qo, gp, thr, T, reg.TransformationEstimationPointToPlane(),
+                                     reg.ICPConvergenceCriteria(max_iteration=60)).transformation
+        al = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(q)).transform(T)
+        md = float(np.asarray(al.compute_point_cloud_distance(gp)).mean())
+        if md < best_md:
+            best_md, best_T = md, T
+    aligned = np.asarray(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(q)).transform(best_T).points)
+    return aligned, best_md
+
+
+def identify_surface(query_points: np.ndarray, gallery_point_sets, voxel_size: float = 0.5) -> np.ndarray:
+    """Robust identification: best-rigid-fit mean surface distance of one query scan
+    against every gallery scan (``gallery_point_sets`` = sequence of ``(N, 3)``
+    arrays). Returns the per-gallery distance row; the argmin is the identity.
+
+    Preferred over :func:`identify` (FPFH + inlier-RMSE), which can be fooled by a
+    poor alignment — a strong alignment is given to *every* candidate first via
+    :func:`align_rigid`, so the score reflects shape, not pose.
+    """
+    return np.array([align_rigid(query_points, np.asarray(g), voxel_size)[1]
+                     for g in gallery_point_sets])
+
+
 def identify(query_points: np.ndarray, gallery_templates, voxel_size: float = 0.5,
              no_match_rmse: float = 1e6) -> np.ndarray:
     """RMSE of one query scan against every enrolled gallery template.

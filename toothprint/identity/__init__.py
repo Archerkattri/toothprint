@@ -5,8 +5,10 @@ from toothprint.identity.constellation import (
 )
 from toothprint.identity.constellation import identify as identify_radiograph
 from toothprint.identity.mesh import (
+    align_rigid,
     compute_fpfh,
     enroll,
+    identify_surface,
     register_rmse,
     to_point_cloud,
 )
@@ -17,8 +19,10 @@ __all__ = [
     "constellation",
     "icp_residual",
     "identify_radiograph",
+    "align_rigid",
     "compute_fpfh",
     "enroll",
+    "identify_surface",
     "register_rmse",
     "to_point_cloud",
     "identify_scan",

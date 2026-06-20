@@ -27,7 +27,7 @@ pluggable and optional, so the guarantees run without a GPU.
 
 | Capability | What it answers | Result |
 |---|---|---|
-| **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000** (N=80, EER 0), genuine 0.10 mm vs impostor 0.55 mm |
+| **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000** (N=50, EER 0), genuine ≤0.89 mm vs impostor ≥1.20 mm — *no overlap*, best-fit aligned |
 | **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=400, EER 0), robust to 20 px jitter (0.985) & 50% magnification |
 | **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.81 end-to-end** (detector-limited) |
 | **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (global avg gets 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
@@ -42,10 +42,12 @@ by α in finite samples — no distributional assumptions.
 
 These are the system's own outputs on the public Poseidon3D and DenPAR datasets.
 
-**Identification** — a query arch (gold) is registered onto a gallery arch. For
-the **same person** its points hug the surface (blue, **0.10 mm → match**); for a
-**stranger** the best alignment still leaves them floating off it (red,
-**0.54 mm → no match**). Recognition by teeth:
+**Identification** — a query re-scan (gold) is given its **best rigid alignment**
+to each gallery arch (PCA-axis init + ICP — rigid, so no scale collapse), then
+coloured by distance to the surface. For the **same person** its points hug the
+surface (blue, **0.7 mm → match**); for a **stranger** — *even at its best
+alignment* — they float off it (red, **4.3 mm → no match**). The residual is
+genuine shape difference, not a pose failure. Recognition by teeth:
 
 ![Same-person vs stranger registration — animated](docs/identity_match.gif)
 
@@ -168,7 +170,7 @@ toothprint/
   api/               FastAPI service
   web/               the console (HTML/CSS/JS, no build step)
   docs/              result figures
-  tests/             97 tests, 100% coverage
+  tests/             100 tests, 100% coverage
 ```
 
 ## Test

@@ -135,3 +135,48 @@ def test_identify_scan_genuine_is_best():
     query = _arch(seed=2) @ R.T + rng.uniform(-3, 3, 3) + rng.normal(0, 0.05, (1500, 3))
     row = identify_scan(query, gallery, voxel)
     assert int(np.argmin(row)) == 1  # subject 2 is gallery index 1
+
+
+def _subject(seed=0, n=2000):
+    """A distinct synthetic arch (per-subject ellipsoid anisotropy + surface bumps)
+    with stable principal axes — the regime where rigid identification applies."""
+    rng = np.random.default_rng(seed)
+    v = rng.normal(size=(n, 3)); v /= np.linalg.norm(v, axis=1, keepdims=True)
+    radii = np.array([18.0, 12.0, 7.0]) + rng.uniform(-3, 3, 3)
+    bump = 1 + 0.22 * np.sin(rng.uniform(1, 5) * v[:, 0]) * np.cos(rng.uniform(1, 5) * v[:, 1])
+    return v * radii * bump[:, None] + rng.normal(0, 0.05, (n, 3))
+
+
+def _reproject(pts, seed):
+    rng = np.random.default_rng(seed)
+    ax = rng.normal(size=3); ax /= np.linalg.norm(ax); a = 0.25
+    K = np.array([[0, -ax[2], ax[1]], [ax[2], 0, -ax[0]], [-ax[1], ax[0], 0]])
+    R = np.eye(3) + np.sin(a) * K + (1 - np.cos(a)) * (K @ K)
+    return pts @ R.T + rng.uniform(-4, 4, 3) + rng.normal(0, 0.06, pts.shape)
+
+
+def test_align_rigid_genuine_low_impostor_high_after_bestfit():
+    pytest.importorskip("open3d")
+    from toothprint.identity.mesh import align_rigid
+    # genuine re-scan (reposed + noised copy of subject 2) vs an impostor (subject 5)
+    query = _reproject(_subject(seed=2), seed=9)
+    _, d_gen = align_rigid(query, _subject(seed=2), voxel_size=1.0)
+    _, d_imp = align_rigid(query, _subject(seed=5), voxel_size=1.0)
+    # even given its BEST rigid alignment, the impostor stays well above the genuine
+    assert d_gen < 0.5 and d_imp > 2.0 * d_gen
+
+
+def test_align_rigid_bad_shape_raises():
+    pytest.importorskip("open3d")
+    from toothprint.identity.mesh import align_rigid
+    with pytest.raises(ValueError, match=r"\(N, 3\)"):
+        align_rigid(np.zeros((10, 2)), _subject(0))
+
+
+def test_identify_surface_genuine_is_best():
+    pytest.importorskip("open3d")
+    from toothprint.identity.mesh import identify_surface
+    gallery = [_subject(seed=s) for s in (1, 2, 3)]
+    query = _reproject(_subject(seed=2), seed=4)
+    row = identify_surface(query, gallery, voxel_size=1.0)
+    assert int(np.argmin(row)) == 1     # subject 2 (gallery index 1) is the match
