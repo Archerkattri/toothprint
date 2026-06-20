@@ -3,7 +3,8 @@ import pytest
 
 from toothprint.surface.certificate import SurfaceCertificate, certify_surface_change
 from toothprint.surface.error import (
-    chamfer_distance, icp_align, noise_floor_sq, surface_displacement, surface_error,
+    assign_regions, chamfer_distance, icp_align, noise_floor_sq,
+    regional_displacements, surface_displacement, surface_error,
 )
 from toothprint.change.conformal import CHANGED, STABLE, UNCERTAIN, ConformalCertifier
 
@@ -139,6 +140,60 @@ def test_surface_displacement_nonfinite_raises():
     a = _sphere(10); b = _sphere(10).copy(); b[0, 0] = np.inf
     with pytest.raises(ValueError, match="finite"):
         surface_displacement(a, b)
+
+
+# --- regional (localized-change) detection ---------------------------------
+
+def test_assign_regions_partitions_deterministically():
+    pts = _sphere(2000)
+    lab = assign_regions(pts, n_regions=12, seed=0)
+    assert lab.shape == (2000,) and lab.min() >= 0 and lab.max() < 12
+    assert len(np.unique(lab)) == 12              # FPS spreads centres; all non-empty
+    assert np.array_equal(lab, assign_regions(pts, n_regions=12, seed=0))
+
+
+def test_assign_regions_validation_and_clamp():
+    with pytest.raises(ValueError, match=r"\(N, 3\)"):
+        assign_regions(np.zeros((10, 2)))
+    with pytest.raises(ValueError, match=">= 1"):
+        assign_regions(_sphere(10), n_regions=0)
+    lab = assign_regions(_sphere(5), n_regions=50)  # clamp k to N
+    assert lab.max() < 5
+
+
+def test_regional_localizes_change_that_global_dilutes():
+    rng = np.random.default_rng(0)
+    base = _sphere(2000)
+    sigma, K = 0.1, 12
+    lab = assign_regions(base, n_regions=K, seed=0)
+    # a localized 1mm change: push one region's patch radially outward
+    patch = lab == 0
+    t1 = base.copy()
+    t1[patch] = base[patch] + base[patch] / np.linalg.norm(base[patch], axis=1, keepdims=True) * 1.0
+    stable = [(base + rng.normal(0, sigma, base.shape), base + rng.normal(0, sigma, base.shape))
+              for _ in range(8)]
+    floors = [noise_floor_sq([(a[lab == r], b[lab == r]) for a, b in stable]) for r in range(K)]
+    a = base + rng.normal(0, sigma, base.shape)
+    b = t1 + rng.normal(0, sigma, base.shape)
+    d = regional_displacements(a, b, lab, floors)
+    assert d.argmax() == 0 and d[0] > 0.8         # localizes + recovers ~full 1mm
+    g = surface_displacement(a, b, noise_floor_sq=noise_floor_sq(stable))
+    assert g < 0.5 and d.max() > 2 * g            # global dilutes; regional recovers it
+
+
+def test_regional_displacements_validation():
+    base = _sphere(50); lab = assign_regions(base, 4)
+    with pytest.raises(ValueError, match="equal shape"):
+        regional_displacements(base, _sphere(51), lab, [0, 0, 0, 0])
+    with pytest.raises(ValueError, match="one entry per point"):
+        regional_displacements(base, base.copy(), lab[:10], [0, 0, 0, 0])
+
+
+def test_regional_empty_region_reads_zero():
+    base = _sphere(50)
+    lab = np.zeros(50, int)                        # region 1 has no points
+    d = regional_displacements(base, base.copy(), lab, [0.0, 0.0])
+    assert d[1] == 0.0
 
 
 # --- certificate -----------------------------------------------------------

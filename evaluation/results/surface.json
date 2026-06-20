@@ -1267,5 +1267,227 @@
     "fpr": null
    }
   ]
+ },
+ "localized": {
+  "global_corr0.0": {
+   "radius_mm": 0.08776325512298955,
+   "mode": "global",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    }
+   ]
+  },
+  "regional_corr0.0": {
+   "radius_mm": 0.20171625062895646,
+   "mode": "regional",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 0.9895833333333334,
+     "recall": 0.9895833333333334,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "global_corr0.9": {
+   "radius_mm": 0.3362856215621408,
+   "mode": "global",
+   "corr": 0.9,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    }
+   ]
+  },
+  "regional_corr0.9": {
+   "radius_mm": 0.7122472872904005,
+   "mode": "regional",
+   "corr": 0.9,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 0.041666666666666664,
+     "recall": 0.041666666666666664,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 0.4791666666666667,
+     "recall": 0.4791666666666667,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 0.9895833333333334,
+     "recall": 0.9895833333333334,
+     "fpr": null
+    }
+   ]
+  }
  }
 }

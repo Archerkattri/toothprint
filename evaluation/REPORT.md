@@ -20,7 +20,8 @@ harness in the companion repositories.
 |---|---|---|---|
 | Identity — 3D scans (**N=80**) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan of the *same* scan |
 | Identity — 2D radiographs (**N=179**, full test set) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robustness is partly by-design invariance |
-| Surface certificate (de-biased) | recall @1 mm (σ≤0.4 mm) / FPR | **1.000 / 0.000** | usable recon-noise range **0.1 → 0.4 mm** (de-biasing, was 0.1); 0.84 mm photo-recon still too noisy |
+| Surface certificate — global change (de-biased) | recall @1 mm (σ≤0.4 mm) / FPR | **1.000 / 0.000** | usable recon-noise **0.1 → 0.4 mm** (de-biasing, was 0.1); 0.84 mm photo-recon still too noisy |
+| Surface certificate — **localized** change (regional) | recall @1 mm (σ=0.2 mm) / FPR | **0.99 / 0.000** | global average gets **0.00** (dilutes); regional max localizes it; FPR ≤ α via max-calibration |
 | Change **measurement** (accurate localization) | recall @ **true 0 %** false-progression | **0.98** (0.95 at 4 px → **1.00** at ≥16 px) | tau = 2 px; FPR = 0.000 |
 | Change certificate | false-progression rate vs α | **≤ α always** (measured 0.000–0.010) | distribution-free, finite-sample |
 | Change end-to-end (v2 detector, full pipeline) | recall / FPR | **0.81 / 0.010** | detector at the ~35 px label floor |
@@ -51,7 +52,7 @@ landmark labels than the dataset provides, not better code.
    identity was **robust to tooth loss** (Rank-1 = 1.0 down to 30 % arch
    coverage) — consistent with the forensic literature.
 3. **Engineering is production-grade**: the integrated library is at 100 % test
-   coverage (85 tests), with a clean API and a finite-sample-correct certifier.
+   coverage (90 tests), with a clean API and a finite-sample-correct certifier.
 
 ## The limitations that block clinical use (quantified)
 
@@ -75,23 +76,28 @@ landmark labels than the dataset provides, not better code.
    *Residual:* needs confirmation on real radiograph pairs, where projection-angle
    change (not modelled here) adds error.
 
-3. **The surface certificate's reach was extended, not unlocked.** The original
-   mean-norm measurement *rectifies* zero-mean reconstruction noise into a positive
-   bias (~2.3·σ), so its conformal radius grows linearly with noise (0.069 → 0.458
-   mm as σ goes 0.03 → 0.20) and recall for a 1 mm change collapses to **0 by
-   0.2 mm**. De-biasing by noise-power subtraction
-   (`toothprint.surface.surface_displacement`: √(max(0, mean‖v‖² − floor))) cuts
-   the radius ~6× and extends the usable range to **~0.4 mm** (recall 1.0 at 0.2
-   and 0.4 mm, false-change still 0.000; even the IOS detection threshold drops
-   from 1.0 → 0.8 mm). **Two honest caveats remain:** (a) our Gaussian-Splatting
-   photo-reconstruction (~0.84 mm) is *still* too noisy — a 1 mm change sits at the
-   SNR floor there (recall **0.02**), so the "no scanner" path needs IOS-class
-   input or a larger change; (b) the de-biasing gain assumes the noise is spatially
-   *incoherent* — under correlated (realistic) reconstruction error it erodes
-   sharply (recall@1mm **1.0 → 0.23** as correlation 0 → 1 at 0.2 mm). The
-   certificate's **specificity (0 % false-change) holds at every noise level and
-   correlation** — that part is unconditional; the *sensitivity* reach must be
-   pinned down on real reconstruction residuals.
+3. **The surface certificate: de-biased *and* localized.** The original mean-norm
+   measurement *rectifies* zero-mean reconstruction noise into a +2.3·σ bias, so its
+   conformal radius grew linearly with noise (0.069 → 0.458 mm) and recall for a
+   1 mm change collapsed by 0.2 mm — and a whole-surface average can't see a
+   *localized* lesion at all (the signal is diluted by the unchanged majority).
+   Two fixes, both shipped with their ablations:
+   - **De-biasing** (noise-power subtraction, `surface_displacement`:
+     √(max(0, mean‖v‖² − floor))) cuts the radius ~6× and extends the usable
+     reconstruction noise from 0.1 → **0.4 mm** (recall 1.0 @ 1 mm; IOS detection
+     threshold 1.0 → 0.8 mm).
+   - **Regional detection** (`assign_regions` + `regional_displacements`: de-biased
+     displacement per region, max over K=12, conformal-calibrated on the *max* so
+     false-change stays ≤ α despite the multiplicity) detects a localized patch
+     change that the global average **dilutes to 0** — global recall **0.00 →
+     regional 0.99** @ 1 mm (σ=0.2 mm) — and reports *which* region moved.
+   **Honest residuals:** (a) the 0.84 mm Gaussian-Splatting photo-recon is still too
+   noisy for a 1 mm *global* change (recall 0.02 — at the SNR floor); (b) under
+   heavy correlated noise a *small* (1 mm) localized change is hard (regional recall
+   0.04 at correlation 0.9), though a 1.5 mm one is recoverable (**0.48**, vs
+   global's 0.00). **Specificity (0 % false-change) holds at every noise level,
+   correlation, and region count** — unconditional; the *sensitivity* reach on tiny
+   changes under coherent error must be pinned down on real reconstruction residuals.
 
 4. **The detector is coarse** (~36 px landmark error, near the DenPAR
    annotation-noise floor). It bounds the fully-automatic pipeline: end-to-end
@@ -122,7 +128,7 @@ deployment-grade *engineering* (not clinical validation):
   (`clinical.AuditLog`) for full traceability.
 - **Governance docs**: [MODEL_CARD](../MODEL_CARD.md), [RISK](../RISK.md),
   [CLINICAL_READINESS](../CLINICAL_READINESS.md).
-- 100 % test coverage maintained (85 tests).
+- 100 % test coverage maintained (90 tests).
 
 What this does **not** change: there is still no real longitudinal/cross-session
 data, no prospective study, and no regulatory clearance. Those are the gate.

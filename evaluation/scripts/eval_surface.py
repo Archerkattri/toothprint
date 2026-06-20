@@ -28,7 +28,9 @@ import numpy as np
 
 from dentalmapcert.calibration import ErrorCalibrator
 from dentalmapcert.dataset_loaders import Poseidon3DLoader, load_poseidon3d_points
-from toothprint.surface.error import noise_floor_sq, surface_displacement
+from toothprint.surface.error import (
+    assign_regions, noise_floor_sq, regional_displacements, surface_displacement,
+)
 
 OUT = Path("/home/krishi/personal-projects/toothprint/evaluation/results/surface.json")
 DATA = "data/poseidon3d/extracted/data"
@@ -103,6 +105,49 @@ def run(surfaces, *, noise, alpha, reps, changes, corr=0.0, estimator="debiased"
     return {"radius_mm": cal.radius_mm, "estimator": estimator, "corr": corr, "curve": curve}
 
 
+def displace_region(pts, labels, region, mm):
+    """Localized change: push one region's patch radially outward by ``mm`` — a
+    realistic lesion (resorption / restoration / wear), unlike a global expansion."""
+    out = pts.copy()
+    m = labels == region
+    if mm and m.any():
+        u = pts[m] - pts.mean(0)
+        u /= np.clip(np.linalg.norm(u, axis=1, keepdims=True), 1e-9, None)
+        out[m] = pts[m] + u * mm
+    return out
+
+
+def run_localized(surfaces, *, noise, alpha, reps, changes, corr, mode, K=12):
+    """Localized-change evaluation: ``mode`` is 'global' (whole-surface de-biased
+    displacement) or 'regional' (max over K regions). Calibrated on stable pairs so
+    false-change ≤ α either way; the question is *sensitivity* to a patch change."""
+    rng = np.random.default_rng(0)
+    labels = [assign_regions(s, K, seed=0) for s in surfaces]
+    stable = {i: [(noisy(s, noise, corr, rng), noisy(s, noise, corr, rng)) for _ in range(reps)]
+              for i, s in enumerate(surfaces)}
+    if mode == "regional":
+        floors = {i: [noise_floor_sq([(a[labels[i] == r], b[labels[i] == r]) for a, b in stable[i]])
+                      for r in range(K)] for i in range(len(surfaces))}
+        def stat(i, a, b):
+            return float(regional_displacements(a, b, labels[i], floors[i]).max())
+    else:
+        floors = {i: noise_floor_sq(stable[i]) for i in range(len(surfaces))}
+        def stat(i, a, b):
+            return surface_displacement(a, b, noise_floor_sq=floors[i])
+    cal = ErrorCalibrator.fit([stat(i, a, b) for i in range(len(surfaces)) for a, b in stable[i]], alpha=alpha)
+    curve = []
+    for ch in changes:
+        n = cc = 0
+        for i, s in enumerate(surfaces):
+            t1 = displace_region(s, labels[i], 0, ch)
+            for _ in range(reps):
+                lab = certify(stat(i, noisy(s, noise, corr, rng), noisy(t1, noise, corr, rng)), cal)
+                n += 1; cc += lab == "changed"
+        curve.append({"change_mm": ch, "changed_rate": cc / n,
+                      "recall": cc / n if ch >= CT else None, "fpr": cc / n if ch == 0 else None})
+    return {"radius_mm": cal.radius_mm, "mode": mode, "corr": corr, "curve": curve}
+
+
 def _rec1(block):
     return next(x["changed_rate"] for x in block["curve"] if x["change_mm"] == 1.0)
 
@@ -141,6 +186,18 @@ def main():
         res["correlated"][f"corr_{corr}"] = block
         print(f"  corr {corr}: radius={block['radius_mm']:.3f} recall@1mm={_rec1(block):.2f} "
               f"fpr={_fpr(block):.3f}", flush=True)
+
+    print("[localized] LOCALIZED patch change: global (dilutes) vs regional max", flush=True)
+    res["localized"] = {}
+    print(f"  {'cond':>16} {'recall@1mm':>10} {'recall@1.5':>10} {'fpr':>6} {'radius':>7}", flush=True)
+    for corr in [0.0, 0.9]:
+        for mode in ["global", "regional"]:
+            block = run_localized(surfaces, noise=0.20, alpha=0.1, reps=12, changes=changes,
+                                  corr=corr, mode=mode)
+            res["localized"][f"{mode}_corr{corr}"] = block
+            r15 = next(x["changed_rate"] for x in block["curve"] if x["change_mm"] == 1.5)
+            print(f"  {mode+' corr'+str(corr):>16} {_rec1(block):>10.2f} {r15:>10.2f} "
+                  f"{_fpr(block):>6.3f} {block['radius_mm']:>7.3f}", flush=True)
 
     print("[alpha] FPR <= alpha (de-biased, noise 0.05)", flush=True)
     for a in [0.05, 0.1, 0.2]:

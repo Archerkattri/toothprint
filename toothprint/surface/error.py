@@ -128,6 +128,58 @@ def surface_displacement(cloud_t0: np.ndarray, cloud_t1: np.ndarray, *,
     return float(np.sqrt(max(0.0, s2 - float(noise_floor_sq))))
 
 
+def assign_regions(points: np.ndarray, n_regions: int = 12, seed: int = 0) -> np.ndarray:
+    """Partition ``points`` into ``n_regions`` spatial clusters (farthest-point
+    seeding + nearest-centre assignment). Deterministic for a fixed ``seed``.
+
+    Used to localise surface change: a real lesion (caries, resorption, a new
+    restoration) moves a *patch* of the surface, so a whole-surface average dilutes
+    it; per-region measurement recovers the undiluted signal and says *where* it is.
+    Returns an ``(N,)`` int array of region ids in ``[0, n_regions)``.
+    """
+    pts = np.asarray(points, float)
+    if pts.ndim != 2 or pts.shape[1] != 3:
+        raise ValueError("points must be (N, 3)")
+    n = pts.shape[0]
+    if n_regions < 1:
+        raise ValueError("n_regions must be >= 1")
+    k = min(n_regions, n)
+    rng = np.random.default_rng(seed)
+    centres = [int(rng.integers(n))]
+    d2 = ((pts - pts[centres[0]]) ** 2).sum(axis=1)
+    for _ in range(1, k):
+        centres.append(int(d2.argmax()))
+        d2 = np.minimum(d2, ((pts - pts[centres[-1]]) ** 2).sum(axis=1))
+    C = pts[centres]
+    return ((pts[:, None, :] - C[None, :, :]) ** 2).sum(axis=2).argmin(axis=1).astype(int)
+
+
+def regional_displacements(cloud_t0: np.ndarray, cloud_t1: np.ndarray,
+                           labels: np.ndarray, floors_sq) -> np.ndarray:
+    """Per-region de-biased surface displacement (mm).
+
+    ``labels`` assigns each corresponded point to a region (see
+    :func:`assign_regions`); ``floors_sq`` is the per-region noise power (length
+    ``K``) from stable pairs. Returns a ``(K,)`` array; the max localises the most
+    displaced region. Calibrating that max over stable pairs keeps the conformal
+    false-change rate ≤ α despite the maximisation (multiplicity is absorbed).
+    """
+    a = np.asarray(cloud_t0, float)
+    b = np.asarray(cloud_t1, float)
+    if a.shape != b.shape:
+        raise ValueError("regional_displacements requires corresponded clouds of equal shape")
+    lab = np.asarray(labels)
+    if lab.shape[0] != a.shape[0]:
+        raise ValueError("labels must have one entry per point")
+    k = len(floors_sq)
+    out = np.zeros(k)
+    for r in range(k):
+        m = lab == r
+        if m.any():
+            out[r] = surface_displacement(a[m], b[m], noise_floor_sq=float(floors_sq[r]))
+    return out
+
+
 def surface_error(reconstructed: np.ndarray, reference: np.ndarray, *,
                   run_icp: bool = True, estimate_scale: bool = False) -> SurfaceError:
     """Full surface error between a reconstructed and a reference point cloud."""
