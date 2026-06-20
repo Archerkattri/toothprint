@@ -146,8 +146,10 @@ deployment-grade *engineering* (not clinical validation):
   detects *localized* lesions a whole-surface average misses (0.99 vs 0.00), with
   the conformal false-change rate preserved (caveat 3).
 - **Larger, harder identity validation** — 2D gallery grown to **N=400** at
-  Rank-1 1.0 / EER 0 (robust to 20 px jitter, 50 % magnification); 3D queries
-  stressed with non-rigid intra-subject deformation (caveat 1, tightened).
+  Rank-1 1.0 / EER 0 (robust to 20 px jitter, 50 % magnification); the 3D eval
+  harness adds a **non-rigid intra-subject deformation** augmentation (wear /
+  soft-tissue movement) on top of pose + noise + partial coverage (caveat 1,
+  tightened — deformation-robustness ablation runs in `eval_id3d.py`).
 - **Site recalibration** (`clinical.SiteCalibration`) — recalibrate the conformal
   layer on the deployment site's own data, with a min-sample floor and a
   provenance hash, so the α guarantee is honoured on-distribution.
