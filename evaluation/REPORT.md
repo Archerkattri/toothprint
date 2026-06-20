@@ -6,13 +6,19 @@ A full, ablated evaluation of all three mechanisms on all available real data
 `evaluation/ablation_summary.png`. Reproduce with the `scripts/eval_*.py`
 harness in the companion repositories.
 
-> **Bottom line up front: NO — this is not ready for hospital use, and it is not
-> "perfect."** It is a strong, honestly-validated *research prototype* with one
-> genuinely trustworthy property (a conformal false-alarm guarantee). Every
-> headline number is measured against **synthetic perturbations of
-> single-timepoint data**, because no real longitudinal or cross-session dental
-> data exists in these datasets. Sensitivity also degrades sharply under
-> realistic noise. Details and the path forward below.
+> **Bottom line up front.** The *methods and code* are now hardened to
+> medical-grade *engineering*: the conformal false-alarm guarantee holds in every
+> ablation (specificity is unconditional), the change measurement is robust to
+> acquisition noise **and** repositioning (rotation/magnification, not just
+> translation), the surface certificate is de-biased and detects **localized**
+> lesions a whole-surface average misses, and identity separates cleanly at
+> **N=400** (2D) / **N=80** (3D). **But this is still NOT a deployable medical
+> device, and not "perfect":** every headline number is measured against
+> **synthetic perturbations of single-timepoint data** (no real
+> longitudinal/cross-session dental data exists in these datasets), and there is no
+> prospective study and no regulatory clearance. Those gaps are **non-code** — they
+> cannot be closed by any amount of engineering — and they remain the gate. Details
+> below.
 
 ## Headline metrics (real data + synthetic perturbations)
 
