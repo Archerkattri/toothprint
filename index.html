@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ToothPrint — certified dental identity, change & surface</title>
+  <meta name="description" content="Recognise a person by their teeth, and certify whether their teeth changed — with a finite-sample statistical guarantee. Validated on real intraoral scans and radiographs." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <header class="nav">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">ToothPrint</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#identity">Identity</a>
+      <a href="#change">Change</a>
+      <a href="#surface">Surface</a>
+      <a href="#certainty">The guarantee</a>
+    </nav>
+    <a class="btn btn-ghost" href="#certainty">Try a certificate</a>
+  </header>
+
+  <main id="top">
+    <!-- HERO ---------------------------------------------------------------->
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Forensic-grade dental biometrics · certified</p>
+        <h1 class="display">
+          A face can be lost.<br />
+          The <span class="ink">teeth</span> still know who you are.
+        </h1>
+        <p class="lede">
+          ToothPrint reads the dentition three ways — <strong>who</strong> it
+          belongs to, <strong>whether</strong> it has changed, and <strong>what</strong>
+          its surface is — and returns a certificate, not a guess. Each verdict
+          carries a finite-sample statistical guarantee, validated on real
+          intraoral scans and radiographs.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-solid" href="#identity">See it identify a person</a>
+          <a class="btn btn-line" href="#certainty">Feel the guarantee</a>
+        </div>
+        <dl class="hero-stats">
+          <div><dt>Rank-1 identification</dt><dd class="mono">1.000</dd></div>
+          <div><dt>Genuine vs impostor d′</dt><dd class="mono">50</dd></div>
+          <div><dt>False-change rate</dt><dd class="mono">0.0%</dd></div>
+        </dl>
+      </div>
+      <figure class="hero-stage" aria-label="A dental arch rendered as a luminous tooth print">
+        <canvas id="archCanvas" width="640" height="680"></canvas>
+        <figcaption class="stage-cap mono">live tooth print · 33-dim FPFH signature</figcaption>
+      </figure>
+    </section>
+
+    <!-- PROOF BAND ---------------------------------------------------------->
+    <section class="proof" aria-label="What the certificates guarantee">
+      <p class="proof-line">
+        Built on three primitives — <em>detection</em>, <em>registration</em>,
+        <em>conformal calibration</em> — applied to one durable signal.
+      </p>
+      <div class="proof-grid">
+        <article class="proof-card reveal">
+          <span class="proof-n mono">who</span>
+          <h3>Identification</h3>
+          <p>Match a scan or radiograph against a gallery by registration distance. The closest enrolment is the person.</p>
+        </article>
+        <article class="proof-card reveal">
+          <span class="proof-n mono">whether</span>
+          <h3>Change certificate</h3>
+          <p>Certify a bone-level change only when its conformal interval clears the threshold. The false-alarm rate is bounded.</p>
+        </article>
+        <article class="proof-card reveal">
+          <span class="proof-n mono">what</span>
+          <h3>Surface certificate</h3>
+          <p>Certify a 3D surface change against reconstruction noise — stable, changed, or honestly uncertain.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- IDENTITY ------------------------------------------------------------>
+    <section id="identity" class="pillar">
+      <div class="pillar-head">
+        <p class="eyebrow">01 · Identity</p>
+        <h2 class="display-2">Recognise a person by their teeth</h2>
+        <p class="pillar-lede">
+          A dental arch — its crown contours, cusps, and gingival margin — is
+          individual. ToothPrint enrols each person, then identifies a fresh
+          scan by the smallest registration error. A genuine re-scan snaps into
+          place; a stranger's anatomy cannot.
+        </p>
+      </div>
+      <div class="pillar-body">
+        <figure class="shot reveal">
+          <img src="assets/identification.png" alt="Genuine matches cluster at low distance; impostors sit far away, for both 3D scans and 2D radiographs." loading="lazy" />
+          <figcaption>Genuine and impostor matches never overlap — on real Poseidon3D arches (3D) and DenPAR constellations (2D).</figcaption>
+        </figure>
+        <div class="pillar-detail">
+          <div class="metric-row">
+            <div class="metric"><span class="metric-k mono">Rank-1 (3D scans)</span><span class="metric-v mono">1.000</span></div>
+            <div class="metric"><span class="metric-k mono">Genuine RMSE</span><span class="metric-v mono">0.10 mm</span></div>
+            <div class="metric"><span class="metric-k mono">Impostor RMSE</span><span class="metric-v mono">0.55 mm</span></div>
+            <div class="metric"><span class="metric-k mono">Rank-1 (2D X-ray)</span><span class="metric-v mono">1.000</span></div>
+          </div>
+          <p class="how">
+            <strong>3D:</strong> FPFH descriptors → RANSAC → ICP → smallest RMSE
+            wins. <strong>2D:</strong> the per-tooth landmark constellation,
+            scale-normalised so magnification cancels, aligned by rigid ICP.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHANGE -------------------------------------------------------------->
+    <section id="change" class="pillar alt">
+      <div class="pillar-head">
+        <p class="eyebrow">02 · Change</p>
+        <h2 class="display-2">Did the bone level really change?</h2>
+        <p class="pillar-lede">
+          Comparing two radiographs is hard: re-positioning, exposure, and
+          detector error swamp a real sub-millimetre change. ToothPrint measures
+          the change <em>differentially</em> — registering the bone-margin patch
+          between timepoints, referenced to a stationary crown — driving the
+          noise floor to a tenth of a pixel.
+        </p>
+      </div>
+      <div class="pillar-body reverse">
+        <figure class="shot reveal">
+          <img src="assets/change_certificate.png" alt="Recall rises with change magnitude while the false-progression rate stays at zero." loading="lazy" />
+          <figcaption>Recall climbs to 0.97 at a 0% false-progression rate; the certificate abstains below the noise floor.</figcaption>
+        </figure>
+        <div class="pillar-detail">
+          <div class="metric-row">
+            <div class="metric"><span class="metric-k mono">Recall ≥0.4 mm</span><span class="metric-v mono">0.97</span></div>
+            <div class="metric"><span class="metric-k mono">False-progression</span><span class="metric-v mono">0.000</span></div>
+            <div class="metric"><span class="metric-k mono">Stable-pair noise</span><span class="metric-v mono">0.1 px</span></div>
+            <div class="metric"><span class="metric-k mono">End-to-end recall</span><span class="metric-v mono">0.72</span></div>
+          </div>
+          <p class="how">
+            A <strong>ViTPose</strong> detector localises each tooth; sub-pixel
+            template matching measures the margin shift; a conformal certificate
+            decides — and never certifies change it cannot distinguish from
+            acquisition noise.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SURFACE ------------------------------------------------------------->
+    <section id="surface" class="pillar">
+      <div class="pillar-head">
+        <p class="eyebrow">03 · Surface</p>
+        <h2 class="display-2">Did the 3D surface really change?</h2>
+        <p class="pillar-lede">
+          From an intraoral scan or a handful of photos, ToothPrint reconstructs
+          the arch, refines it with screened-Poisson denoising, and certifies a
+          surface change against the reconstruction's own error — so swelling or
+          recession is flagged, and scanner noise is not.
+        </p>
+      </div>
+      <div class="pillar-body">
+        <figure class="shot reveal">
+          <img src="assets/surface_certificate.png" alt="The surface certificate certifies stability below 0.2mm and change above 1.0mm at zero false-change rate." loading="lazy" />
+          <figcaption>Certifies stable ≤0.2 mm and changed ≥1.0 mm at a 0% false-change rate, abstaining in the gray zone.</figcaption>
+        </figure>
+        <div class="pillar-detail">
+          <div class="metric-row">
+            <div class="metric"><span class="metric-k mono">Stable certified</span><span class="metric-v mono">≤0.2 mm</span></div>
+            <div class="metric"><span class="metric-k mono">Change certified</span><span class="metric-v mono">≥1.0 mm</span></div>
+            <div class="metric"><span class="metric-k mono">False-change</span><span class="metric-v mono">0.000</span></div>
+            <div class="metric"><span class="metric-k mono">Poisson denoise</span><span class="metric-v mono">−43%</span></div>
+          </div>
+          <p class="how">
+            Reconstruction (<strong>DUSt3R</strong>, runs on an 8&nbsp;GB GPU) →
+            screened-Poisson refinement → scale-aware surface error → conformal
+            certificate. Pure-numpy from the error metric onward.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE CERTAINTY ----------------------------------------------->
+    <section id="certainty" class="certainty">
+      <div class="certainty-head">
+        <p class="eyebrow">The guarantee, in your hands</p>
+        <h2 class="display-2">A certificate fires only when it is sure</h2>
+        <p class="pillar-lede">
+          Drag the measured change. The conformal interval moves with it. The
+          verdict turns <span class="tag tag-change">changed</span> only when the
+          whole interval clears the change threshold, and
+          <span class="tag tag-stable">stable</span> only when it sits below the
+          stable threshold. Everywhere between, it abstains — on purpose.
+        </p>
+      </div>
+
+      <div class="lab">
+        <div class="lab-readout">
+          <div class="verdict" id="verdict" data-state="stable">
+            <span class="verdict-label mono">verdict</span>
+            <span class="verdict-word" id="verdictWord">stable</span>
+          </div>
+          <dl class="lab-stats">
+            <div><dt class="mono">measured</dt><dd class="mono" id="measuredOut">0.30 mm</dd></div>
+            <div><dt class="mono">interval</dt><dd class="mono" id="intervalOut">[0.19, 0.41]</dd></div>
+            <div><dt class="mono">conformal α</dt><dd class="mono" id="alphaOut">0.10</dd></div>
+          </dl>
+        </div>
+
+        <div class="lab-stage">
+          <div class="track" id="track" aria-hidden="true">
+            <div class="zone zone-stable"><span>stable</span></div>
+            <div class="zone zone-gray"><span>uncertain</span></div>
+            <div class="zone zone-change"><span>changed</span></div>
+            <div class="interval-band" id="band"></div>
+            <div class="measured-pin" id="pin"></div>
+          </div>
+
+          <label class="slider-label" for="measured">Measured surface change — <span class="mono" id="sliderVal">0.30</span> mm</label>
+          <input id="measured" class="slider" type="range" min="0" max="200" value="30" />
+
+          <div class="lab-controls">
+            <label class="ctrl">Reconstruction precision
+              <select id="noise">
+                <option value="0.06">IOS scan · σ 0.05 mm (tight)</option>
+                <option value="0.12" selected>good photogrammetry · σ 0.10 mm</option>
+                <option value="0.24">rough · σ 0.20 mm (wide)</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </div>
+      <p class="lab-foot mono">
+        interval = measured ± conformal radius · radius grows with reconstruction noise · thresholds: stable 0.35 mm / change 0.75 mm
+      </p>
+    </section>
+
+    <!-- PIPELINE ------------------------------------------------------------>
+    <section class="pipeline">
+      <h2 class="display-2 center">One signal, one stack</h2>
+      <div class="pipe-row">
+        <div class="pipe-step reveal"><span class="pipe-k mono">in</span><p>Intraoral scan or periapical radiograph</p></div>
+        <div class="pipe-arrow" aria-hidden="true">→</div>
+        <div class="pipe-step reveal"><span class="pipe-k mono">detect</span><p>Teeth + landmarks (ViTPose) or arch point cloud</p></div>
+        <div class="pipe-arrow" aria-hidden="true">→</div>
+        <div class="pipe-step reveal"><span class="pipe-k mono">register</span><p>2D/3D ICP · FPFH · sub-pixel template matching</p></div>
+        <div class="pipe-arrow" aria-hidden="true">→</div>
+        <div class="pipe-step reveal"><span class="pipe-k mono">certify</span><p>Conformal interval → identity, change, surface</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot-brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">ToothPrint</span>
+    </div>
+    <p class="foot-note">
+      Certified dental-imaging intelligence. Identification, change, and surface
+      certificates from one durable signal. Numbers shown are measured on real
+      public datasets; see the repository for reproduction.
+    </p>
+    <p class="foot-meta mono">100% test coverage · numpy / scipy / opencv / open3d · MIT</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
