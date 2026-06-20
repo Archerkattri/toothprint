@@ -76,13 +76,14 @@ toothprint/
 
 ## Testing
 
-Every package is at **100% line coverage** on real-data-backed logic.
-
 ```bash
-cd identity && python -m pytest tests/ --cov=toothid
-cd change   && python -m pytest tests/ --cov=dcc
-cd surface  && python -m pytest tests/ --cov=dentalmapcert
+cd identity && python -m pytest tests/ --cov=toothid          # 100% (standalone)
+cd change   && python -m pytest tests/ --cov=dcc              # 100% with datasets present
+cd surface  && python -m pytest tests/ --cov=dentalmapcert    # 100% with datasets present
 ```
 
-Datasets and model checkpoints are gitignored; see each pillar's docs for
-download instructions.
+`identity` is **100% covered standalone** (synthetic + small fixtures). `change`
+and `surface` reach **100%** when their datasets are present; without the
+(gitignored) datasets, their dataset-adapter/CLI integration tests skip, so a
+bare checkout reports ~95–99%. Datasets and model checkpoints are gitignored; see
+each pillar's docs for download instructions.
