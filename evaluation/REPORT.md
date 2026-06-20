@@ -164,9 +164,11 @@ data, no prospective study, and no regulatory clearance. Those are the gate.
 
 ## Verdict by use case
 
-- **Clinical diagnostic / change-screening tool — not viable today.** Real-world
-  sensitivity is unproven and low under realistic noise; there is no clinical
-  validation or clearance. Using it to decide patient care would be unsafe.
+- **Clinical diagnostic / change-screening tool — not viable today.** The
+  measurement is now robust to acquisition noise *and* repositioning, but real-world
+  sensitivity is **unproven on real longitudinal data** (synthetic robustness is not
+  field validation), and there is no clinical validation or clearance. Using it to
+  decide patient care would be unsafe.
 - **Forensic identification aid (post-mortem ↔ ante-mortem matching) — closest to
   plausible, but still not deployable.** The method matches the forensic SOTA and
   is robust to tooth loss, but it must be validated on **real same-person,
@@ -181,8 +183,9 @@ data, no prospective study, and no regulatory clearance. Those are the gate.
    inter-operator and inter-device studies, on a diverse population including
    pathology.
 3. **Calibrate the conformal layer on the deployment distribution**, and report
-   sensitivity at the clinically-required operating point (a screening tool
-   typically needs high recall, which today it lacks under noise).
+   sensitivity at the clinically-required operating point (a screening tool needs
+   high recall there — the *measurement* reaches it, but the detector-limited
+   end-to-end pipeline (0.81) and the absence of real-data validation do not yet).
 4. **Regulatory pathway**: FDA/CE submission, ISO 13485 QMS, risk management
    (ISO 14971), documented failure-mode analysis.
 5. **Harden the front ends**: a more precise/robust detector; a reconstruction

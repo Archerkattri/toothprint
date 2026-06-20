@@ -9,7 +9,7 @@ mitigation and the residual risk that real-world validation must still address.
 
 | # | Hazard | Cause | Severity | Mitigation (implemented) | Residual risk |
 |---|---|---|---|---|---|
-| H1 | **False "no change"** — real disease progression missed | low sensitivity under acquisition noise | Critical | conformal abstention ("uncertain"); registration measurement (noise-robust); report sensitivity at the operating point | High until validated on real longitudinal data; **never use as sole screen** |
+| H1 | **False "no change"** — real disease progression missed | detector-limited end-to-end sensitivity (0.81); unproven on real longitudinal data | Critical | conformal abstention ("uncertain"); registration measurement (noise- **and repositioning**-robust, multi-anchor affine); surface regional detection of localized lesions; report sensitivity at the operating point | High until validated on real longitudinal data; **never use as sole screen** |
 | H2 | **False "change"** — unnecessary intervention | reconstruction/measurement noise read as change | Serious | conformal false-alarm rate bounded by α; verified ≤ α in all ablations | Bound holds only if calibrated on the deployment distribution (H6) |
 | H3 | **Mis-identification** — wrong person matched | impostor closer than genuine; out-of-gallery query | Critical | smallest-RMSE + separation reported; **closed-set only**; expert confirmation mandated | Open-set / cross-session not validated; must show candidates, never auto-decide |
 | H4 | **Garbage-in verdict** — confident output on unusable capture | blurred radiograph / incomplete scan | Serious | `clinical.assess_radiograph` / `assess_scan` quality gates → abstain ("refer / recapture") | Thresholds need per-site tuning on real captures |
