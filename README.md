@@ -111,8 +111,10 @@ scan / radiograph ─▶ detect ─▶ register ─▶ certify
                                 matching
 ```
 
-- **Identity (3D):** FPFH descriptors → coarse RANSAC → fine ICP → the gallery
-  arch with the smallest registration RMSE is the person.
+- **Identity (3D):** give the query its *best rigid alignment* to each gallery arch
+  (PCA-axis init → multi-threshold ICP, rigid so no scale collapse), then pick the
+  arch with the smallest mean surface distance — fair to every candidate, so the
+  score is shape, not pose (`identity.align_rigid` / `identify_surface`).
 - **Identity (2D):** the per-tooth landmark constellation, scale-normalised so
   magnification cancels, aligned by rigid ICP.
 - **Change:** the bone-level shift is measured *differentially* — sub-pixel

@@ -12,7 +12,8 @@ harness in the companion repositories.
 > acquisition noise **and** repositioning (rotation/magnification, not just
 > translation), the surface certificate is de-biased and detects **localized**
 > lesions a whole-surface average misses, and identity separates cleanly at
-> **N=400** (2D) / **N=80** (3D). **But this is still NOT a deployable medical
+> **N=400** (2D) / **N=50** (3D, fair best-fit alignment, no genuine/impostor
+> overlap). **But this is still NOT a deployable medical
 > device, and not "perfect":** every headline number is measured against
 > **synthetic perturbations of single-timepoint data** (no real
 > longitudinal/cross-session dental data exists in these datasets), and there is no
