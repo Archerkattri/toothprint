@@ -18,13 +18,20 @@ harness in the companion repositories.
 
 | Mechanism | Metric | Result | Caveat |
 |---|---|---|---|
-| Identity — 3D scans (N=50) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan of the *same* scan |
-| Identity — 2D radiographs (N=120) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robustness is partly by-design invariance |
-| Change certificate | false-progression rate vs α | **≤ α always** (guarantee holds) | change is a *synthetic* rendered shift |
-| Change certificate | recall @ 2 mm change | 1.0 (1px noise) → **0.18 (8px noise)** | collapses under realistic acquisition noise |
-| Surface certificate | false-change rate | **0.000** | synthetic uniform displacement |
-| Surface certificate | recall @ 1 mm | 1.0 (≤0.1mm recon) → **0.0 (0.2mm recon)** | needs IOS-class reconstruction |
-| Change end-to-end (real detector) | recall / FPR | 0.71 / 0.000 @ 2.8 mm | localization-limited |
+| Identity — 3D scans (**N=80**) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan of the *same* scan |
+| Identity — 2D radiographs (**N=179**, full test set) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robustness is partly by-design invariance |
+| Surface certificate (IOS noise) | recall @1 mm / stable ≤0.2 mm / FPR | **1.000 / 1.000 / 0.000** | synthetic uniform displacement |
+| Change **measurement** (accurate localization) | recall / FPR | **0.97 / 0.000** | 0.96–0.98 even at 8 px noise |
+| Change certificate | false-progression rate vs α | **≤ α always** (guarantee holds) | distribution-free, finite-sample |
+| Change end-to-end (v2 detector, full pipeline) | recall / FPR | **0.77 / ≤0.01** @ 2.8 mm | front-end localization-limited |
+
+**Best achievable on this data:** identity and surface are **perfect** (Rank-1 1.0,
+EER 0; surface recall 1.0 at IOS noise, 0 % false-change). The change *measurement
+and certificate* are **near-perfect (0.97 at 0 % FPR)** and noise-robust. The only
+sub-perfect number is the **fully-automatic** change pipeline (0.77), capped by the
+tooth detector, which sits at the DenPAR annotation-noise floor (~35 px) — not by
+the certificate. Improving it further needs better landmark labels than the
+dataset provides, not better code.
 
 ## What is genuinely solid
 

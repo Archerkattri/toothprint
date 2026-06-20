@@ -27,9 +27,9 @@ pluggable and optional, so the guarantees run without a GPU.
 
 | Capability | What it answers | Result |
 |---|---|---|
-| **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000**, genuine 0.10 mm vs impostor 0.55 mm, d′ = 50 |
-| **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000**, genuine 4 px vs impostor 102 px, d′ = 4.2 |
-| **Change certificate** | Did the bone level change? | recall **0.97 @ 0% false-progression** (0.72 end-to-end) |
+| **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000** (N=80, EER 0), genuine 0.10 mm vs impostor 0.55 mm |
+| **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=179, EER 0), genuine 4 px vs impostor 102 px |
+| **Change certificate** | Did the bone level change? | recall **0.97 @ 0% false-progression** (0.77 end-to-end) |
 | **Surface certificate** | Did the 3D surface change? | stable ≤0.2 mm / change ≥1.0 mm at **0% false-change** |
 
 ![Genuine vs impostor — both modalities](docs/identification_separation.png)
