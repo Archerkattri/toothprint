@@ -52,7 +52,7 @@ landmark labels than the dataset provides, not better code.
    identity was **robust to tooth loss** (Rank-1 = 1.0 down to 30 % arch
    coverage) — consistent with the forensic literature.
 3. **Engineering is production-grade**: the integrated library is at 100 % test
-   coverage (90 tests), with a clean API and a finite-sample-correct certifier.
+   coverage (94 tests), with a clean API and a finite-sample-correct certifier.
 
 ## The limitations that block clinical use (quantified)
 
@@ -66,15 +66,23 @@ landmark labels than the dataset provides, not better code.
    → Every "1.000" should be read as an **optimistic ceiling**, not field
    performance.
 
-2. **Change sensitivity vs noise — largely fixed by the registration measurement.**
-   The *landmark*-distance scoring collapses with noise (recall 0.75 → 0.18 as
-   acquisition noise goes 3 → 8 px). The production certificate instead uses the
-   **differential sub-pixel registration** measurement, which holds recall
-   **0.98 (3 px) → 0.96 (8 px)** before failing at extreme 15 px (0.08). So at
-   realistic noise the certificate is far more sensitive than the landmark
-   ablation implied; only severe repositioning (>~10 px residual) defeats it.
-   *Residual:* needs confirmation on real radiograph pairs, where projection-angle
-   change (not modelled here) adds error.
+2. **Change sensitivity vs noise — fixed by the registration measurement; and now
+   robust to *repositioning*, not just translation.** The *landmark*-distance
+   scoring collapses with noise (recall 0.75 → 0.18 as acquisition noise goes
+   3 → 8 px); the production certificate instead uses the **differential sub-pixel
+   registration** measurement, which holds recall **0.98 (3 px) → 0.96 (8 px)**.
+   The earlier residual — a single crown reference cancels only a global
+   *translation*, so rotation and projection **magnification** between visits leak
+   straight into the measurement — is closed by a **multi-anchor affine
+   global-motion model** (`fit_global_motion` + `measure_change_anchored`): it fits
+   the motion from several stationary crown anchors and cancels it *at the crest*.
+   On real DenPAR teeth with **no** real change, the stable-pair spurious change
+   under repositioning drops ~8×: at a mild 1°/2 %/4 px, single-reference already
+   leaks **5.4 px** (a false ~0.5 mm progression) vs anchored **0.6 px**; at a
+   severe 4°/8 %/16 px, **22.4 px → 2.9 px**
+   (`docs/repositioning_robustness.png`). *Residual:* the perturbations are
+   synthetic — real longitudinal pairs (with true projection-geometry change and
+   tissue change) remain the validation gate.
 
 3. **The surface certificate: de-biased *and* localized.** The original mean-norm
    measurement *rectifies* zero-mean reconstruction noise into a +2.3·σ bias, so its
@@ -128,7 +136,7 @@ deployment-grade *engineering* (not clinical validation):
   (`clinical.AuditLog`) for full traceability.
 - **Governance docs**: [MODEL_CARD](../MODEL_CARD.md), [RISK](../RISK.md),
   [CLINICAL_READINESS](../CLINICAL_READINESS.md).
-- 100 % test coverage maintained (90 tests).
+- 100 % test coverage maintained (94 tests).
 
 What this does **not** change: there is still no real longitudinal/cross-session
 data, no prospective study, and no regulatory clearance. Those are the gate.

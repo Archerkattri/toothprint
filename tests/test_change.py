@@ -7,8 +7,28 @@ from scipy.ndimage import gaussian_filter, shift as ndshift
 from toothprint.change.certificate import ChangeCertificate, bone_vector, certify_change
 from toothprint.change.conformal import CHANGED, STABLE, UNCERTAIN, ConformalCertifier
 from toothprint.change.registration import (
-    _patch, _subpixel_peak, measure_change, measure_change_search, measure_displacement,
+    _patch, _subpixel_peak, fit_global_motion, measure_change, measure_change_anchored,
+    measure_change_search, measure_displacement,
 )
+
+
+def _affine_warp(g, angle, tx, ty, scale=1.0):
+    """Global repositioning: rotation about centre + translation (+ magnification)."""
+    h, w = g.shape
+    M = cv2.getRotationMatrix2D((w / 2, h / 2), angle, scale)
+    M[0, 2] += tx
+    M[1, 2] += ty
+    return cv2.warpAffine(g, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def _crown_anchors(cej_c, L, u):
+    p = (-u[1], u[0])  # perpendicular to the bone vector
+    out = []
+    for row in (0.5, 0.8):
+        for s in (-1, 0, 1):
+            out.append((cej_c[0] - row * L * u[0] + s * 0.4 * L * p[0],
+                        cej_c[1] - row * L * u[1] + s * 0.4 * L * p[1]))
+    return out
 
 
 def _textured(n=160, seed=0):
@@ -112,6 +132,54 @@ def test_measure_change_search_all_gated_returns_fallback():
     out = measure_change_search(g0, g1, ref_c, crest, u, range(-40, 41, 8),
                                 half=18, search=40, min_response=2.0)
     assert out is not None
+
+
+# --- global-motion model (repositioning robustness) ------------------------
+
+def test_fit_global_motion_needs_three_reliable_anchors():
+    g = _textured(120, seed=3)
+    # impossibly high gate drops every anchor -> None
+    assert fit_global_motion(g, g, [(40, 40), (60, 60), (80, 80), (50, 70)],
+                             half=15, search=20, min_response=1.5) is None
+    # an out-of-bounds anchor is skipped; the remaining 2 < 3 -> None
+    assert fit_global_motion(g, g, [(5, 5), (60, 60), (80, 80)], half=15, search=20) is None
+
+
+def test_anchored_cancels_magnification_where_single_ref_fails():
+    # 6% magnification (a projection-distance change between visits) moves the crest
+    # and the crown reference by *different* amounts along the bone axis — exactly
+    # what a single reference patch cannot cancel but a multi-anchor affine can.
+    g0 = _textured(300, seed=11)
+    g1 = _affine_warp(g0, angle=1.5, tx=8.0, ty=-5.0, scale=1.06)   # no local change
+    cej_c, crest_c, u, L = (150, 150), (150, 195), (0.0, 1.0), 45.0
+    anchors = _crown_anchors(cej_c, L, u)
+    out = measure_change_anchored(g0, g1, anchors, crest_c, u, half=18, search=45)
+    assert out is not None and abs(out[0]) < 2.0        # affine model cancels the motion
+    single = measure_change(g0, g1, anchors[1], crest_c, u, half=18, search=45)
+    assert single is not None and abs(single[0]) > abs(out[0]) + 2.0  # single-ref is fooled
+
+
+def test_anchored_recovers_local_change_under_repositioning():
+    g0 = _textured(300, seed=12)
+    cej_c, crest_c, u, L = (150, 150), (150, 195), (0.0, 1.0), 45.0
+    band = ndshift(g0, (13.0, 0.0), order=1, mode="reflect")   # apical crest move
+    yy = np.arange(g0.shape[0])[:, None]
+    wmask = np.exp(-((yy - crest_c[1]) ** 2) / (2 * 15.0 ** 2))
+    changed = (g0 * (1 - wmask) + band * wmask).astype(np.float32)
+    g1 = _affine_warp(changed, angle=2.0, tx=7.0, ty=-4.0, scale=1.05)  # change THEN reposition
+    out = measure_change_anchored(g0, g1, _crown_anchors(cej_c, L, u), crest_c, u,
+                                  half=18, search=45)
+    assert out is not None and out[0] > 6.0                    # recovers it despite motion
+
+
+def test_anchored_none_paths():
+    g = _textured(120, seed=4)
+    # < 3 anchors -> global fit None -> None
+    assert measure_change_anchored(g, g, [(40, 40), (60, 60)], (60, 80), (0, 1),
+                                   half=15, search=20) is None
+    # crest patch out of bounds -> None
+    assert measure_change_anchored(g, g, [(40, 40), (60, 60), (80, 80)], (5, 5), (0, 1),
+                                   half=15, search=20) is None
 
 
 # --- conformal -------------------------------------------------------------

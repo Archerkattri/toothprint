@@ -75,6 +75,59 @@ def measure_change(g0: np.ndarray, g1: np.ndarray, reference_center, crest_cente
     return float(rel), float(min(cresp, rresp))
 
 
+def fit_global_motion(g0: np.ndarray, g1: np.ndarray, anchors, half: int = 20,
+                      search: int = 70, min_response: float = 0.3):
+    """Affine global-motion model ``t0 → t1`` from stationary anchor patches.
+
+    A single reference patch only cancels a global *translation*; real
+    repositioning between visits adds rotation, magnification, and projection-angle
+    (perspective) change, under which different image locations move by different
+    amounts. Template-matching several stationary crown ``anchors`` and fitting a
+    least-squares affine recovers that full motion field, so it can be evaluated
+    *at the crest* (see :func:`measure_change_anchored`) rather than assumed equal
+    to one far reference.
+
+    Returns a ``(3, 2)`` matrix ``P`` mapping ``[x, y, 1] → [x', y']`` (the t1
+    location of t0 content), or ``None`` if fewer than 3 anchors match reliably
+    (an affine needs 3 non-collinear correspondences).
+    """
+    src, dst = [], []
+    for c in anchors:
+        out = measure_displacement(g0, g1, c, half, search)
+        if out is None:
+            continue
+        (dx, dy), resp = out
+        if resp < min_response:
+            continue
+        src.append([c[0], c[1]])
+        dst.append([c[0] + dx, c[1] + dy])
+    if len(src) < 3:
+        return None
+    A = np.column_stack([np.asarray(src, float), np.ones(len(src))])
+    P, *_ = np.linalg.lstsq(A, np.asarray(dst, float), rcond=None)
+    return P
+
+
+def measure_change_anchored(g0, g1, anchors, crest_center, bone_unit,
+                            half: int = 20, search: int = 70, min_response: float = 0.3):
+    """Local apical bone change with a multi-anchor *affine* global-motion model.
+
+    Cancels the global motion **evaluated at the crest location** — so arbitrary
+    repositioning (large translation, rotation, magnification, modest
+    projection-angle change) is removed, not just a pure translation. Returns
+    ``(change, response)`` or ``None`` if the motion fit or the crest match fails.
+    """
+    P = fit_global_motion(g0, g1, anchors, half, search, min_response)
+    crest = measure_displacement(g0, g1, crest_center, half, search)
+    if P is None or crest is None:
+        return None
+    (cdx, cdy), cresp = crest
+    pred = np.asarray([crest_center[0], crest_center[1], 1.0]) @ P  # global t1 location at crest
+    gdx, gdy = pred[0] - crest_center[0], pred[1] - crest_center[1]
+    rel = (cdx - gdx) * bone_unit[0] + (cdy - gdy) * bone_unit[1]
+    return float(rel), float(cresp)
+
+
 def measure_change_search(g0, g1, reference_center, crest_center, bone_unit, offsets,
                           half: int = 20, search: int = 70, min_response: float = 0.0):
     """Largest apical change over *reliable* candidate crest positions.

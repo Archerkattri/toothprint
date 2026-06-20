@@ -101,8 +101,10 @@ scan / radiograph ─▶ detect ─▶ register ─▶ certify
 - **Identity (2D):** the per-tooth landmark constellation, scale-normalised so
   magnification cancels, aligned by rigid ICP.
 - **Change:** the bone-level shift is measured *differentially* — sub-pixel
-  template matching of the margin between timepoints, referenced to a stationary
-  crown so acquisition motion cancels — then certified conformally.
+  template matching of the margin between timepoints, referenced to **multiple
+  stationary crown anchors fitted to an affine motion model** so acquisition
+  repositioning (translation, rotation, *and* projection magnification) cancels —
+  then certified conformally.
 - **Surface:** scale-aware ICP + screened-Poisson refinement, then a *de-biased*
   differential displacement (subtract the reconstruction-noise power so zero-mean
   noise isn't rectified into a false signal), measured *per region* so a localized
@@ -153,7 +155,7 @@ toothprint/
   api/               FastAPI service
   web/               the console (HTML/CSS/JS, no build step)
   docs/              result figures
-  tests/             90 tests, 100% coverage
+  tests/             94 tests, 100% coverage
 ```
 
 ## Test
