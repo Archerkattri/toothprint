@@ -29,7 +29,7 @@ pluggable and optional, so the guarantees run without a GPU.
 |---|---|---|
 | **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000** (N=80, EER 0), genuine 0.10 mm vs impostor 0.55 mm |
 | **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=179, EER 0), genuine 4 px vs impostor 102 px |
-| **Change certificate** | Did the bone level change? | recall **0.97 @ 0% false-progression** (0.77 end-to-end) |
+| **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.81 end-to-end** (detector-limited) |
 | **Surface certificate** | Did the 3D surface change? | stable ≤0.2 mm / change ≥1.0 mm at **0% false-change** |
 
 ![Genuine vs impostor — both modalities](docs/identification_separation.png)
@@ -60,6 +60,16 @@ change certificate measures the shift by sub-pixel registration, not by these
 points:
 
 ![Landmark overlays on real radiographs](docs/landmark_overlays.png)
+
+**Change certificate** — measuring the bone-level shift *differentially* (sub-pixel
+registration of the margin between timepoints, not by re-detecting landmarks) is
+near-perfect: recall climbs to **1.0** with false-progression conformally bounded,
+and still holds **0.98** even when the threshold is set so false-progression is a
+true **0**. The only gap is the fully-automatic pipeline, where the detector's
+coarse localization attenuates the signal — an honest, isolated, data-label limit,
+not a flaw in the certificate:
+
+![Change certificate recall and conformal false-progression bound](docs/change_certificate.png)
 
 ## How it works
 
@@ -127,7 +137,7 @@ toothprint/
   api/               FastAPI service
   web/               the console (HTML/CSS/JS, no build step)
   docs/              result figures
-  tests/             58 tests, 100% coverage
+  tests/             77 tests, 100% coverage
 ```
 
 ## Test

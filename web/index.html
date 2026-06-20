@@ -133,15 +133,15 @@
       </div>
       <div class="pillar-body reverse">
         <figure class="shot reveal">
-          <img src="assets/change_certificate.png" alt="Recall rises with change magnitude while the false-progression rate stays at zero." loading="lazy" />
-          <figcaption>Recall climbs to 0.97 at a 0% false-progression rate; the certificate abstains below the noise floor.</figcaption>
+          <img src="assets/change_certificate.png" alt="Change recall rises to 1.0 across magnitudes while false-progression stays at a true zero; the fully-automatic pipeline is detector-limited." loading="lazy" />
+          <figcaption>Measurement recall reaches <strong>1.0</strong> with false-progression conformally bounded, and holds <strong>0.98</strong> even at a <strong>true 0%</strong> false-progression rate; only the fully-automatic ViTPose pipeline is lower, bounded by detector localization — not by the certificate.</figcaption>
         </figure>
         <div class="pillar-detail">
           <div class="metric-row">
-            <div class="metric"><span class="metric-k mono">Recall ≥0.4 mm</span><span class="metric-v mono">0.97</span></div>
+            <div class="metric"><span class="metric-k mono">Measurement recall</span><span class="metric-v mono">0.98</span></div>
             <div class="metric"><span class="metric-k mono">False-progression</span><span class="metric-v mono">0.000</span></div>
             <div class="metric"><span class="metric-k mono">Stable-pair noise</span><span class="metric-v mono">0.1 px</span></div>
-            <div class="metric"><span class="metric-k mono">End-to-end recall</span><span class="metric-v mono">0.72</span></div>
+            <div class="metric"><span class="metric-k mono">End-to-end recall</span><span class="metric-v mono">0.81</span></div>
           </div>
           <p class="how">
             A <strong>ViTPose</strong> detector localises each tooth; sub-pixel

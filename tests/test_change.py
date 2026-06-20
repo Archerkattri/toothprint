@@ -87,6 +87,33 @@ def test_measure_change_search_all_oob_none():
     assert measure_change_search(g, g, (5, 5), (5, 50), (0, 1), range(-40, 41, 8), half=20, search=30) is None
 
 
+def _band_scene(seed=4):
+    g0 = _textured(240, seed=seed)
+    ref_c, coarse_crest, true_crest, u = (80, 80), (80, 120), (80, 150), (0.0, 1.0)
+    g1 = ndshift(g0, (3.0, 2.0), order=1, mode="reflect")
+    band = ndshift(g0, (17.0, 2.0), order=1, mode="reflect")
+    yy = np.arange(g0.shape[0])[:, None]
+    w = np.exp(-((yy - true_crest[1]) ** 2) / (2 * 16.0 ** 2))
+    g1 = (g1 * (1 - w) + band * w).astype(np.float32)
+    return g0, g1, ref_c, coarse_crest, u
+
+
+def test_measure_change_search_response_gate_finds_margin():
+    g0, g1, ref_c, crest, u = _band_scene()
+    out = measure_change_search(g0, g1, ref_c, crest, u, range(-40, 41, 8),
+                                half=18, search=40, min_response=0.3)
+    assert out is not None and out[0] > 6.0 and out[1] >= 0.3
+
+
+def test_measure_change_search_all_gated_returns_fallback():
+    # An impossibly high gate rejects every candidate; the most-reliable one is
+    # still returned (fallback), never None.
+    g0, g1, ref_c, crest, u = _band_scene()
+    out = measure_change_search(g0, g1, ref_c, crest, u, range(-40, 41, 8),
+                                half=18, search=40, min_response=2.0)
+    assert out is not None
+
+
 # --- conformal -------------------------------------------------------------
 
 def test_conformal_fit_interval_classify():

@@ -76,20 +76,27 @@ def measure_change(g0: np.ndarray, g1: np.ndarray, reference_center, crest_cente
 
 
 def measure_change_search(g0, g1, reference_center, crest_center, bone_unit, offsets,
-                          half: int = 20, search: int = 70):
-    """Largest apical change over candidate crest positions along the bone vector.
+                          half: int = 20, search: int = 70, min_response: float = 0.0):
+    """Largest apical change over *reliable* candidate crest positions.
 
     A coarse localisation rarely lands the patch exactly on the bone margin;
     sliding it over ``offsets`` (px) and taking the most-apical displacement finds
-    the moving margin. Returns ``(change, response)`` of the best candidate, or
-    ``None``.
+    the moving margin. ``min_response`` gates candidates by NCC match reliability,
+    so a spurious large displacement from a poorly-matched (textureless) patch
+    can't set the value and inflate the noise floor — only well-matched candidates
+    compete for the maximum, which lets the certificate detect smaller changes. If
+    no candidate clears the gate the most-reliable one is returned. Returns
+    ``(change, response)`` of the best candidate, or ``None``.
     """
-    best = None
+    best = None        # max change among reliable candidates
+    fallback = None    # most-reliable candidate, if none clear the gate
     for t in offsets:
         c = (crest_center[0] + t * bone_unit[0], crest_center[1] + t * bone_unit[1])
         out = measure_change(g0, g1, reference_center, c, bone_unit, half, search)
         if out is None:
             continue
-        if best is None or out[0] > best[0]:
+        if fallback is None or out[1] > fallback[1]:
+            fallback = out
+        if out[1] >= min_response and (best is None or out[0] > best[0]):
             best = out
-    return best
+    return best if best is not None else fallback

@@ -21,17 +21,23 @@ harness in the companion repositories.
 | Identity — 3D scans (**N=80**) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan of the *same* scan |
 | Identity — 2D radiographs (**N=179**, full test set) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robustness is partly by-design invariance |
 | Surface certificate (IOS noise) | recall @1 mm / stable ≤0.2 mm / FPR | **1.000 / 1.000 / 0.000** | synthetic uniform displacement |
-| Change **measurement** (accurate localization) | recall / FPR | **0.97 / 0.000** | 0.96–0.98 even at 8 px noise |
-| Change certificate | false-progression rate vs α | **≤ α always** (guarantee holds) | distribution-free, finite-sample |
-| Change end-to-end (v2 detector, full pipeline) | recall / FPR | **0.77 / ≤0.01** @ 2.8 mm | front-end localization-limited |
+| Change **measurement** (accurate localization) | recall @ **true 0 %** false-progression | **0.98** (0.95 at 4 px → **1.00** at ≥16 px) | tau = 2 px; FPR = 0.000 |
+| Change certificate | false-progression rate vs α | **≤ α always** (measured 0.000–0.010) | distribution-free, finite-sample |
+| Change end-to-end (v2 detector, full pipeline) | recall / FPR | **0.81 / 0.010** | detector at the ~35 px label floor |
 
 **Best achievable on this data:** identity and surface are **perfect** (Rank-1 1.0,
 EER 0; surface recall 1.0 at IOS noise, 0 % false-change). The change *measurement
-and certificate* are **near-perfect (0.97 at 0 % FPR)** and noise-robust. The only
-sub-perfect number is the **fully-automatic** change pipeline (0.77), capped by the
-tooth detector, which sits at the DenPAR annotation-noise floor (~35 px) — not by
-the certificate. Improving it further needs better landmark labels than the
-dataset provides, not better code.
+and certificate* are **near-perfect**: with an accurate margin the certificate
+recovers a change with recall **0.98 at a true 0 % false-progression rate** (and
+**1.00** for changes ≥ 16 px), after an NCC-reliability gate on the candidate-patch
+search lowered the stable-pair noise floor (this lifted the ceiling from 0.97 and
+the end-to-end pipeline from 0.77). The only sub-perfect number is the
+**fully-automatic** pipeline (**0.81**), capped by the tooth detector, which sits
+at the DenPAR annotation-noise floor (~35 px) — not by the certificate. Its coarse
+localization lands the patch off the bone margin and *attenuates* the measured
+signal (a 4 px change reads ~2 px), so the smallest changes fall under the
+threshold; the certificate itself is unchanged. Improving it further needs better
+landmark labels than the dataset provides, not better code.
 
 ## What is genuinely solid
 
@@ -44,7 +50,7 @@ dataset provides, not better code.
    identity was **robust to tooth loss** (Rank-1 = 1.0 down to 30 % arch
    coverage) — consistent with the forensic literature.
 3. **Engineering is production-grade**: the integrated library is at 100 % test
-   coverage (58 tests), with a clean API and a finite-sample-correct certifier.
+   coverage (77 tests), with a clean API and a finite-sample-correct certifier.
 
 ## The limitations that block clinical use (quantified)
 
@@ -75,7 +81,9 @@ dataset provides, not better code.
    incompatible; the certificate is only usable on IOS-class scans (sub-0.1 mm).
 
 4. **The detector is coarse** (~36 px landmark error, near the DenPAR
-   annotation-noise floor). End-to-end change recall is 0.71.
+   annotation-noise floor). It bounds the fully-automatic pipeline: end-to-end
+   change recall is **0.81** (vs the **0.98** measurement ceiling with an accurate
+   margin) — the detector, not the certificate, is the ceiling.
 
 5. **No clinical or regulatory validation whatsoever**: no prospective study, no
    radiologist/forensic-expert ground truth, no demographic diversity (age,

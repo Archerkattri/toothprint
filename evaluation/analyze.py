@@ -103,9 +103,16 @@ def main():
         a = surface["ablations"]
         print(f"Surface cert recall@1mm vs recon noise: " +
               ", ".join(f"{nz}mm={next(x['changed_rate'] for x in a[f'noise_{nz}']['curve'] if x['change_mm']==1.0):.2f}" for nz in [0.03,0.05,0.1,0.2]))
+    if reg_gt:
+        s = reg_gt["sweep"]; fpr0 = next((x["fpr"] for x in s if x["change_px"] == 0), None)
+        big = next(x for x in reversed(s) if x["change_px"] >= 8)
+        print(f"Change measurement (GT loc): recall@{big['change_px']:.0f}px={big['certified_change']:.2f}, "
+              f"stable-FPR={fpr0:.3f} (conformal-bounded by alpha={reg_gt['alpha']})")
     if reg_det:
-        last = reg_det["sweep"][-1]
-        print(f"Change end-to-end (detector): recall@{last['change_px']}px={last['certified_change']:.2f}, FPR=0")
+        s = reg_det["sweep"]; fpr0 = next((x["fpr"] for x in s if x["change_px"] == 0), None)
+        last = s[-1]
+        print(f"Change end-to-end (detector): recall@{last['change_px']:.0f}px={last['certified_change']:.2f}, "
+              f"stable-FPR={fpr0:.3f} (detector-localization-limited)")
 
 
 if __name__ == "__main__":
