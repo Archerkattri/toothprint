@@ -1,0 +1,494 @@
+{
+ "dataset": "poseidon3d",
+ "n_meshes": 8,
+ "ablations": {
+  "noise_0.03": {
+   "radius_mm": 0.06865138065250705,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "noise_0.05": {
+   "radius_mm": 0.11441896775417856,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "noise_0.1": {
+   "radius_mm": 0.22883793550835715,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "noise_0.2": {
+   "radius_mm": 0.4576758710167142,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "alpha_0.05": {
+   "radius_mm": 0.11489484843614188,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "alpha_0.1": {
+   "radius_mm": 0.11441896775417856,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "alpha_0.2": {
+   "radius_mm": 0.11382312897113657,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  }
+ },
+ "main": {
+  "radius_mm": 0.11441896775417856,
+  "curve": [
+   {
+    "change_mm": 0.0,
+    "changed_rate": 0.0,
+    "stable_rate": 1.0,
+    "recall": null,
+    "fpr": 0.0
+   },
+   {
+    "change_mm": 0.2,
+    "changed_rate": 0.0,
+    "stable_rate": 1.0,
+    "recall": null,
+    "fpr": null
+   },
+   {
+    "change_mm": 0.4,
+    "changed_rate": 0.0,
+    "stable_rate": 0.0,
+    "recall": null,
+    "fpr": null
+   },
+   {
+    "change_mm": 0.6,
+    "changed_rate": 0.0,
+    "stable_rate": 0.0,
+    "recall": null,
+    "fpr": null
+   },
+   {
+    "change_mm": 0.8,
+    "changed_rate": 0.0,
+    "stable_rate": 0.0,
+    "recall": 0.0,
+    "fpr": null
+   },
+   {
+    "change_mm": 1.0,
+    "changed_rate": 1.0,
+    "stable_rate": 0.0,
+    "recall": 1.0,
+    "fpr": null
+   },
+   {
+    "change_mm": 1.5,
+    "changed_rate": 1.0,
+    "stable_rate": 0.0,
+    "recall": 1.0,
+    "fpr": null
+   },
+   {
+    "change_mm": 2.0,
+    "changed_rate": 1.0,
+    "stable_rate": 0.0,
+    "recall": 1.0,
+    "fpr": null
+   }
+  ]
+ }
+}

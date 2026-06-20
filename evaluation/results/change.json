@@ -1,0 +1,131 @@
+{
+ "dataset": "denpar",
+ "n_cal": 650,
+ "n_test": 200,
+ "ablations": {
+  "alpha_0.05": {
+   "recall": 0.71,
+   "fpr": 0.0,
+   "stable_cert": 0.465,
+   "uncertain": 0.4125
+  },
+  "alpha_0.1": {
+   "recall": 0.75,
+   "fpr": 0.005,
+   "stable_cert": 0.495,
+   "uncertain": 0.375
+  },
+  "alpha_0.2": {
+   "recall": 0.85,
+   "fpr": 0.005,
+   "stable_cert": 0.495,
+   "uncertain": 0.325
+  },
+  "noise_1": {
+   "recall": 1.0,
+   "fpr": 0.0,
+   "stable_cert": 0.995,
+   "uncertain": 0.0025
+  },
+  "noise_3": {
+   "recall": 0.75,
+   "fpr": 0.005,
+   "stable_cert": 0.495,
+   "uncertain": 0.375
+  },
+  "noise_5": {
+   "recall": 0.375,
+   "fpr": 0.01,
+   "stable_cert": 0.255,
+   "uncertain": 0.655
+  },
+  "noise_8": {
+   "recall": 0.18,
+   "fpr": 0.025,
+   "stable_cert": 0.005,
+   "uncertain": 0.8875
+  },
+  "tau_4": {
+   "recall": 0.965,
+   "fpr": 0.01,
+   "stable_cert": 0.33,
+   "uncertain": 0.3475
+  },
+  "tau_8": {
+   "recall": 0.75,
+   "fpr": 0.005,
+   "stable_cert": 0.495,
+   "uncertain": 0.375
+  },
+  "tau_12": {
+   "recall": 0.43,
+   "fpr": 0.0,
+   "stable_cert": 0.58,
+   "uncertain": 0.495
+  },
+  "tau_16": {
+   "recall": 0.125,
+   "fpr": 0.0,
+   "stable_cert": 0.815,
+   "uncertain": 0.53
+  }
+ },
+ "magnitude_curve": [
+  {
+   "shift_px": 0,
+   "recall": 0.0,
+   "fpr": 0.005,
+   "stable_cert": 0.475,
+   "uncertain": 0.5025
+  },
+  {
+   "shift_px": 4,
+   "recall": 0.0,
+   "fpr": 0.005,
+   "stable_cert": 0.39,
+   "uncertain": 0.645
+  },
+  {
+   "shift_px": 8,
+   "recall": 0.03,
+   "fpr": 0.005,
+   "stable_cert": 0.2,
+   "uncertain": 0.8125
+  },
+  {
+   "shift_px": 12,
+   "recall": 0.125,
+   "fpr": 0.005,
+   "stable_cert": 0.455,
+   "uncertain": 0.6775
+  },
+  {
+   "shift_px": 16,
+   "recall": 0.43,
+   "fpr": 0.005,
+   "stable_cert": 0.495,
+   "uncertain": 0.53
+  },
+  {
+   "shift_px": 20,
+   "recall": 0.75,
+   "fpr": 0.005,
+   "stable_cert": 0.495,
+   "uncertain": 0.375
+  },
+  {
+   "shift_px": 28,
+   "recall": 1.0,
+   "fpr": 0.005,
+   "stable_cert": 0.495,
+   "uncertain": 0.25
+  },
+  {
+   "shift_px": 40,
+   "recall": 1.0,
+   "fpr": 0.005,
+   "stable_cert": 0.495,
+   "uncertain": 0.25
+  }
+ ]
+}

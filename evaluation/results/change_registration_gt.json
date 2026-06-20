@@ -1,0 +1,69 @@
+{
+  "dataset": "denpar",
+  "localization": "gt",
+  "tau": 2.0,
+  "alpha": 0.1,
+  "acq_noise": 3.0,
+  "global_shift": 6.0,
+  "n_test_teeth": 200,
+  "q_lo": 0.3347561265,
+  "q_hi": 0.2566472194,
+  "sweep": [
+    {
+      "change_px": 0.0,
+      "certified_change": 0.0,
+      "stable_cert": 1.0,
+      "measured_median": -0.0155847509192785,
+      "recall": null,
+      "fpr": 0.0
+    },
+    {
+      "change_px": 4.0,
+      "certified_change": 0.945,
+      "stable_cert": 0.04,
+      "measured_median": 3.7191944388425324,
+      "recall": 0.945,
+      "fpr": null
+    },
+    {
+      "change_px": 8.0,
+      "certified_change": 0.975,
+      "stable_cert": 0.02,
+      "measured_median": 7.2837083000521385,
+      "recall": 0.975,
+      "fpr": null
+    },
+    {
+      "change_px": 12.0,
+      "certified_change": 0.975,
+      "stable_cert": 0.02,
+      "measured_median": 10.86178481637738,
+      "recall": 0.975,
+      "fpr": null
+    },
+    {
+      "change_px": 16.0,
+      "certified_change": 0.975,
+      "stable_cert": 0.02,
+      "measured_median": 14.311036737541425,
+      "recall": 0.975,
+      "fpr": null
+    },
+    {
+      "change_px": 20.0,
+      "certified_change": 0.975,
+      "stable_cert": 0.025,
+      "measured_median": 17.812000735708978,
+      "recall": 0.975,
+      "fpr": null
+    },
+    {
+      "change_px": 30.0,
+      "certified_change": 0.985,
+      "stable_cert": 0.01,
+      "measured_median": 25.837283837710984,
+      "recall": 0.985,
+      "fpr": null
+    }
+  ]
+}
