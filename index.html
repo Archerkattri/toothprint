@@ -167,15 +167,15 @@
       </div>
       <div class="pillar-body">
         <figure class="shot reveal">
-          <img src="assets/surface_certificate.png" alt="Recall for a 1mm surface change vs reconstruction noise: de-biasing extends the usable range to 0.4mm at zero false-change, with the honest caveat that correlated noise erodes the gain." loading="lazy" />
-          <figcaption>De-biasing the displacement (subtracting the reconstruction-noise power) extends the usable reconstruction noise from 0.1 mm to <strong>0.4 mm</strong> at a <strong>0%</strong> false-change rate. Honest caveat (right): the gain assumes spatially incoherent noise and erodes under correlated reconstruction error.</figcaption>
+          <img src="assets/surface_certificate.png" alt="Three panels: de-biasing extends usable reconstruction noise to 0.4mm; a regional max statistic recovers a localized patch change that a whole-surface average dilutes to zero; the honest residual is small changes under correlated noise. Zero false-change throughout." loading="lazy" />
+          <figcaption><strong>A</strong> De-biasing (subtracting the reconstruction-noise power) extends the usable noise from 0.1 to <strong>0.4 mm</strong>. <strong>B</strong> A <strong>regional</strong> max statistic recovers a <em>localized</em> patch change that a whole-surface average dilutes to <strong>0</strong> (regional <strong>0.99</strong> vs global 0.00) — and says where it is. <strong>C</strong> Honest residual: heavy correlated noise still costs small changes. <strong>0%</strong> false-change in every panel.</figcaption>
         </figure>
         <div class="pillar-detail">
           <div class="metric-row">
-            <div class="metric"><span class="metric-k mono">Change certified</span><span class="metric-v mono">≥0.8 mm</span></div>
+            <div class="metric"><span class="metric-k mono">Localized recall</span><span class="metric-v mono">0.99</span></div>
             <div class="metric"><span class="metric-k mono">Usable recon noise</span><span class="metric-v mono">0.4 mm</span></div>
             <div class="metric"><span class="metric-k mono">False-change</span><span class="metric-v mono">0.000</span></div>
-            <div class="metric"><span class="metric-k mono">Radius cut</span><span class="metric-v mono">~6×</span></div>
+            <div class="metric"><span class="metric-k mono">Global avg recall</span><span class="metric-v mono">0.00</span></div>
           </div>
           <p class="how">
             Reconstruction (<strong>3D Gaussian Splatting</strong>, runs on an 8&nbsp;GB GPU) →
