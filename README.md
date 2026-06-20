@@ -32,7 +32,7 @@ pluggable and optional, so the guarantees run without a GPU.
 | **Change certificate** | Did the bone level change? | recall **0.97 @ 0% false-progression** (0.72 end-to-end) |
 | **Surface certificate** | Did the 3D surface change? | stable ≤0.2 mm / change ≥1.0 mm at **0% false-change** |
 
-![Genuine vs impostor — both modalities](docs/toothprint_identification.png)
+![Genuine vs impostor — both modalities](docs/identification_separation.png)
 
 Every certificate is conformal: it fires only when the interval around the
 measurement lies entirely past the threshold, so the false-alarm rate is bounded
@@ -42,22 +42,24 @@ by α in finite samples — no distributional assumptions.
 
 These are the system's own outputs on the public Poseidon3D and DenPAR datasets.
 
-**Landmarks on real radiographs** — ViTPose places CEJ, bone crest, and apex
-(ground truth in green, prediction in red):
+**Identification** — a query arch registers tightly onto its own enrolment
+(0.10 mm) but cannot match a stranger's (0.54 mm). Recognition by teeth:
 
-![Landmark overlays on real radiographs](docs/landmark_montage.png)
+![Genuine vs impostor registration overlay](docs/identity_registration.png)
 
-**Photos to geometry** — a real arch reconstructed from shaded photos by **3D
-Gaussian Splatting** to within **0.84 mm** of the ground-truth scan (on an 8 GB
-GPU). Shading turns the textureless surface into the photometric signal that
+**Photos to geometry** — no scanner? **3D Gaussian Splatting** rebuilds a real
+arch from shaded photos to within **0.84 mm** of the ground-truth scan (on an
+8 GB GPU). Shading turns the textureless surface into the photometric signal that
 photogrammetry can't find:
 
-![Gaussian Splatting reconstruction](docs/recon_evidence.png)
+![Gaussian Splatting reconstruction](docs/gaussian_splatting_recon.png)
 
-**Identification** — a query arch registers tightly onto its own enrolment
-(0.10 mm) but cannot match a stranger's (0.54 mm):
+**Tooth localization** — ViTPose coarsely localises CEJ and bone crest on real
+radiographs (GT green, prediction red). Pinpoint accuracy isn't required: the
+change certificate measures the shift by sub-pixel registration, not by these
+points:
 
-![Genuine vs impostor registration overlay](docs/identity_overlay.png)
+![Landmark overlays on real radiographs](docs/landmark_overlays.png)
 
 ## How it works
 
