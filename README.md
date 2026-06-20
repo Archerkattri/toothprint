@@ -20,7 +20,7 @@ and attaches a statistical guarantee to every verdict:
 - **What** its surface is — certified 3D surface-change mapping.
 
 The certification core depends only on `numpy`, `scipy`, `opencv`, and `open3d`.
-Learned front-ends (tooth detection, photogrammetric reconstruction) are
+Learned front-ends (tooth detection, Gaussian-splatting reconstruction) are
 pluggable and optional, so the guarantees run without a GPU.
 
 ## Results (measured on real public data)
@@ -47,10 +47,12 @@ These are the system's own outputs on the public Poseidon3D and DenPAR datasets.
 
 ![Landmark overlays on real radiographs](docs/landmark_montage.png)
 
-**Photos to geometry** — five protocol views of a real arch reconstructed into a
-53k-point 3D surface by DUSt3R (on an 8 GB GPU):
+**Photos to geometry** — a real arch reconstructed from shaded photos by **3D
+Gaussian Splatting** to within **0.84 mm** of the ground-truth scan (on an 8 GB
+GPU). Shading turns the textureless surface into the photometric signal that
+photogrammetry can't find:
 
-![DUSt3R reconstruction from five views](docs/recon_evidence.png)
+![Gaussian Splatting reconstruction](docs/recon_evidence.png)
 
 **Identification** — a query arch registers tightly onto its own enrolment
 (0.10 mm) but cannot match a stranger's (0.54 mm):

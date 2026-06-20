@@ -19,6 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 api = ["fastapi>=0.110", "uvicorn>=0.27", "python-multipart>=0.0.9"]
+recon = ["torch>=2.4", "gsplat>=1.4"]  # Gaussian-Splatting reconstruction front end
 dev = ["pytest>=8", "pytest-cov"]
 plots = ["matplotlib>=3.7"]
 
