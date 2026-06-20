@@ -18,6 +18,10 @@ def load(name):
     return json.loads(p.read_text()) if p.exists() else None
 
 
+def _rec1(block):
+    return next(x["changed_rate"] for x in block["curve"] if x["change_mm"] == 1.0)
+
+
 def main():
     id3d, id2d = load("id3d"), load("id2d")
     change, surface = load("change"), load("surface")
@@ -42,15 +46,16 @@ def main():
         axes[0, 1].set_title("Change: recall collapses with acquisition noise")
         axes[0, 1].set_xlabel("acquisition noise (px)"); axes[0, 1].set_ylabel("rate"); axes[0, 1].grid(alpha=.3); axes[0, 1].legend()
 
-    # 3 — surface recall vs reconstruction noise (the limitation)
+    # 3 — surface recall vs reconstruction noise: de-biasing extends the range
     if surface:
-        nz = [0.03, 0.05, 0.10, 0.20]
-        rec = [next(x["changed_rate"] for x in surface["ablations"][f"noise_{n}"]["curve"] if x["change_mm"] == 1.0) for n in nz]
-        rad = [surface["ablations"][f"noise_{n}"]["radius_mm"] for n in nz]
-        axes[0, 2].plot(nz, rec, "-o", color="#2ca02c", label="recall @ 1mm change")
-        axes[0, 2].axvline(0.84, color="#e6a93f", ls="--", label="GS photo-recon (0.84mm)")
-        axes[0, 2].set_title("Surface: needs IOS-class reconstruction")
-        axes[0, 2].set_xlabel("reconstruction noise (mm)"); axes[0, 2].set_ylabel("recall"); axes[0, 2].grid(alpha=.3); axes[0, 2].legend()
+        nz = [0.03, 0.05, 0.10, 0.20, 0.40, 0.84]
+        deb = [_rec1(surface["ablations"][f"noise_{n}"]) for n in nz]
+        raw = [_rec1(surface["baseline_raw"][f"noise_{n}"]) for n in nz]
+        axes[0, 2].plot(nz, deb, "-o", color="#2ca02c", label="de-biased")
+        axes[0, 2].plot(nz, raw, "-s", color="#d62728", label="raw mean-norm")
+        axes[0, 2].axvline(0.84, color="#e6a93f", ls="--", label="GS recon 0.84mm")
+        axes[0, 2].set_title("Surface: de-biasing extends usable noise")
+        axes[0, 2].set_xlabel("reconstruction noise (mm)"); axes[0, 2].set_ylabel("recall @ 1mm"); axes[0, 2].grid(alpha=.3); axes[0, 2].legend()
 
     # 4 — 3D identity robustness to tooth loss
     if id3d:
@@ -101,8 +106,12 @@ def main():
         print(f"  recall @2mm change vs noise: " + ", ".join(f"{nz}px={n[f'noise_{nz}']['recall']:.2f}" for nz in [1,3,5,8]))
     if surface:
         a = surface["ablations"]
-        print(f"Surface cert recall@1mm vs recon noise: " +
-              ", ".join(f"{nz}mm={next(x['changed_rate'] for x in a[f'noise_{nz}']['curve'] if x['change_mm']==1.0):.2f}" for nz in [0.03,0.05,0.1,0.2]))
+        print(f"Surface recall@1mm (de-biased) vs recon noise: " +
+              ", ".join(f"{nz}mm={_rec1(a[f'noise_{nz}']):.2f}" for nz in [0.05,0.2,0.4,0.84]))
+        if "correlated" in surface:
+            c = surface["correlated"]
+            print(f"  correlated-noise caveat (0.2mm): " +
+                  ", ".join(f"corr{cc}={_rec1(c[f'corr_{cc}']):.2f}" for cc in [0.0,0.5,1.0]))
     if reg_gt:
         s = reg_gt["sweep"]; fpr0 = next((x["fpr"] for x in s if x["change_px"] == 0), None)
         big = next(x for x in reversed(s) if x["change_px"] >= 8)

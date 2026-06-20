@@ -30,7 +30,7 @@ pluggable and optional, so the guarantees run without a GPU.
 | **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000** (N=80, EER 0), genuine 0.10 mm vs impostor 0.55 mm |
 | **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=179, EER 0), genuine 4 px vs impostor 102 px |
 | **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.81 end-to-end** (detector-limited) |
-| **Surface certificate** | Did the 3D surface change? | stable ≤0.2 mm / change ≥1.0 mm at **0% false-change** |
+| **Surface certificate** | Did the 3D surface change? | recall **1.0 @ 1 mm** up to **0.4 mm** recon noise, **0% false-change** (de-biased) |
 
 ![Genuine vs impostor — both modalities](docs/identification_separation.png)
 
@@ -71,6 +71,17 @@ not a flaw in the certificate:
 
 ![Change certificate recall and conformal false-progression bound](docs/change_certificate.png)
 
+**Surface certificate** — the surface displacement is measured *differentially*
+and de-biased (the naive mean-of-distances rectifies reconstruction noise into a
+false signal; subtracting the noise power removes it). That cuts the conformal
+radius ~6× and extends the usable reconstruction noise from 0.1 mm to **0.4 mm**
+with **0% false-change** throughout. The honest caveat is shown too: the gain
+assumes spatially incoherent noise, so it erodes under correlated (realistic)
+reconstruction error — and an 0.84 mm photo-reconstruction is still too noisy for
+a 1 mm change:
+
+![Surface certificate recall vs reconstruction noise, with the honest correlated-noise caveat](docs/surface_certificate.png)
+
 ## How it works
 
 One stack, three certificates:
@@ -90,8 +101,10 @@ scan / radiograph ─▶ detect ─▶ register ─▶ certify
 - **Change:** the bone-level shift is measured *differentially* — sub-pixel
   template matching of the margin between timepoints, referenced to a stationary
   crown so acquisition motion cancels — then certified conformally.
-- **Surface:** scale-aware ICP + screened-Poisson refinement give a surface
-  error that a conformal certificate decides against the reconstruction's own noise.
+- **Surface:** scale-aware ICP + screened-Poisson refinement, then a *de-biased*
+  differential displacement (subtract the reconstruction-noise power so zero-mean
+  noise isn't rectified into a false signal) that a conformal certificate decides
+  against the reconstruction's own noise.
 
 ## Use it
 
@@ -137,7 +150,7 @@ toothprint/
   api/               FastAPI service
   web/               the console (HTML/CSS/JS, no build step)
   docs/              result figures
-  tests/             77 tests, 100% coverage
+  tests/             85 tests, 100% coverage
 ```
 
 ## Test

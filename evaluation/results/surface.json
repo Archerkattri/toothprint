@@ -1,9 +1,581 @@
 {
  "dataset": "poseidon3d",
  "n_meshes": 8,
+ "estimator": "debiased",
  "ablations": {
   "noise_0.03": {
+   "radius_mm": 0.011998938232357708,
+   "estimator": "debiased",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "noise_0.05": {
+   "radius_mm": 0.019998230387262877,
+   "estimator": "debiased",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "noise_0.1": {
+   "radius_mm": 0.03999646077452541,
+   "estimator": "debiased",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "noise_0.2": {
+   "radius_mm": 0.07999292154905134,
+   "estimator": "debiased",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "noise_0.4": {
+   "radius_mm": 0.15998584309810232,
+   "estimator": "debiased",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.9895833333333334,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 0.4895833333333333,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "noise_0.84": {
+   "radius_mm": 0.33597027050601513,
+   "estimator": "debiased",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.59375,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 0.375,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.03125,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 0.020833333333333332,
+     "stable_rate": 0.0,
+     "recall": 0.020833333333333332,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "alpha_0.05": {
+   "radius_mm": 0.023280750434116385,
+   "estimator": "debiased",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "alpha_0.1": {
+   "radius_mm": 0.019998230387262877,
+   "estimator": "debiased",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "alpha_0.2": {
+   "radius_mm": 0.014642393763174536,
+   "estimator": "debiased",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 1.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  }
+ },
+ "baseline_raw": {
+  "noise_0.03": {
    "radius_mm": 0.06865138065250705,
+   "estimator": "raw",
+   "corr": 0.0,
    "curve": [
     {
      "change_mm": 0.0,
@@ -65,6 +637,8 @@
   },
   "noise_0.05": {
    "radius_mm": 0.11441896775417856,
+   "estimator": "raw",
+   "corr": 0.0,
    "curve": [
     {
      "change_mm": 0.0,
@@ -126,6 +700,8 @@
   },
   "noise_0.1": {
    "radius_mm": 0.22883793550835715,
+   "estimator": "raw",
+   "corr": 0.0,
    "curve": [
     {
      "change_mm": 0.0,
@@ -187,6 +763,8 @@
   },
   "noise_0.2": {
    "radius_mm": 0.4576758710167142,
+   "estimator": "raw",
+   "corr": 0.0,
    "curve": [
     {
      "change_mm": 0.0,
@@ -246,8 +824,138 @@
     }
    ]
   },
-  "alpha_0.05": {
-   "radius_mm": 0.11489484843614188,
+  "noise_0.4": {
+   "radius_mm": 0.9153517420334285,
+   "estimator": "raw",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 1.0,
+     "stable_rate": 0.0,
+     "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "noise_0.84": {
+   "radius_mm": 1.9222386582702002,
+   "estimator": "raw",
+   "corr": 0.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
+     "changed_rate": 0.75,
+     "stable_rate": 0.0,
+     "recall": 0.75,
+     "fpr": null
+    }
+   ]
+  }
+ },
+ "correlated": {
+  "corr_0.0": {
+   "radius_mm": 0.07999292154905134,
+   "estimator": "debiased",
+   "corr": 0.0,
    "curve": [
     {
      "change_mm": 0.0,
@@ -307,27 +1015,29 @@
     }
    ]
   },
-  "alpha_0.1": {
-   "radius_mm": 0.11441896775417856,
+  "corr_0.5": {
+   "radius_mm": 0.2701734193222087,
+   "estimator": "debiased",
+   "corr": 0.5,
    "curve": [
     {
      "change_mm": 0.0,
      "changed_rate": 0.0,
-     "stable_rate": 1.0,
+     "stable_rate": 0.625,
      "recall": null,
      "fpr": 0.0
     },
     {
      "change_mm": 0.2,
      "changed_rate": 0.0,
-     "stable_rate": 1.0,
+     "stable_rate": 0.23958333333333334,
      "recall": null,
      "fpr": null
     },
     {
      "change_mm": 0.4,
      "changed_rate": 0.0,
-     "stable_rate": 0.0,
+     "stable_rate": 0.041666666666666664,
      "recall": null,
      "fpr": null
     },
@@ -347,9 +1057,9 @@
     },
     {
      "change_mm": 1.0,
-     "changed_rate": 1.0,
+     "changed_rate": 0.4583333333333333,
      "stable_rate": 0.0,
-     "recall": 1.0,
+     "recall": 0.4583333333333333,
      "fpr": null
     },
     {
@@ -368,20 +1078,22 @@
     }
    ]
   },
-  "alpha_0.2": {
-   "radius_mm": 0.11382312897113657,
+  "corr_0.9": {
+   "radius_mm": 0.3599957813729336,
+   "estimator": "debiased",
+   "corr": 0.9,
    "curve": [
     {
      "change_mm": 0.0,
      "changed_rate": 0.0,
-     "stable_rate": 1.0,
+     "stable_rate": 0.0,
      "recall": null,
      "fpr": 0.0
     },
     {
      "change_mm": 0.2,
      "changed_rate": 0.0,
-     "stable_rate": 1.0,
+     "stable_rate": 0.0,
      "recall": null,
      "fpr": null
     },
@@ -408,16 +1120,79 @@
     },
     {
      "change_mm": 1.0,
-     "changed_rate": 1.0,
+     "changed_rate": 0.23958333333333334,
      "stable_rate": 0.0,
-     "recall": 1.0,
+     "recall": 0.23958333333333334,
      "fpr": null
     },
     {
      "change_mm": 1.5,
+     "changed_rate": 0.9895833333333334,
+     "stable_rate": 0.0,
+     "recall": 0.9895833333333334,
+     "fpr": null
+    },
+    {
+     "change_mm": 2.0,
      "changed_rate": 1.0,
      "stable_rate": 0.0,
      "recall": 1.0,
+     "fpr": null
+    }
+   ]
+  },
+  "corr_1.0": {
+   "radius_mm": 0.37634195274350346,
+   "estimator": "debiased",
+   "corr": 1.0,
+   "curve": [
+    {
+     "change_mm": 0.0,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": 0.0
+    },
+    {
+     "change_mm": 0.2,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.4,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.6,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": null,
+     "fpr": null
+    },
+    {
+     "change_mm": 0.8,
+     "changed_rate": 0.0,
+     "stable_rate": 0.0,
+     "recall": 0.0,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.0,
+     "changed_rate": 0.22916666666666666,
+     "stable_rate": 0.0,
+     "recall": 0.22916666666666666,
+     "fpr": null
+    },
+    {
+     "change_mm": 1.5,
+     "changed_rate": 0.9895833333333334,
+     "stable_rate": 0.0,
+     "recall": 0.9895833333333334,
      "fpr": null
     },
     {
@@ -431,7 +1206,9 @@
   }
  },
  "main": {
-  "radius_mm": 0.11441896775417856,
+  "radius_mm": 0.019998230387262877,
+  "estimator": "debiased",
+  "corr": 0.0,
   "curve": [
    {
     "change_mm": 0.0,
@@ -463,9 +1240,9 @@
    },
    {
     "change_mm": 0.8,
-    "changed_rate": 0.0,
+    "changed_rate": 1.0,
     "stable_rate": 0.0,
-    "recall": 0.0,
+    "recall": 1.0,
     "fpr": null
    },
    {

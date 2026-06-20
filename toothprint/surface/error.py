@@ -71,6 +71,63 @@ def icp_align(source: np.ndarray, target: np.ndarray, *, max_iterations: int = 5
     return src, n_iters
 
 
+def noise_floor_sq(stable_pairs) -> float:
+    """Reconstruction-noise power ``E[mean ||t1 - t0||^2]`` from stable pairs.
+
+    ``stable_pairs`` is an iterable of ``(cloud_t0, cloud_t1)`` re-scan pairs with
+    *no* real change between them (in point correspondence). The return value is
+    the mean per-point squared displacement — the noise power that
+    :func:`surface_displacement` subtracts to de-bias a change measurement.
+    """
+    vals = []
+    for a, b in stable_pairs:
+        a = np.asarray(a, float)
+        b = np.asarray(b, float)
+        if a.shape != b.shape or a.shape[0] == 0:
+            raise ValueError("each stable pair must be non-empty corresponded clouds")
+        vals.append(float(((b - a) ** 2).sum(axis=1).mean()))
+    if not vals:
+        raise ValueError("at least one stable pair is required")
+    return float(np.mean(vals))
+
+
+def surface_displacement(cloud_t0: np.ndarray, cloud_t1: np.ndarray, *,
+                         noise_floor_sq: float = 0.0) -> float:
+    """De-biased mean surface displacement (mm) between two corresponded timepoints.
+
+    The per-point displacement is ``v_i = t1_i - t0_i`` (clouds in correspondence,
+    e.g. established by registration upstream). Aggregating as ``mean_i ||v_i||``
+    *rectifies* zero-mean reconstruction noise into a positive bias ~k*sigma that
+    inflates the certificate's conformal radius and hides small changes. This
+    instead estimates the displacement magnitude in noise-power-corrected (squared)
+    space::
+
+        sqrt(max(0, mean_i ||v_i||^2 - noise_floor_sq))
+
+    because ``E[mean ||v||^2] = (true displacement power) + (noise power)``. With
+    ``noise_floor_sq`` = :func:`noise_floor_sq` of the *stable* calibration pairs,
+    a no-change pair returns ~0 and a real displacement of magnitude m returns ~m,
+    largely independent of the noise level — so the conformal certificate
+    (calibrated on the de-biased stable residuals) keeps its sensitivity as
+    reconstruction noise grows.
+
+    Caveat: the residual spread of this estimate shrinks with the point count only
+    when the reconstruction noise is spatially *incoherent*; spatially correlated
+    error (the realistic case) does not average out, so the de-biasing gain is an
+    upper bound — see the correlated-noise ablation in the evaluation.
+    """
+    a = np.asarray(cloud_t0, float)
+    b = np.asarray(cloud_t1, float)
+    if a.shape != b.shape:
+        raise ValueError("surface_displacement requires corresponded clouds of equal shape")
+    if a.shape[0] == 0:
+        raise ValueError("surface_displacement requires non-empty clouds")
+    if not (np.isfinite(a).all() and np.isfinite(b).all()):
+        raise ValueError("surface_displacement requires finite coordinates")
+    s2 = float(((b - a) ** 2).sum(axis=1).mean())
+    return float(np.sqrt(max(0.0, s2 - float(noise_floor_sq))))
+
+
 def surface_error(reconstructed: np.ndarray, reference: np.ndarray, *,
                   run_icp: bool = True, estimate_scale: bool = False) -> SurfaceError:
     """Full surface error between a reconstructed and a reference point cloud."""

@@ -2,7 +2,9 @@ import numpy as np
 import pytest
 
 from toothprint.surface.certificate import SurfaceCertificate, certify_surface_change
-from toothprint.surface.error import chamfer_distance, icp_align, surface_error
+from toothprint.surface.error import (
+    chamfer_distance, icp_align, noise_floor_sq, surface_displacement, surface_error,
+)
 from toothprint.change.conformal import CHANGED, STABLE, UNCERTAIN, ConformalCertifier
 
 
@@ -63,6 +65,80 @@ def test_surface_error_nonfinite_raises():
 def test_surface_error_no_icp_path():
     e = surface_error(_sphere(50), _sphere(50, seed=9), run_icp=False)
     assert e.icp_iterations == 0
+
+
+# --- differential displacement (de-biased) ---------------------------------
+
+def _displace(pts, mm):
+    c = pts.mean(0)
+    u = (pts - c) / np.clip(np.linalg.norm(pts - c, axis=1, keepdims=True), 1e-9, None)
+    return pts + u * mm
+
+
+def test_noise_floor_sq_estimates_power():
+    rng = np.random.default_rng(0)
+    base = _sphere(2000)
+    sigma = 0.2
+    pairs = [(base + rng.normal(0, sigma, base.shape), base + rng.normal(0, sigma, base.shape))
+             for _ in range(8)]
+    f = noise_floor_sq(pairs)
+    # E[mean ||n1 - n0||^2] = 3 axes * 2 * sigma^2 = 6 sigma^2
+    assert abs(f - 6 * sigma ** 2) < 0.02
+
+
+def test_noise_floor_sq_empty_raises():
+    with pytest.raises(ValueError, match="at least one stable pair"):
+        noise_floor_sq([])
+
+
+def test_noise_floor_sq_bad_pair_raises():
+    with pytest.raises(ValueError, match="corresponded clouds"):
+        noise_floor_sq([(_sphere(10), _sphere(11))])
+
+
+def test_surface_displacement_debiases_noise_to_zero():
+    # The raw mean-norm of a stable (no-change) noisy pair is a large positive
+    # bias (~2.3 sigma); de-biasing with the estimated floor drives it to ~0.
+    rng = np.random.default_rng(1)
+    base = _sphere(2000)
+    sigma = 0.2
+    floor = noise_floor_sq([(base + rng.normal(0, sigma, base.shape),
+                             base + rng.normal(0, sigma, base.shape)) for _ in range(12)])
+    a = base + rng.normal(0, sigma, base.shape)
+    b = base + rng.normal(0, sigma, base.shape)  # no real change
+    raw = float(np.linalg.norm(b - a, axis=1).mean())
+    debiased = surface_displacement(a, b, noise_floor_sq=floor)
+    assert raw > 0.4                  # rectified-noise floor is large
+    assert debiased < 0.1             # de-biasing removes it
+
+
+def test_surface_displacement_recovers_change_under_noise():
+    # A 1mm change at 0.2mm noise (where the raw certificate collapses) is
+    # recovered to ~1mm by the de-biased estimator.
+    rng = np.random.default_rng(2)
+    base = _sphere(2000)
+    sigma = 0.2
+    floor = noise_floor_sq([(base + rng.normal(0, sigma, base.shape),
+                             base + rng.normal(0, sigma, base.shape)) for _ in range(12)])
+    t0 = base + rng.normal(0, sigma, base.shape)
+    t1 = _displace(base, 1.0) + rng.normal(0, sigma, base.shape)
+    assert abs(surface_displacement(t0, t1, noise_floor_sq=floor) - 1.0) < 0.1
+
+
+def test_surface_displacement_shape_mismatch_raises():
+    with pytest.raises(ValueError, match="equal shape"):
+        surface_displacement(_sphere(10), _sphere(11))
+
+
+def test_surface_displacement_empty_raises():
+    with pytest.raises(ValueError, match="non-empty"):
+        surface_displacement(np.zeros((0, 3)), np.zeros((0, 3)))
+
+
+def test_surface_displacement_nonfinite_raises():
+    a = _sphere(10); b = _sphere(10).copy(); b[0, 0] = np.inf
+    with pytest.raises(ValueError, match="finite"):
+        surface_displacement(a, b)
 
 
 # --- certificate -----------------------------------------------------------

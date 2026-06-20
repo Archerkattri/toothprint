@@ -4,6 +4,8 @@ from toothprint.surface.error import (
     SurfaceError,
     chamfer_distance,
     icp_align,
+    noise_floor_sq,
+    surface_displacement,
     surface_error,
 )
 from toothprint.surface.meshing import poisson_refine
@@ -14,6 +16,8 @@ __all__ = [
     "SurfaceError",
     "chamfer_distance",
     "icp_align",
+    "noise_floor_sq",
+    "surface_displacement",
     "surface_error",
     "poisson_refine",
 ]

@@ -19,9 +19,9 @@ institution / a regulator (cannot be done in software).
 | Input quality gates (refuse unusable captures) | ✅ |
 | Site recalibration + provenance hashing | ✅ |
 | Append-only audit trail | ✅ |
-| 100% unit-test coverage (75 tests) | ✅ |
+| 100% unit-test coverage (85 tests) | ✅ |
 | Change measurement robust to acquisition noise (registration vs landmarks) | 🟡 improved; needs real-pair confirmation |
-| Photo reconstruction accurate enough for the surface certificate | 🟡 0.84 mm; needs sub-0.1 mm or an IOS scanner |
+| Photo reconstruction accurate enough for the surface certificate | 🟡 0.84 mm; de-biasing lifted the bar to ~0.4 mm but 0.84 mm is still too noisy (needs IOS scanner or larger change) |
 | Detector localisation precision | 🟡 ~36 px; coarse |
 
 ## 2. Clinical validation — none of this is software

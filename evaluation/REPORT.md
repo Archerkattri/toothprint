@@ -20,13 +20,14 @@ harness in the companion repositories.
 |---|---|---|---|
 | Identity — 3D scans (**N=80**) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan of the *same* scan |
 | Identity — 2D radiographs (**N=179**, full test set) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robustness is partly by-design invariance |
-| Surface certificate (IOS noise) | recall @1 mm / stable ≤0.2 mm / FPR | **1.000 / 1.000 / 0.000** | synthetic uniform displacement |
+| Surface certificate (de-biased) | recall @1 mm (σ≤0.4 mm) / FPR | **1.000 / 0.000** | usable recon-noise range **0.1 → 0.4 mm** (de-biasing, was 0.1); 0.84 mm photo-recon still too noisy |
 | Change **measurement** (accurate localization) | recall @ **true 0 %** false-progression | **0.98** (0.95 at 4 px → **1.00** at ≥16 px) | tau = 2 px; FPR = 0.000 |
 | Change certificate | false-progression rate vs α | **≤ α always** (measured 0.000–0.010) | distribution-free, finite-sample |
 | Change end-to-end (v2 detector, full pipeline) | recall / FPR | **0.81 / 0.010** | detector at the ~35 px label floor |
 
-**Best achievable on this data:** identity and surface are **perfect** (Rank-1 1.0,
-EER 0; surface recall 1.0 at IOS noise, 0 % false-change). The change *measurement
+**Best achievable on this data:** identity and surface are **perfect** in their
+usable regime (Rank-1 1.0, EER 0; surface recall 1.0 with 0 % false-change, now to
+**0.4 mm** reconstruction noise after de-biasing, was 0.1 mm). The change *measurement
 and certificate* are **near-perfect**: with an accurate margin the certificate
 recovers a change with recall **0.98 at a true 0 % false-progression rate** (and
 **1.00** for changes ≥ 16 px), after an NCC-reliability gate on the candidate-patch
@@ -50,7 +51,7 @@ landmark labels than the dataset provides, not better code.
    identity was **robust to tooth loss** (Rank-1 = 1.0 down to 30 % arch
    coverage) — consistent with the forensic literature.
 3. **Engineering is production-grade**: the integrated library is at 100 % test
-   coverage (77 tests), with a clean API and a finite-sample-correct certifier.
+   coverage (85 tests), with a clean API and a finite-sample-correct certifier.
 
 ## The limitations that block clinical use (quantified)
 
@@ -74,11 +75,23 @@ landmark labels than the dataset provides, not better code.
    *Residual:* needs confirmation on real radiograph pairs, where projection-angle
    change (not modelled here) adds error.
 
-3. **The surface certificate needs a real scanner.** At 0.2 mm reconstruction
-   noise, recall for a 1 mm change is **0**. Our own Gaussian-Splatting
-   photo-reconstruction is ~0.84 mm — roughly **8× too noisy** for the surface
-   certificate. The "no scanner" path and the surface certificate are therefore
-   incompatible; the certificate is only usable on IOS-class scans (sub-0.1 mm).
+3. **The surface certificate's reach was extended, not unlocked.** The original
+   mean-norm measurement *rectifies* zero-mean reconstruction noise into a positive
+   bias (~2.3·σ), so its conformal radius grows linearly with noise (0.069 → 0.458
+   mm as σ goes 0.03 → 0.20) and recall for a 1 mm change collapses to **0 by
+   0.2 mm**. De-biasing by noise-power subtraction
+   (`toothprint.surface.surface_displacement`: √(max(0, mean‖v‖² − floor))) cuts
+   the radius ~6× and extends the usable range to **~0.4 mm** (recall 1.0 at 0.2
+   and 0.4 mm, false-change still 0.000; even the IOS detection threshold drops
+   from 1.0 → 0.8 mm). **Two honest caveats remain:** (a) our Gaussian-Splatting
+   photo-reconstruction (~0.84 mm) is *still* too noisy — a 1 mm change sits at the
+   SNR floor there (recall **0.02**), so the "no scanner" path needs IOS-class
+   input or a larger change; (b) the de-biasing gain assumes the noise is spatially
+   *incoherent* — under correlated (realistic) reconstruction error it erodes
+   sharply (recall@1mm **1.0 → 0.23** as correlation 0 → 1 at 0.2 mm). The
+   certificate's **specificity (0 % false-change) holds at every noise level and
+   correlation** — that part is unconditional; the *sensitivity* reach must be
+   pinned down on real reconstruction residuals.
 
 4. **The detector is coarse** (~36 px landmark error, near the DenPAR
    annotation-noise floor). It bounds the fully-automatic pipeline: end-to-end
@@ -109,7 +122,7 @@ deployment-grade *engineering* (not clinical validation):
   (`clinical.AuditLog`) for full traceability.
 - **Governance docs**: [MODEL_CARD](../MODEL_CARD.md), [RISK](../RISK.md),
   [CLINICAL_READINESS](../CLINICAL_READINESS.md).
-- 100 % test coverage maintained (75 tests).
+- 100 % test coverage maintained (85 tests).
 
 What this does **not** change: there is still no real longitudinal/cross-session
 data, no prospective study, and no regulatory clearance. Those are the gate.
@@ -138,8 +151,10 @@ data, no prospective study, and no regulatory clearance. Those are the gate.
 4. **Regulatory pathway**: FDA/CE submission, ISO 13485 QMS, risk management
    (ISO 14971), documented failure-mode analysis.
 5. **Harden the front ends**: a more precise/robust detector; a reconstruction
-   path that reaches sub-0.1 mm if the surface certificate is to run without a
-   scanner.
+   path that reaches ~0.4 mm (the de-biased surface certificate's usable noise) —
+   or better, if it is to run without a scanner. Pin the surface reach down on
+   *real* reconstruction residuals, since the de-biasing gain assumes the noise is
+   spatially incoherent.
 
 Treat the headline numbers as proof that the *methods* are sound and the
 *guarantee* is real — not as evidence of clinical readiness.
