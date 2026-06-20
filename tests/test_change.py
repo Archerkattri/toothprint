@@ -134,6 +134,35 @@ def test_measure_change_search_all_gated_returns_fallback():
     assert out is not None
 
 
+# --- margin snapping (detector localization refinement) --------------------
+
+def test_snap_to_margin_locks_onto_edge():
+    from toothprint.change.registration import snap_to_margin
+    # horizontal bone margin at y=150: bright (bone) above, dark below
+    g = np.zeros((300, 120), np.float32)
+    g[:150] = 200.0
+    g = (g + np.random.default_rng(0).normal(0, 2, g.shape)).astype(np.float32)
+    u = (0.0, 1.0)
+    # detector crest 25px off the true margin -> snaps back onto y~150
+    snapped = snap_to_margin(g, (60, 175), u, span=40, step=2.0)
+    assert abs(snapped[1] - 150) < 4.0 and abs(snapped[0] - 60) < 1e-6
+
+
+def test_snap_to_margin_no_edge_keeps_center():
+    from toothprint.change.registration import snap_to_margin
+    flat = np.full((80, 80), 100.0, np.float32)   # no edge -> centre is best
+    assert snap_to_margin(flat, (40, 40), (0.0, 1.0), span=20) == (40.0, 40.0)
+
+
+def test_snap_to_margin_center_out_of_bounds_finds_edge():
+    from toothprint.change.registration import snap_to_margin
+    # centre near the border (its own gradient sample is out of bounds) but the
+    # span reaches the margin at y=20 and snaps to it
+    g = np.zeros((40, 40), np.float32); g[:20] = 150.0
+    out = snap_to_margin(g, (20, 39), (0.0, 1.0), span=40, step=2.0)
+    assert 16.0 < out[1] < 24.0
+
+
 # --- global-motion model (repositioning robustness) ------------------------
 
 def test_fit_global_motion_needs_three_reliable_anchors():

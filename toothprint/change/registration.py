@@ -75,6 +75,49 @@ def measure_change(g0: np.ndarray, g1: np.ndarray, reference_center, crest_cente
     return float(rel), float(min(cresp, rresp))
 
 
+def _bilinear(gray: np.ndarray, x: float, y: float):
+    """Bilinearly-sampled intensity at sub-pixel ``(x, y)``, or None if out of bounds."""
+    h, w = gray.shape
+    x0, y0 = int(np.floor(x)), int(np.floor(y))
+    if x0 < 0 or y0 < 0 or x0 + 1 >= w or y0 + 1 >= h:
+        return None
+    fx, fy = x - x0, y - y0
+    return float(gray[y0, x0] * (1 - fx) * (1 - fy) + gray[y0, x0 + 1] * fx * (1 - fy)
+                 + gray[y0 + 1, x0] * (1 - fx) * fy + gray[y0 + 1, x0 + 1] * fx * fy)
+
+
+def snap_to_margin(gray: np.ndarray, center, bone_unit, span: float = 40.0,
+                   step: float = 2.0):
+    """Refine ``center`` along ±``bone_unit`` onto the strongest apical intensity
+    edge — the bone margin itself.
+
+    A learned detector localises the crest only coarsely (~35 px on DenPAR), so its
+    patch sits off the radiopaque margin and *attenuates* the measured change. The
+    margin is the dominant intensity step along the bone vector; snapping the centre
+    to the peak of ``|dI/du|`` lands the patch on it — consistently for stable and
+    changed pairs alike, which both tightens the noise floor and recovers signal.
+    Returns the snapped ``(x, y)`` (the original centre if no edge is in range).
+    """
+    ux, uy = float(bone_unit[0]), float(bone_unit[1])
+
+    def grad_at(cx, cy):
+        a = _bilinear(gray, cx - step * ux, cy - step * uy)
+        b = _bilinear(gray, cx + step * ux, cy + step * uy)
+        return None if (a is None or b is None) else abs(b - a)
+
+    best = (float(center[0]), float(center[1]))
+    g_center = grad_at(*best)
+    best_g = g_center if g_center is not None else -1.0  # anchor on the centre itself
+    t = -span
+    while t <= span:
+        cx, cy = center[0] + t * ux, center[1] + t * uy
+        g = grad_at(cx, cy)
+        if g is not None and g > best_g:
+            best_g, best = g, (cx, cy)
+        t += 1.0
+    return best
+
+
 def fit_global_motion(g0: np.ndarray, g1: np.ndarray, anchors, half: int = 20,
                       search: int = 70, min_response: float = 0.3):
     """Affine global-motion model ``t0 → t1`` from stationary anchor patches.

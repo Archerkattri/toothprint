@@ -19,7 +19,7 @@ harness in the companion repositories.
 | Mechanism | Metric | Result | Caveat |
 |---|---|---|---|
 | Identity — 3D scans (**N=80**) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan of the *same* scan |
-| Identity — 2D radiographs (**N=179**, full test set) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robustness is partly by-design invariance |
+| Identity — 2D radiographs (**N=144**, test split, ≥4 teeth) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robustness is partly by-design invariance |
 | Surface certificate — global change (de-biased) | recall @1 mm (σ≤0.4 mm) / FPR | **1.000 / 0.000** | usable recon-noise **0.1 → 0.4 mm** (de-biasing, was 0.1); 0.84 mm photo-recon still too noisy |
 | Surface certificate — **localized** change (regional) | recall @1 mm (σ=0.2 mm) / FPR | **0.99 / 0.000** | global average gets **0.00** (dilutes); regional max localizes it; FPR ≤ α via max-calibration |
 | Change **measurement** (accurate localization) | recall @ **true 0 %** false-progression | **0.98** (0.95 at 4 px → **1.00** at ≥16 px) | tau = 2 px; FPR = 0.000 |
@@ -52,7 +52,7 @@ landmark labels than the dataset provides, not better code.
    identity was **robust to tooth loss** (Rank-1 = 1.0 down to 30 % arch
    coverage) — consistent with the forensic literature.
 3. **Engineering is production-grade**: the integrated library is at 100 % test
-   coverage (94 tests), with a clean API and a finite-sample-correct certifier.
+   coverage (97 tests), with a clean API and a finite-sample-correct certifier.
 
 ## The limitations that block clinical use (quantified)
 
@@ -110,7 +110,12 @@ landmark labels than the dataset provides, not better code.
 4. **The detector is coarse** (~36 px landmark error, near the DenPAR
    annotation-noise floor). It bounds the fully-automatic pipeline: end-to-end
    change recall is **0.81** (vs the **0.98** measurement ceiling with an accurate
-   margin) — the detector, not the certificate, is the ceiling.
+   margin) — the detector, not the certificate, is the ceiling. We **rigorously
+   confirmed** this is irreducible *in code*: edge-snapping the crest onto the bone
+   margin (`snap_to_margin`) and widening the synthetic warp both give **no lift**
+   (end-to-end recall stays 0.79–0.82 across both), because the candidate-patch
+   search already extracts the available signal at a misplaced patch. Closing it
+   needs a better detector (better landmark labels), not better measurement code.
 
 5. **No clinical or regulatory validation whatsoever**: no prospective study, no
    radiologist/forensic-expert ground truth, no demographic diversity (age,
@@ -136,7 +141,7 @@ deployment-grade *engineering* (not clinical validation):
   (`clinical.AuditLog`) for full traceability.
 - **Governance docs**: [MODEL_CARD](../MODEL_CARD.md), [RISK](../RISK.md),
   [CLINICAL_READINESS](../CLINICAL_READINESS.md).
-- 100 % test coverage maintained (94 tests).
+- 100 % test coverage maintained (97 tests).
 
 What this does **not** change: there is still no real longitudinal/cross-session
 data, no prospective study, and no regulatory clearance. Those are the gate.

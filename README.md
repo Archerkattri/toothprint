@@ -28,7 +28,7 @@ pluggable and optional, so the guarantees run without a GPU.
 | Capability | What it answers | Result |
 |---|---|---|
 | **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000** (N=80, EER 0), genuine 0.10 mm vs impostor 0.55 mm |
-| **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=179, EER 0), genuine 4 px vs impostor 102 px |
+| **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=144, EER 0), genuine 4 px vs impostor 102 px |
 | **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.81 end-to-end** (detector-limited) |
 | **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (global avg gets 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
 
@@ -155,7 +155,7 @@ toothprint/
   api/               FastAPI service
   web/               the console (HTML/CSS/JS, no build step)
   docs/              result figures
-  tests/             94 tests, 100% coverage
+  tests/             97 tests, 100% coverage
 ```
 
 ## Test
