@@ -156,6 +156,13 @@ a { color: inherit; text-decoration: none; }
 .how { color: var(--bone); font-size: 15px; margin: 0; }
 @media (max-width: 880px) { .pillar-body, .pillar-body.reverse .shot { grid-template-columns: 1fr; order: 0; } }
 
+/* ---- evidence gallery ---------------------------------------------------- */
+.evidence { position: relative; z-index: 2; max-width: var(--maxw); margin: 0 auto; padding: clamp(56px,8vw,104px) var(--pad); }
+.ev-panel { margin: 0 0 22px; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--panel); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+.ev-panel img { display: block; width: 100%; height: auto; background: #fff; }
+.ev-panel figcaption { padding: 15px 20px; font-size: 14px; color: var(--bone); border-top: 1px solid var(--line); background: var(--film-2); }
+.ev-tag { display: inline-block; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--signal); margin-right: 12px; }
+
 /* ---- certainty lab ------------------------------------------------------- */
 .certainty { position: relative; z-index: 2; max-width: var(--maxw); margin: 0 auto; padding: clamp(56px,8vw,104px) var(--pad); }
 .certainty-head { max-width: 64ch; margin-bottom: 40px; }
