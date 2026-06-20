@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dentalmapcert"
+version = "0.1.0"
+description = "GPU-ready DentalMapCert visible-surface certificate scaffold"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pillow>=9.0",
+]
+
+[project.optional-dependencies]
+vision  = ["opencv-python-headless>=4.8", "torch>=2.0"]
+mesh    = ["open3d>=0.18"]
+vggt    = ["vggt"]
+dust3r  = ["mini-dust3r"]
+dev     = ["pytest>=8", "pytest-cov"]
+full    = ["dentalmapcert[vision,mesh,vggt,dust3r]"]
+
+[project.scripts]
+dentalmapcert = "dentalmapcert.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.setuptools.packages.find]
+where = ["src"]

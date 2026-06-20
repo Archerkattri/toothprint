@@ -1,0 +1,26 @@
+# Datasets and model artifacts — never commit
+data/
+*/data/
+outputs/
+*/outputs/
+*.pt
+*.pth
+*.ckpt
+*.stl
+*.ply
+*.obj
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+venv/
+
+# Env / secrets
+.env
+*.key
