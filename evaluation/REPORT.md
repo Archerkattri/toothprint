@@ -105,8 +105,12 @@ landmark labels than the dataset provides, not better code.
      false-change stays ≤ α despite the multiplicity) detects a localized patch
      change that the global average **dilutes to 0** — global recall **0.00 →
      regional 0.99** @ 1 mm (σ=0.2 mm) — and reports *which* region moved.
-   **Honest residuals:** (a) the 0.84 mm Gaussian-Splatting photo-recon is still too
-   noisy for a 1 mm *global* change (recall 0.02 — at the SNR floor); (b) under
+   **Honest residuals:** (a) the photo-reconstruction — now a high-detail
+   **2DGS+TSDF mesh at 0.42 mm median** (`make_gsplat_mesh.py`, up from the 0.84 mm
+   point cloud) — sits right at this certificate's 0.4 mm usable-noise edge: its
+   *median* clears the bar but its *mean* (~0.6 mm) and tail do not, so a 1 mm
+   *global* change on the raw 0.84 mm point cloud still reads recall 0.02 and an IOS
+   scan remains preferable; (b) under
    heavy correlated noise a *small* (1 mm) localized change is hard (regional recall
    0.04 at correlation 0.9), though a 1.5 mm one is recoverable (**0.48**, vs
    global's 0.00). **Specificity (0 % false-change) holds at every noise level,
@@ -150,6 +154,13 @@ deployment-grade *engineering* (not clinical validation):
   (N=80) holds **Rank-1 1.0 under non-rigid intra-subject deformation up to
   0.2 mm** (wear / soft-tissue movement, on top of pose + noise + partial coverage)
   and **0.93 at a large 0.4 mm** — measured, not asserted (caveat 1, tightened).
+- **Dentist-usable mesh reconstruction** — the "no scanner" path now produces a
+  watertight **1.2 M-triangle mesh** via Gaussian-Splatting + multi-view **TSDF
+  fusion** (`make_gsplat_mesh.py`), matching the GT scan to **0.42 mm median** (was
+  an 0.84 mm point cloud) — importable into dental CAD, not just a point cloud.
+- **Evidence videos** — animated identification (genuine-hugs / impostor-floats)
+  and reconstruction (mesh + error heatmap) turntables, plus a change-measurement-
+  in-action figure, replace the static/weak figures in the README.
 - **Site recalibration** (`clinical.SiteCalibration`) — recalibrate the conformal
   layer on the deployment site's own data, with a min-sample floor and a
   provenance hash, so the α guarantee is honoured on-distribution.

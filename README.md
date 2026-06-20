@@ -42,24 +42,28 @@ by α in finite samples — no distributional assumptions.
 
 These are the system's own outputs on the public Poseidon3D and DenPAR datasets.
 
-**Identification** — a query arch registers tightly onto its own enrolment
-(0.10 mm) but cannot match a stranger's (0.54 mm). Recognition by teeth:
+**Identification** — a query arch (gold) is registered onto a gallery arch. For
+the **same person** its points hug the surface (blue, **0.10 mm → match**); for a
+**stranger** the best alignment still leaves them floating off it (red,
+**0.54 mm → no match**). Recognition by teeth:
 
-![Genuine vs impostor registration overlay](docs/identity_registration_v2.png)
+![Same-person vs stranger registration — animated](docs/identity_match.gif)
 
-**Photos to geometry** — no scanner? **3D Gaussian Splatting** rebuilds a real
-arch from shaded photos to within **0.84 mm** of the ground-truth scan (on an
-8 GB GPU). Shading turns the textureless surface into the photometric signal that
-photogrammetry can't find:
+**Photos → a dentist-usable mesh** — no scanner? **3D Gaussian Splatting +
+multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight
+**1.2 M-triangle mesh** (not a point cloud, not smoothed-away Poisson) that matches
+the ground-truth scan to **0.42 mm median** — detailed enough for dental CAD. The
+error heatmap (right) is mostly blue:
 
-![Gaussian Splatting reconstruction](docs/gaussian_splatting_recon_v2.png)
+![Photos to a high-detail mesh, with error heatmap — animated](docs/recon_turntable.gif)
 
-**Tooth localization** — ViTPose coarsely localises CEJ and bone crest on real
-radiographs (GT green, prediction red). Pinpoint accuracy isn't required: the
-change certificate measures the shift by sub-pixel registration, not by these
-points:
+**Change measurement in action** — the detector only *roughly* localises the tooth
+(coarse, on these large radiographs) — pinpoint landmarks aren't needed. The
+certificate finds the bone-margin patch and reads the recession between two
+timepoints by **sub-pixel registration** (here 20.7 px measured vs 22 px true),
+then certifies it conformally:
 
-![Landmark overlays on real radiographs](docs/landmark_overlays_v2.png)
+![Change certificate measuring a real bone-level change](docs/change_measurement.png)
 
 **Change certificate** — measuring the bone-level shift *differentially* (sub-pixel
 registration of the margin between timepoints, not by re-detecting landmarks) is
@@ -87,8 +91,9 @@ lesion moves a *patch*, which a whole-surface average dilutes to nothing (recall
 **0.00**) — a per-region max statistic recovers it (**0.99**) and says *where* it
 is, with the conformal false-change rate still **0** (the max is calibrated on
 stable pairs). The honest residuals are shown too — heavy correlated noise still
-costs small changes, and an 0.84 mm photo-reconstruction is too noisy for a 1 mm
-global change:
+costs small changes. (The new high-detail mesh reconstruction reaches **0.42 mm
+median**, right at this certificate's usable-noise edge — a big step from the old
+0.84 mm point cloud — though its error *mean* of ~0.6 mm still favours an IOS scan):
 
 ![Surface certificate recall vs reconstruction noise, with the honest correlated-noise caveat](docs/surface_certificate_v2.png)
 

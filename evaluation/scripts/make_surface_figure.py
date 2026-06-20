@@ -46,9 +46,11 @@ def main():
     deb = [rec1(d["ablations"][f"noise_{n}"]) for n in noises]
     axA.plot(noises, deb, "-o", color="#2ca02c", lw=2.4, ms=6, label="de-biased")
     axA.plot(noises, raw, "-s", color="#d62728", lw=2.0, ms=5, label="raw mean-norm")
-    axA.axvline(0.84, color="#e6a93f", ls="--", lw=1.4)
-    axA.annotate("photo-recon\n0.84 mm", xy=(0.84, 0.45), xytext=(0.5, 0.6), fontsize=8,
-                 color="#b07d12", arrowprops=dict(arrowstyle="->", color="#e6a93f"))
+    axA.axvline(0.42, color="#2ca02c", ls="--", lw=1.6)
+    axA.annotate("high-detail mesh\nrecon (0.42 mm med.)", xy=(0.42, 0.5), xytext=(0.45, 0.62),
+                 fontsize=8, color="#1a7f4b", arrowprops=dict(arrowstyle="->", color="#2ca02c"))
+    axA.axvline(0.84, color="#e6a93f", ls=":", lw=1.0, alpha=0.7)
+    axA.annotate("old point cloud (0.84)", xy=(0.84, 0.12), fontsize=7, color="#b07d12")
     axA.set_title("A · De-bias extends usable noise\n(global change)", fontsize=11)
     axA.set_xlabel("reconstruction noise σ (mm)"); axA.set_ylabel("recall @ 1 mm")
     axA.set_ylim(-0.03, 1.05); axA.grid(alpha=.3); axA.legend(loc="center left", fontsize=8)
