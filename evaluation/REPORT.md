@@ -24,7 +24,7 @@ harness in the companion repositories.
 
 | Mechanism | Metric | Result | Caveat |
 |---|---|---|---|
-| Identity — 3D scans (**N=80**) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan of the *same* scan |
+| Identity — 3D scans (**N=80**) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan; Rank-1 1.0 holds under non-rigid deformation ≤0.2 mm |
 | Identity — 2D radiographs (**N=400**, both splits, ≥4 teeth) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robust to 20 px jitter (0.985) & 50 % magnification; partly by-design invariance |
 | Surface certificate — global change (de-biased) | recall @1 mm (σ≤0.4 mm) / FPR | **1.000 / 0.000** | usable recon-noise **0.1 → 0.4 mm** (de-biasing, was 0.1); 0.84 mm photo-recon still too noisy |
 | Surface certificate — **localized** change (regional) | recall @1 mm (σ=0.2 mm) / FPR | **0.99 / 0.000** | global average gets **0.00** (dilutes); regional max localizes it; FPR ≤ α via max-calibration |
@@ -146,10 +146,10 @@ deployment-grade *engineering* (not clinical validation):
   detects *localized* lesions a whole-surface average misses (0.99 vs 0.00), with
   the conformal false-change rate preserved (caveat 3).
 - **Larger, harder identity validation** — 2D gallery grown to **N=400** at
-  Rank-1 1.0 / EER 0 (robust to 20 px jitter, 50 % magnification); the 3D eval
-  harness adds a **non-rigid intra-subject deformation** augmentation (wear /
-  soft-tissue movement) on top of pose + noise + partial coverage (caveat 1,
-  tightened — deformation-robustness ablation runs in `eval_id3d.py`).
+  Rank-1 1.0 / EER 0 (robust to 20 px jitter, 50 % magnification); 3D identity
+  (N=80) holds **Rank-1 1.0 under non-rigid intra-subject deformation up to
+  0.2 mm** (wear / soft-tissue movement, on top of pose + noise + partial coverage)
+  and **0.93 at a large 0.4 mm** — measured, not asserted (caveat 1, tightened).
 - **Site recalibration** (`clinical.SiteCalibration`) — recalibrate the conformal
   layer on the deployment site's own data, with a min-sample floor and a
   provenance hash, so the α guarantee is honoured on-distribution.
