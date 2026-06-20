@@ -22,6 +22,7 @@
       <a href="#identity">Identity</a>
       <a href="#change">Change</a>
       <a href="#surface">Surface</a>
+      <a href="#evidence">Evidence</a>
       <a href="#certainty">The guarantee</a>
     </nav>
     <a class="btn btn-ghost" href="#certainty">Try a certificate</a>
@@ -183,6 +184,35 @@
           </p>
         </div>
       </div>
+    </section>
+
+    <!-- INTERACTIVE CERTAINTY ----------------------------------------------->
+    <!-- EVIDENCE ------------------------------------------------------------>
+    <section id="evidence" class="evidence">
+      <div class="pillar-head">
+        <p class="eyebrow">Evidence · real data, real outputs</p>
+        <h2 class="display-2">Seen on real scans and radiographs</h2>
+        <p class="pillar-lede">
+          Not renders of an idea — these are the system's own outputs on public
+          dental data: landmarks placed on real X-rays, an arch reconstructed
+          from photographs, and a query that finds its owner.
+        </p>
+      </div>
+
+      <figure class="ev-panel reveal">
+        <img src="assets/landmark_montage.png" alt="ViTPose landmark predictions overlaid on eight real DenPAR radiograph teeth, against ground truth." loading="lazy" />
+        <figcaption><span class="ev-tag mono">overlays</span> ViTPose places CEJ, bone crest, and apex on real radiographs — ground truth in green, prediction in red.</figcaption>
+      </figure>
+
+      <figure class="ev-panel reveal">
+        <img src="assets/recon_evidence.png" alt="Five protocol views of a real dental arch and the DUSt3R 3D point cloud reconstructed from them." loading="lazy" />
+        <figcaption><span class="ev-tag mono">reconstruction</span> Five protocol views of a real arch become a 53k-point 3D surface via DUSt3R — on an 8&nbsp;GB GPU.</figcaption>
+      </figure>
+
+      <figure class="ev-panel reveal">
+        <img src="assets/identity_overlay.png" alt="A query arch registers tightly onto its genuine enrolment (0.10mm) but not onto an impostor (0.54mm)." loading="lazy" />
+        <figcaption><span class="ev-tag mono">identification</span> The query arch (gold) snaps onto its own enrolment at 0.10&nbsp;mm, but cannot match a stranger's at 0.54&nbsp;mm.</figcaption>
+      </figure>
     </section>
 
     <!-- INTERACTIVE CERTAINTY ----------------------------------------------->

@@ -38,6 +38,25 @@ Every certificate is conformal: it fires only when the interval around the
 measurement lies entirely past the threshold, so the false-alarm rate is bounded
 by α in finite samples — no distributional assumptions.
 
+## Evidence on real data
+
+These are the system's own outputs on the public Poseidon3D and DenPAR datasets.
+
+**Landmarks on real radiographs** — ViTPose places CEJ, bone crest, and apex
+(ground truth in green, prediction in red):
+
+![Landmark overlays on real radiographs](docs/landmark_montage.png)
+
+**Photos to geometry** — five protocol views of a real arch reconstructed into a
+53k-point 3D surface by DUSt3R (on an 8 GB GPU):
+
+![DUSt3R reconstruction from five views](docs/recon_evidence.png)
+
+**Identification** — a query arch registers tightly onto its own enrolment
+(0.10 mm) but cannot match a stranger's (0.54 mm):
+
+![Genuine vs impostor registration overlay](docs/identity_overlay.png)
+
 ## How it works
 
 One stack, three certificates:
