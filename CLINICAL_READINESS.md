@@ -20,7 +20,8 @@ institution / a regulator (cannot be done in software).
 | Site recalibration + provenance hashing | ✅ |
 | Append-only audit trail | ✅ |
 | 100% unit-test coverage (97 tests) | ✅ |
-| Change measurement robust to acquisition noise (registration vs landmarks) | 🟡 improved; needs real-pair confirmation |
+| Change measurement robust to acquisition noise + **repositioning** (rotation/magnification, multi-anchor affine) | 🟢 ~8× lower spurious change on real teeth; needs real-pair confirmation |
+| Surface certificate detects **localized** lesions (regional max statistic) | 🟢 recall 0.99 vs 0.00 global; FPR bounded |
 | Photo reconstruction accurate enough for the surface certificate | 🟡 0.84 mm; de-biasing lifted the bar to ~0.4 mm but 0.84 mm is still too noisy (needs IOS scanner or larger change) |
 | Detector localisation precision | 🟡 ~36 px; coarse |
 

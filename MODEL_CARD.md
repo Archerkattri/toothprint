@@ -48,10 +48,14 @@ strong only in their good-quality regimes and degrade under noise (quantified).
 
 1. Validated on **synthetic perturbations of single-timepoint data**; no real
    longitudinal or cross-session data. Headline metrics are optimistic ceilings.
-2. Change sensitivity **drops sharply with acquisition noise**.
+2. Change measurement is **robust to acquisition repositioning** (translation +
+   rotation + magnification, via a multi-anchor affine model — stable-pair spurious
+   change ~8× lower than single-reference); residual is real longitudinal pairs.
 3. Surface certificate usable to **~0.4 mm reconstruction noise** (de-biased; was
-   0.1 mm), at 0% false-change; the 0.84 mm photo reconstruction is still too noisy
-   for a 1 mm change, and the gain assumes spatially incoherent noise.
+   0.1 mm) and now detects **localized** lesions a whole-surface average misses
+   (regional recall 0.99 vs global 0.00), at 0% false-change; the 0.84 mm photo
+   reconstruction is still too noisy for a 1 mm global change, and the regional gain
+   on small changes degrades under spatially-correlated noise.
 4. Tooth detection is **coarse**; end-to-end change recall ≈ 0.81.
 5. **No** demographic, device, or pathology diversity in validation.
 

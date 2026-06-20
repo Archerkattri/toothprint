@@ -19,7 +19,7 @@ harness in the companion repositories.
 | Mechanism | Metric | Result | Caveat |
 |---|---|---|---|
 | Identity — 3D scans (**N=80**) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | genuine = synthetic re-scan of the *same* scan |
-| Identity — 2D radiographs (**N=144**, test split, ≥4 teeth) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robustness is partly by-design invariance |
+| Identity — 2D radiographs (**N=400**, both splits, ≥4 teeth) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robust to 20 px jitter (0.985) & 50 % magnification; partly by-design invariance |
 | Surface certificate — global change (de-biased) | recall @1 mm (σ≤0.4 mm) / FPR | **1.000 / 0.000** | usable recon-noise **0.1 → 0.4 mm** (de-biasing, was 0.1); 0.84 mm photo-recon still too noisy |
 | Surface certificate — **localized** change (regional) | recall @1 mm (σ=0.2 mm) / FPR | **0.99 / 0.000** | global average gets **0.00** (dilutes); regional max localizes it; FPR ≤ α via max-calibration |
 | Change **measurement** (accurate localization) | recall @ **true 0 %** false-progression | **0.98** (0.95 at 4 px → **1.00** at ≥16 px) | tau = 2 px; FPR = 0.000 |
@@ -132,6 +132,16 @@ deployment-grade *engineering* (not clinical validation):
 
 - **Noise-robust change measurement** wired through (registration, not landmarks)
   — recall 0.96–0.98 up to 8 px noise (above).
+- **Repositioning-robust change** — a multi-anchor affine global-motion model
+  cancels rotation + magnification, not just translation (~8× lower stable-pair
+  spurious change on real teeth; caveat 2).
+- **De-biased + regional surface certificate** — noise-power subtraction extends
+  the usable reconstruction noise to 0.4 mm, and a max-over-regions statistic
+  detects *localized* lesions a whole-surface average misses (0.99 vs 0.00), with
+  the conformal false-change rate preserved (caveat 3).
+- **Larger, harder identity validation** — 2D gallery grown to **N=400** at
+  Rank-1 1.0 / EER 0 (robust to 20 px jitter, 50 % magnification); 3D queries
+  stressed with non-rigid intra-subject deformation (caveat 1, tightened).
 - **Site recalibration** (`clinical.SiteCalibration`) — recalibrate the conformal
   layer on the deployment site's own data, with a min-sample floor and a
   provenance hash, so the α guarantee is honoured on-distribution.
