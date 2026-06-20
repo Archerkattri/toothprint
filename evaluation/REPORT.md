@@ -51,11 +51,15 @@ harness in the companion repositories.
    → Every "1.000" should be read as an **optimistic ceiling**, not field
    performance.
 
-2. **Change sensitivity collapses under realistic noise.** Recall for a 2 mm
-   crestal change falls 1.00 → 0.75 → 0.38 → **0.18** as acquisition noise goes
-   1 → 3 → 5 → 8 px. Real periapical repositioning easily reaches this range, so
-   a deployed screening tool would **miss the majority of true progression**
-   (while rarely false-alarming).
+2. **Change sensitivity vs noise — largely fixed by the registration measurement.**
+   The *landmark*-distance scoring collapses with noise (recall 0.75 → 0.18 as
+   acquisition noise goes 3 → 8 px). The production certificate instead uses the
+   **differential sub-pixel registration** measurement, which holds recall
+   **0.98 (3 px) → 0.96 (8 px)** before failing at extreme 15 px (0.08). So at
+   realistic noise the certificate is far more sensitive than the landmark
+   ablation implied; only severe repositioning (>~10 px residual) defeats it.
+   *Residual:* needs confirmation on real radiograph pairs, where projection-angle
+   change (not modelled here) adds error.
 
 3. **The surface certificate needs a real scanner.** At 0.2 mm reconstruction
    noise, recall for a 1 mm change is **0**. Our own Gaussian-Splatting
@@ -73,6 +77,27 @@ harness in the companion repositories.
    system. The conformal guarantee also assumes the calibration set is
    exchangeable with deployment — which requires calibrating on the *target*
    scanner and population, not synthetic noise.
+
+## Deployment-engineering hardening (completed this round)
+
+The technically-fixable gaps have been addressed; the system is now at
+deployment-grade *engineering* (not clinical validation):
+
+- **Noise-robust change measurement** wired through (registration, not landmarks)
+  — recall 0.96–0.98 up to 8 px noise (above).
+- **Site recalibration** (`clinical.SiteCalibration`) — recalibrate the conformal
+  layer on the deployment site's own data, with a min-sample floor and a
+  provenance hash, so the α guarantee is honoured on-distribution.
+- **Input quality gates** (`clinical.assess_radiograph` / `assess_scan`) — refuse
+  blurred radiographs / incomplete scans rather than certify them.
+- **First-class abstention** and an **append-only audit trail**
+  (`clinical.AuditLog`) for full traceability.
+- **Governance docs**: [MODEL_CARD](../MODEL_CARD.md), [RISK](../RISK.md),
+  [CLINICAL_READINESS](../CLINICAL_READINESS.md).
+- 100 % test coverage maintained (75 tests).
+
+What this does **not** change: there is still no real longitudinal/cross-session
+data, no prospective study, and no regulatory clearance. Those are the gate.
 
 ## Verdict by use case
 

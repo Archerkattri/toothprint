@@ -137,14 +137,31 @@ pip install -e ".[dev]"
 pytest --cov=toothprint --cov=api      # 100%
 ```
 
+## Clinical deployment & readiness
+
+ToothPrint is a **validated research prototype, not a cleared medical device.** A
+`toothprint.clinical` layer provides the deployment-engineering a clinical
+setting needs — **site recalibration** of the conformal layer (the α guarantee
+only transfers if you recalibrate on your own data), **input quality gates**
+(refuse unusable captures), **first-class abstention**, and an **append-only
+audit trail**. Governance docs spell out the rest honestly:
+
+- [MODEL_CARD.md](MODEL_CARD.md) — intended use, out-of-scope use, performance, ethics
+- [RISK.md](RISK.md) — ISO 14971-style hazard analysis
+- [CLINICAL_READINESS.md](CLINICAL_READINESS.md) — what is done vs the regulatory gate
+- [evaluation/REPORT.md](evaluation/REPORT.md) — full ablated evaluation + verdict
+
+**Bottom line:** the methods are sound and the false-alarm guarantee is real, but
+real-world clinical use still requires longitudinal/cross-session data, a
+prospective study, and FDA/CE clearance — none of which can be produced from code.
+
 ## Provenance & limits
 
 Numbers are measured on the public Poseidon3D (intraoral scans) and DenPAR
-(radiographs) datasets; reproduction scripts and the underlying research live in
-the companion repositories. Identification is validated closed-set on real
-anatomy; end-to-end change *sensitivity* is bounded today by tooth-localisation
-precision, not by the measurement, and is reported honestly as such. Datasets and
-model checkpoints are never committed.
+(radiographs) datasets with **synthetic** perturbations (single-timepoint data —
+read the headline metrics as optimistic ceilings); reproduction scripts and the
+underlying research live in the companion repositories. Datasets and model
+checkpoints are never committed.
 
 ## License
 

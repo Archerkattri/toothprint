@@ -1,0 +1,23 @@
+[
+ {
+  "noise_px": 3,
+  "recall_16px": 0.98,
+  "recall_20px": 0.98,
+  "recall_30px": 0.9933333333333333,
+  "fpr": 0.0
+ },
+ {
+  "noise_px": 8,
+  "recall_16px": 0.96,
+  "recall_20px": 0.96,
+  "recall_30px": 0.98,
+  "fpr": 0.02666666666666667
+ },
+ {
+  "noise_px": 15,
+  "recall_16px": 0.08,
+  "recall_20px": 0.08,
+  "recall_30px": 0.14666666666666667,
+  "fpr": 0.06
+ }
+]
