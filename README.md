@@ -32,7 +32,7 @@ pluggable and optional, so the guarantees run without a GPU.
 | **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.81 end-to-end** (detector-limited) |
 | **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (global avg gets 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
 
-![Genuine vs impostor — both modalities](docs/identification_separation.png)
+![Genuine vs impostor — both modalities](docs/identification_separation_v2.png)
 
 Every certificate is conformal: it fires only when the interval around the
 measurement lies entirely past the threshold, so the false-alarm rate is bounded
@@ -45,21 +45,21 @@ These are the system's own outputs on the public Poseidon3D and DenPAR datasets.
 **Identification** — a query arch registers tightly onto its own enrolment
 (0.10 mm) but cannot match a stranger's (0.54 mm). Recognition by teeth:
 
-![Genuine vs impostor registration overlay](docs/identity_registration.png)
+![Genuine vs impostor registration overlay](docs/identity_registration_v2.png)
 
 **Photos to geometry** — no scanner? **3D Gaussian Splatting** rebuilds a real
 arch from shaded photos to within **0.84 mm** of the ground-truth scan (on an
 8 GB GPU). Shading turns the textureless surface into the photometric signal that
 photogrammetry can't find:
 
-![Gaussian Splatting reconstruction](docs/gaussian_splatting_recon.png)
+![Gaussian Splatting reconstruction](docs/gaussian_splatting_recon_v2.png)
 
 **Tooth localization** — ViTPose coarsely localises CEJ and bone crest on real
 radiographs (GT green, prediction red). Pinpoint accuracy isn't required: the
 change certificate measures the shift by sub-pixel registration, not by these
 points:
 
-![Landmark overlays on real radiographs](docs/landmark_overlays.png)
+![Landmark overlays on real radiographs](docs/landmark_overlays_v2.png)
 
 **Change certificate** — measuring the bone-level shift *differentially* (sub-pixel
 registration of the margin between timepoints, not by re-detecting landmarks) is
@@ -69,7 +69,15 @@ true **0**. The only gap is the fully-automatic pipeline, where the detector's
 coarse localization attenuates the signal — an honest, isolated, data-label limit,
 not a flaw in the certificate:
 
-![Change certificate recall and conformal false-progression bound](docs/change_certificate.png)
+![Change certificate recall and conformal false-progression bound](docs/change_certificate_v2.png)
+
+**Robust to repositioning** — between visits a patient is re-seated at a different
+angle and distance, so the radiograph is rotated and magnified, not just shifted. A
+single crown reference only cancels a translation; a **multi-anchor affine** model
+cancels the full motion. On real teeth with *no* real bone change, that drops the
+spurious "change" ~8× — keeping a repositioning artifact from firing the certificate:
+
+![Repositioning robustness: single-reference vs multi-anchor affine](docs/repositioning_robustness_v2.png)
 
 **Surface certificate** — the displacement is measured *differentially* and
 **de-biased** (the naive mean-of-distances rectifies reconstruction noise into a
@@ -82,7 +90,7 @@ stable pairs). The honest residuals are shown too — heavy correlated noise sti
 costs small changes, and an 0.84 mm photo-reconstruction is too noisy for a 1 mm
 global change:
 
-![Surface certificate recall vs reconstruction noise, with the honest correlated-noise caveat](docs/surface_certificate.png)
+![Surface certificate recall vs reconstruction noise, with the honest correlated-noise caveat](docs/surface_certificate_v2.png)
 
 ## How it works
 

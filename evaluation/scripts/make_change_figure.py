@@ -82,7 +82,7 @@ def main():
     fig.tight_layout(rect=[0, 0, 1, 0.96])
 
     for out in [R.parents[1] / "web" / "assets" / "change_certificate.png",
-                R.parents[1] / "docs" / "change_certificate.png"]:
+                R.parents[1] / "docs" / "change_certificate_v2.png"]:
         out.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(out, dpi=130)
         print("wrote", out)

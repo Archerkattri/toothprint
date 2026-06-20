@@ -44,7 +44,7 @@ def main():
                  "(real DenPAR teeth, no real bone change)", fontsize=12)
     ax.grid(alpha=.3); ax.legend(loc="upper left", fontsize=9)
     fig.tight_layout()
-    for out in [R.parents[1] / "docs" / "repositioning_robustness.png",
+    for out in [R.parents[1] / "docs" / "repositioning_robustness_v2.png",
                 R.parents[1] / "web" / "assets" / "repositioning_robustness.png"]:
         out.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(out, dpi=130)

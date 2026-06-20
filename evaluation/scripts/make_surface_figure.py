@@ -78,7 +78,7 @@ def main():
                  "(false-change = 0 in every panel)", fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.94])
     for out in [R.parents[1] / "web" / "assets" / "surface_certificate.png",
-                R.parents[1] / "docs" / "surface_certificate.png"]:
+                R.parents[1] / "docs" / "surface_certificate_v2.png"]:
         out.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(out, dpi=130)
         print("wrote", out)

@@ -86,7 +86,7 @@ landmark labels than the dataset provides, not better code.
    under repositioning drops ~8×: at a mild 1°/2 %/4 px, single-reference already
    leaks **5.4 px** (a false ~0.5 mm progression) vs anchored **0.6 px**; at a
    severe 4°/8 %/16 px, **22.4 px → 2.9 px**
-   (`docs/repositioning_robustness.png`). *Residual:* the perturbations are
+   (`docs/repositioning_robustness_v2.png`). *Residual:* the perturbations are
    synthetic — real longitudinal pairs (with true projection-geometry change and
    tissue change) remain the validation gate.
 
