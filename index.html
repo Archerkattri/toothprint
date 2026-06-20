@@ -178,7 +178,7 @@
             <div class="metric"><span class="metric-k mono">Poisson denoise</span><span class="metric-v mono">−43%</span></div>
           </div>
           <p class="how">
-            Reconstruction (<strong>DUSt3R</strong>, runs on an 8&nbsp;GB GPU) →
+            Reconstruction (<strong>3D Gaussian Splatting</strong>, runs on an 8&nbsp;GB GPU) →
             screened-Poisson refinement → scale-aware surface error → conformal
             certificate. Pure-numpy from the error metric onward.
           </p>
@@ -200,18 +200,18 @@
       </div>
 
       <figure class="ev-panel reveal">
-        <img src="assets/landmark_montage.png" alt="ViTPose landmark predictions overlaid on eight real DenPAR radiograph teeth, against ground truth." loading="lazy" />
-        <figcaption><span class="ev-tag mono">overlays</span> ViTPose places CEJ, bone crest, and apex on real radiographs — ground truth in green, prediction in red.</figcaption>
-      </figure>
-
-      <figure class="ev-panel reveal">
-        <img src="assets/recon_evidence.png" alt="Five protocol views of a real dental arch and the DUSt3R 3D point cloud reconstructed from them." loading="lazy" />
-        <figcaption><span class="ev-tag mono">reconstruction</span> Five protocol views of a real arch become a 53k-point 3D surface via DUSt3R — on an 8&nbsp;GB GPU.</figcaption>
-      </figure>
-
-      <figure class="ev-panel reveal">
         <img src="assets/identity_overlay.png" alt="A query arch registers tightly onto its genuine enrolment (0.10mm) but not onto an impostor (0.54mm)." loading="lazy" />
-        <figcaption><span class="ev-tag mono">identification</span> The query arch (gold) snaps onto its own enrolment at 0.10&nbsp;mm, but cannot match a stranger's at 0.54&nbsp;mm.</figcaption>
+        <figcaption><span class="ev-tag mono">identification</span> The query arch (gold) snaps onto its own enrolment at 0.10&nbsp;mm, but cannot match a stranger's at 0.54&nbsp;mm — recognition by teeth, on real scans.</figcaption>
+      </figure>
+
+      <figure class="ev-panel reveal">
+        <img src="assets/recon_evidence.png" alt="A real dental arch reconstructed from shaded photos by 3D Gaussian Splatting, matching the ground-truth scan to 0.84mm." loading="lazy" />
+        <figcaption><span class="ev-tag mono">reconstruction</span> No scanner? <strong>3D Gaussian Splatting</strong> rebuilds the arch from shaded photos to <strong>0.84&nbsp;mm</strong> of the ground-truth scan — shading gives a textureless surface the signal photogrammetry can't find.</figcaption>
+      </figure>
+
+      <figure class="ev-panel reveal">
+        <img src="assets/landmark_montage.png" alt="ViTPose landmark predictions overlaid on eight real DenPAR radiograph teeth, against ground truth." loading="lazy" />
+        <figcaption><span class="ev-tag mono">localization</span> ViTPose coarsely localises CEJ and bone crest on real radiographs (GT green, prediction red). Pinpoint accuracy isn't needed — the change certificate measures the shift by sub-pixel registration, not by these points.</figcaption>
       </figure>
     </section>
 
