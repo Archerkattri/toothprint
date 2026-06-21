@@ -183,6 +183,56 @@ def _summary(obj, filename: str) -> dict:
     return base
 
 
+async def _stream_to_tmp(file: UploadFile) -> str:
+    suffix = "".join(Path(file.filename or "upload").suffixes[-2:])
+    fd, tmp = tempfile.mkstemp(suffix=suffix)
+    total = 0
+    with os.fdopen(fd, "wb") as out:
+        while chunk := await file.read(1 << 20):
+            total += len(chunk)
+            if total > MAX_UPLOAD_BYTES:
+                os.unlink(tmp)
+                raise HTTPException(status_code=413, detail="upload too large")
+            out.write(chunk)
+    return tmp
+
+
+@app.post("/api/identify/scan")
+async def identify_scan(files: list[UploadFile] = File(...)) -> dict:
+    """Identify a person from 3D arch files: the FIRST file is the query, the rest are
+    the gallery. Each is parsed safely, the query is given its best rigid fit to every
+    gallery arch, and the smallest mean surface distance wins."""
+    if not (2 <= len(files) <= 12):
+        raise HTTPException(status_code=422, detail="upload a query + 1..11 gallery scans")
+    from toothprint import io as tio
+    from toothprint.identity import identify_surface
+    clouds, labels, tmps = [], [], []
+    try:
+        for f in files:
+            tmp = await _stream_to_tmp(f); tmps.append(tmp)
+            try:
+                scan = tio.load_scan(tmp)
+            except tio.IOError_ as e:
+                raise HTTPException(status_code=422, detail=f"{f.filename}: {e}")
+            v = scan.vertices
+            if len(v) > 4000:
+                v = v[np.linspace(0, len(v) - 1, 4000).astype(int)]
+            clouds.append(np.asarray(v, float)); labels.append(f.filename or f"scan{len(labels)}")
+        row = identify_surface(clouds[0], clouds[1:], voxel_size=0.6)
+        order = np.argsort(row)
+        ranking = [{"label": labels[1 + j], "distance_mm": round(float(row[j]), 3)} for j in order]
+        best = ranking[0]
+        return {"match": best["label"], "distance_mm": best["distance_mm"],
+                "verdict": "same person" if best["distance_mm"] < 1.0 else "no confident match",
+                "ranking": ranking}
+    finally:
+        for t in tmps:
+            try:
+                os.unlink(t)
+            except OSError:  # pragma: no cover
+                pass
+
+
 @app.post("/api/inspect")
 async def inspect(file: UploadFile = File(...)) -> dict:
     """Safely parse any uploaded medical file (DICOM/STL/PLY/OBJ/3MF/NIfTI/PNG/...)
@@ -216,6 +266,12 @@ async def inspect(file: UploadFile = File(...)) -> dict:
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(WEB / "index.html")
+
+
+@app.get("/studio")
+def studio() -> FileResponse:
+    """The desktop workflow UI — drop a file, parse it, run the certificates."""
+    return FileResponse(WEB / "studio.html")
 
 
 app.mount("/", StaticFiles(directory=WEB), name="web")

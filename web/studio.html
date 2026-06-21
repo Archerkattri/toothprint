@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ToothPrint Studio</title>
+<style>
+  /* A clinical negatoscope, not a web template: deep slate cabinet, a luminous film
+     panel, one calibrated phosphor-cyan accent, monospace instrument readouts, and a
+     certificate seal that only stamps when the conformal interval clears the line. */
+  :root{
+    --bg:#0b1115; --cab:#0f181d; --panel:#13202a; --line:#22333d; --film:#e7eef0;
+    --ink:#b6c5cc; --head:#eef6f8; --muted:#69808b;
+    --cyan:#4fe0c9; --amber:#f0b53a; --red:#ef6a57;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+    background-image:radial-gradient(1200px 600px at 80% -10%,#13212a 0,transparent 60%);
+    -webkit-font-smoothing:antialiased}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted)}
+  header{display:flex;align-items:center;justify-content:space-between;
+    padding:18px 26px;border-bottom:1px solid var(--line);background:linear-gradient(#0f181d,#0c1419)}
+  .wm{display:flex;align-items:baseline;gap:12px}
+  .wm b{font-size:20px;letter-spacing:.16em;color:var(--head);font-weight:700}
+  .wm span{font-family:var(--mono);font-size:11px;letter-spacing:.34em;color:var(--cyan)}
+  .live{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--muted);display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#3a4a52;box-shadow:0 0 0 0 rgba(79,224,201,.5)}
+  .dot.on{background:var(--cyan);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(79,224,201,.45)}70%{box-shadow:0 0 0 7px rgba(79,224,201,0)}100%{box-shadow:0 0 0 0 rgba(79,224,201,0)}}
+
+  main{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;padding:24px 26px;max-width:1240px;margin:0 auto}
+  @media(max-width:900px){main{grid-template-columns:1fr}}
+  section h2{font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);
+    font-family:var(--mono);margin:0 0 12px;font-weight:500}
+
+  /* film / drop panel */
+  .film{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+    background:#0c141a;min-height:300px;display:flex;flex-direction:column}
+  .drop{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:10px;padding:34px;text-align:center;cursor:pointer;transition:.18s;
+    background:repeating-linear-gradient(135deg,#0d161c 0 18px,#0c141a 18px 36px)}
+  .drop:hover,.drop.over{background:#0e1a22;box-shadow:inset 0 0 0 1px var(--cyan)}
+  .drop .big{font-size:17px;color:var(--head)}
+  .drop .sub{font-size:12.5px;color:var(--muted);max-width:340px;line-height:1.5}
+  .glyph{width:44px;height:44px;border:1.5px solid var(--cyan);border-radius:9px;position:relative;opacity:.9}
+  .glyph::before{content:"";position:absolute;inset:9px;border:1.5px solid var(--cyan);border-radius:4px;opacity:.5}
+  .scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+    top:0;opacity:0}
+  .film.loading .scan{opacity:.9;animation:sweep 1s ease-in-out}
+  @keyframes sweep{0%{top:0}100%{top:100%}}
+
+  .readout{border-top:1px solid var(--line);padding:16px 18px;display:none}
+  .readout.show{display:block}
+  .rk{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    padding:4px 9px;border-radius:5px;border:1px solid var(--cyan);color:var(--cyan)}
+  .fname{color:var(--head);font-size:14px;word-break:break-all}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .cell{background:var(--cab);padding:9px 12px}
+  .cell .k{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+  .cell .v{font-family:var(--mono);font-size:14px;color:var(--head);margin-top:3px}
+
+  /* instruments */
+  .stack{display:flex;flex-direction:column;gap:14px}
+  .inst{border:1px solid var(--line);border-radius:10px;background:linear-gradient(#121d25,#0f181e);overflow:hidden}
+  .inst > summary{list-style:none;cursor:pointer;padding:15px 18px;display:flex;align-items:center;gap:12px}
+  .inst > summary::-webkit-details-marker{display:none}
+  .inst .rune{width:10px;height:10px;border:1.5px solid var(--cyan);transform:rotate(45deg)}
+  .inst .nm{color:var(--head);font-size:14.5px;letter-spacing:.04em;font-weight:600}
+  .inst .tag{margin-left:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+  .body{padding:0 18px 18px;border-top:1px solid var(--line)}
+  .hint{font-size:12.5px;color:var(--muted);line-height:1.55;margin:13px 0}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  label.f{flex:1;min-width:90px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+  label.f input{display:block;width:100%;margin-top:5px;background:#0b1318;border:1px solid var(--line);
+    color:var(--head);font-family:var(--mono);font-size:14px;border-radius:6px;padding:8px 9px}
+  label.f input:focus{outline:none;border-color:var(--cyan)}
+  button{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    background:var(--cyan);color:#07110e;border:0;border-radius:6px;padding:10px 16px;cursor:pointer;font-weight:700}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .verdict{margin-top:13px;border:1px solid var(--line);border-radius:7px;padding:12px 14px;display:none;font-family:var(--mono)}
+  .verdict.show{display:block}
+  .verdict .lbl{font-size:15px;letter-spacing:.04em}
+  .verdict .iv{font-size:12px;color:var(--muted);margin-top:6px}
+  .ok{color:var(--cyan)} .warn{color:var(--amber)} .bad{color:var(--red)}
+
+  /* signature: the certificate seal */
+  .seal-wrap{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;background:linear-gradient(#101a21,#0d161b)}
+  .seal{width:74px;height:74px;flex:none;border-radius:50%;border:2px solid var(--muted);position:relative;
+    display:flex;align-items:center;justify-content:center;color:var(--muted);
+    font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-align:center;transition:.3s}
+  .seal::before{content:"";position:absolute;inset:5px;border:1px dashed currentColor;border-radius:50%;opacity:.55}
+  .seal.stamped{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 22px -6px var(--cyan);animation:stamp .35s}
+  .seal.stamped.warn{color:var(--amber);border-color:var(--amber);box-shadow:0 0 22px -6px var(--amber)}
+  .seal.stamped.bad{color:var(--red);border-color:var(--red);box-shadow:0 0 22px -6px var(--red)}
+  @keyframes stamp{0%{transform:scale(1.5);opacity:0}60%{transform:scale(.94)}100%{transform:scale(1);opacity:1}}
+  .seal-txt .t{color:var(--head);font-size:14px}
+  .seal-txt .s{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.5;font-family:var(--mono)}
+  footer{padding:14px 26px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px;
+    font-family:var(--mono);letter-spacing:.06em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wm"><b>TOOTHPRINT</b><span>STUDIO</span></div>
+  <div class="live"><span id="dot" class="dot"></span><span id="livetxt">connecting…</span></div>
+</header>
+
+<main>
+  <section>
+    <h2>Specimen</h2>
+    <div class="film" id="film">
+      <div class="drop" id="drop">
+        <div class="glyph"></div>
+        <div class="big">Drop a scan or radiograph</div>
+        <div class="sub">DICOM · STL · PLY · OBJ · 3MF · NIfTI · PNG/JPG/TIFF — read by content, not extension, and parsed safely. Click to choose a file.</div>
+      </div>
+      <div class="scan"></div>
+      <div class="readout" id="readout">
+        <div class="rk"><span class="badge" id="kind">—</span><span class="fname" id="fname"></span></div>
+        <div class="grid" id="meta"></div>
+      </div>
+    </div>
+    <input type="file" id="file" hidden>
+    <p class="hint" id="ingesterr" style="color:var(--red);display:none"></p>
+  </section>
+
+  <section>
+    <h2>Instruments</h2>
+    <div class="stack">
+      <details class="inst" open>
+        <summary><span class="rune"></span><span class="nm">Identity</span><span class="tag">by teeth</span></summary>
+        <div class="body">
+          <p class="hint">Match a person by their dental arch. Drop a <b>query</b> scan and one or more <b>gallery</b> scans; the query is given its best rigid fit to each, and the closest surface wins.</p>
+          <div class="row"><button class="ghost" id="idpick">Choose arch files…</button><span id="idcount" class="tag" style="align-self:center"></span></div>
+          <input type="file" id="idfiles" accept=".stl,.ply,.obj,.off,.glb,.3mf" multiple hidden>
+          <button id="idrun" disabled>Identify</button>
+          <div class="verdict" id="idv"></div>
+        </div>
+      </details>
+
+      <details class="inst">
+        <summary><span class="rune"></span><span class="nm">Change</span><span class="tag">radiograph · px</span></summary>
+        <div class="body">
+          <p class="hint">Certify a bone-level shift between two timepoints. The interval must clear the clinically-meaningful threshold τ for a "changed" verdict — false progression is bounded by α.</p>
+          <div class="row">
+            <label class="f">measured px<input id="c_m" type="number" value="9.0" step="0.1"></label>
+            <label class="f">q-lo<input id="c_lo" type="number" value="0.8" step="0.1"></label>
+            <label class="f">q-hi<input id="c_hi" type="number" value="0.8" step="0.1"></label>
+          </div>
+          <div class="row">
+            <label class="f">τ px<input id="c_tau" type="number" value="6.0" step="0.5"></label>
+            <label class="f">α<input id="c_a" type="number" value="0.1" step="0.01"></label>
+            <button id="crun" style="align-self:flex-end">Certify</button>
+          </div>
+          <div class="verdict" id="cv"></div>
+        </div>
+      </details>
+
+      <details class="inst">
+        <summary><span class="rune"></span><span class="nm">Surface</span><span class="tag">3D · mm</span></summary>
+        <div class="body">
+          <p class="hint">Certify a 3D surface change against calibrated reconstruction noise. "Changed" only fires when the interval lies entirely past the change threshold.</p>
+          <div class="row">
+            <label class="f">measured mm<input id="s_m" type="number" value="1.2" step="0.05"></label>
+            <label class="f">q-lo<input id="s_lo" type="number" value="0.1" step="0.05"></label>
+            <label class="f">q-hi<input id="s_hi" type="number" value="0.1" step="0.05"></label>
+          </div>
+          <div class="row">
+            <label class="f">α<input id="s_a" type="number" value="0.1" step="0.01"></label>
+            <button id="srun" style="align-self:flex-end">Certify</button>
+          </div>
+          <div class="verdict" id="sv"></div>
+        </div>
+      </details>
+
+      <div class="seal-wrap">
+        <div class="seal" id="seal">CONFORMAL<br>SEAL</div>
+        <div class="seal-txt">
+          <div class="t" id="sealt">Awaiting a certified read</div>
+          <div class="s" id="seals">The seal stamps only when the interval clears the threshold — the verdict carries a finite-sample false-alarm bound, not a guess.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>ToothPrint — research prototype, not a cleared medical device.</span>
+  <span id="ver">v—</span>
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const API = location.origin;
+
+async function ping(){
+  try{ const r = await fetch(API+"/api/health"); const j = await r.json();
+    $("#dot").classList.add("on"); $("#livetxt").textContent = "server live"; $("#ver").textContent = "v"+j.version;
+  }catch(e){ $("#livetxt").textContent = "server offline"; }
+}
+ping();
+
+function setSeal(label){
+  const seal=$("#seal"), t=$("#sealt"), s=$("#seals");
+  seal.classList.remove("stamped","warn","bad");
+  const map={"changed":["bad","Change certified"],"same person":["ok","Identity certified"],
+    "stable":["ok","Stable — certified"],"uncertain":["warn","Uncertain — recapture"],
+    "no confident match":["warn","No confident match"]};
+  const m=map[label]||["ok","Certified"];
+  void seal.offsetWidth; seal.classList.add("stamped"); if(m[0]!=="ok")seal.classList.add(m[0]);
+  t.textContent=m[1]; s.textContent="Verdict: "+label+" — the conformal interval determined this, with the false-alarm rate bounded by α.";
+}
+function vclass(label){return label==="changed"||label==="no confident match"?"bad":label==="uncertain"?"warn":"ok";}
+
+// --- specimen ingest ---
+const drop=$("#drop"), film=$("#film");
+function over(e){e.preventDefault();drop.classList.add("over");}
+function leave(){drop.classList.remove("over");}
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,over));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,leave));
+drop.addEventListener("drop",e=>{e.preventDefault();if(e.dataTransfer.files[0])ingest(e.dataTransfer.files[0]);});
+drop.addEventListener("click",()=>$("#file").click());
+$("#file").addEventListener("change",e=>{if(e.target.files[0])ingest(e.target.files[0]);});
+
+async function ingest(f){
+  $("#ingesterr").style.display="none"; film.classList.add("loading");
+  const fd=new FormData(); fd.append("file",f);
+  try{
+    const r=await fetch(API+"/api/inspect",{method:"POST",body:fd});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.detail||"could not read file");
+    $("#kind").textContent=j.kind; $("#fname").textContent=j.filename;
+    const rows=[];
+    const add=(k,v)=>{if(v!==null&&v!==undefined&&v!=="")rows.push(`<div class="cell"><div class="k">${k}</div><div class="v">${v}</div></div>`);};
+    add("format",j.source_format);
+    if(j.kind==="radiograph"){add("size px",j.shape.join(" × "));add("spacing mm",j.pixel_spacing_mm??"—");add("modality",j.modality??"—");add("bit depth",j.bit_depth??"—");}
+    if(j.kind==="scan"){add("vertices",j.n_vertices.toLocaleString());add("faces",j.n_faces.toLocaleString());add("extent mm",(j.extent_mm||[]).join(" × "));}
+    if(j.kind==="volume"){add("voxels",j.shape.join(" × "));add("spacing mm",(j.spacing_mm||[]).map(x=>(+x).toFixed(2)).join(" "));}
+    $("#meta").innerHTML=rows.join(""); $("#readout").classList.add("show");
+  }catch(e){ $("#ingesterr").textContent=String(e.message||e); $("#ingesterr").style.display="block"; }
+  setTimeout(()=>film.classList.remove("loading"),1000);
+}
+
+// --- identity ---
+let idFiles=[];
+$("#idpick").addEventListener("click",()=>$("#idfiles").click());
+$("#idfiles").addEventListener("change",e=>{idFiles=[...e.target.files];
+  $("#idcount").textContent=idFiles.length?`${idFiles.length} file(s) · 1 query + ${idFiles.length-1} gallery`:"";
+  $("#idrun").disabled=idFiles.length<2;});
+$("#idrun").addEventListener("click",async()=>{
+  const fd=new FormData(); idFiles.forEach(f=>fd.append("files",f));
+  $("#idrun").disabled=true; $("#idrun").textContent="Aligning…";
+  try{
+    const r=await fetch(API+"/api/identify/scan",{method:"POST",body:fd}); const j=await r.json();
+    if(!r.ok) throw new Error(j.detail||"failed");
+    const cls=vclass(j.verdict);
+    $("#idv").className="verdict show "+cls;
+    $("#idv").innerHTML=`<div class="lbl ${cls}">${j.verdict.toUpperCase()} · ${j.match}</div>`+
+      `<div class="iv">closest ${j.distance_mm} mm · `+j.ranking.map(x=>`${x.label.split(/[\\/]/).pop()} ${x.distance_mm}`).join(" · ")+`</div>`;
+    setSeal(j.verdict);
+  }catch(e){ $("#idv").className="verdict show bad"; $("#idv").innerHTML=`<div class="lbl bad">ERROR</div><div class="iv">${e.message||e}</div>`; }
+  $("#idrun").disabled=false; $("#idrun").textContent="Identify";
+});
+
+// --- change / surface certificates ---
+async function certify(path,payload,box){
+  try{
+    const r=await fetch(API+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+    const j=await r.json(); if(!r.ok) throw new Error((j.detail&&j.detail[0]?.msg)||j.detail||"invalid input");
+    const cls=vclass(j.label); const iv=j.interval_px||j.interval_mm; const unit=j.interval_px?"px":"mm";
+    $(box).className="verdict show "+cls;
+    $(box).innerHTML=`<div class="lbl ${cls}">${j.label.toUpperCase()}</div>`+
+      `<div class="iv">measured ${j.measured_px??j.measured_mm} ${unit} · interval [${iv.map(x=>(+x).toFixed(2)).join(", ")}] ${unit}</div>`;
+    setSeal(j.label);
+  }catch(e){ $(box).className="verdict show bad"; $(box).innerHTML=`<div class="lbl bad">REJECTED</div><div class="iv">${e.message||e}</div>`; }
+}
+$("#crun").addEventListener("click",()=>certify("/api/certify/change",{
+  measured_px:+$("#c_m").value,q_lo:+$("#c_lo").value,q_hi:+$("#c_hi").value,tau:+$("#c_tau").value,alpha:+$("#c_a").value},"#cv"));
+$("#srun").addEventListener("click",()=>certify("/api/certify/surface",{
+  measured_mm:+$("#s_m").value,q_lo:+$("#s_lo").value,q_hi:+$("#s_hi").value,alpha:+$("#s_a").value},"#sv"));
+</script>
+</body>
+</html>

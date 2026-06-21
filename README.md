@@ -174,11 +174,22 @@ verdict = certify_surface_change(measured_mm=1.2, certifier=certifier)   # -> "c
 
 ## Run the app
 
-A web console for the three certificates, plus a JSON API.
+A **cross-platform desktop app** (Linux · Windows · macOS) — drag in any scan or
+radiograph, see what it is, and run a certified read. Files never leave the machine.
+
+![ToothPrint Studio — the desktop app](docs/studio.png)
 
 ```bash
-pip install -e ".[api]"
-uvicorn api.main:app --reload      # http://localhost:8000
+pip install -e ".[api,io,desktop]"
+python -m desktop.app           # native window (falls back to the browser if headless)
+```
+
+Build native installers per OS with the bundled PyInstaller spec — see
+[desktop/README.md](desktop/README.md). Or run the server + API directly:
+
+```bash
+pip install -e ".[api,io]"
+uvicorn api.main:app --reload      # http://localhost:8000  (/ console, /studio app)
 ```
 
 | Endpoint | Does |

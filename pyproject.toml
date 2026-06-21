@@ -24,6 +24,7 @@ io = [  # every medical format a dentist/oral-radiologist uses (radiographs, sca
     "pydicom>=2.4", "nibabel>=5.1", "trimesh>=4.0", "tifffile>=2023.7",
     "Pillow>=10.0", "lxml>=4.9", "pylibjpeg>=2.0", "pylibjpeg-libjpeg", "pylibjpeg-openjpeg",
 ]
+desktop = ["pywebview>=5.0", "uvicorn>=0.27", "fastapi>=0.110", "python-multipart>=0.0.9"]
 dev = ["pytest>=8", "pytest-cov"]
 plots = ["matplotlib>=3.7"]
 

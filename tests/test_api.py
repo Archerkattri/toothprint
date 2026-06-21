@@ -175,3 +175,66 @@ def test_upload_size_cap(tmp_path, monkeypatch):
     with open(p, "rb") as fh:
         r = client.post("/api/inspect", files={"file": ("m.stl", fh, "application/octet-stream")})
     assert r.status_code == 413
+
+
+# --- desktop studio + scan identification ----------------------------------
+
+def test_studio_served():
+    r = client.get("/studio")
+    assert r.status_code == 200 and b"STUDIO" in r.content
+
+
+def _mesh_bytes(tmp_path, name, shape):
+    import trimesh
+    p = tmp_path / name
+    shape.export(str(p))
+    return ("file_or_files", (name, open(p, "rb"), "application/octet-stream"))
+
+
+def test_identify_scan_matches_same_arch(tmp_path):
+    pytest.importorskip("trimesh")
+    pytest.importorskip("open3d")
+    import trimesh
+    q = tmp_path / "q.stl"; trimesh.creation.icosphere(subdivisions=5, radius=10).export(str(q))  # >4000 verts -> exercises downsample
+    g = tmp_path / "g.stl"; trimesh.creation.icosphere(subdivisions=3, radius=10).export(str(g))
+    o = tmp_path / "o.stl"; trimesh.creation.box(extents=[20, 8, 6]).export(str(o))
+    files = [("files", ("q.stl", open(q, "rb"), "application/octet-stream")),
+             ("files", ("g.stl", open(g, "rb"), "application/octet-stream")),
+             ("files", ("o.stl", open(o, "rb"), "application/octet-stream"))]
+    r = client.post("/api/identify/scan", files=files)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["match"] == "g.stl" and body["verdict"] == "same person"
+    assert len(body["ranking"]) == 2
+
+
+def test_identify_scan_needs_two(tmp_path):
+    pytest.importorskip("trimesh")
+    import trimesh
+    q = tmp_path / "q.stl"; trimesh.creation.box().export(str(q))
+    r = client.post("/api/identify/scan",
+                    files=[("files", ("q.stl", open(q, "rb"), "application/octet-stream"))])
+    assert r.status_code == 422
+
+
+def test_identify_scan_rejects_bad_file(tmp_path):
+    pytest.importorskip("trimesh")
+    import trimesh
+    q = tmp_path / "q.stl"; trimesh.creation.box().export(str(q))
+    bad = tmp_path / "bad.stl"; bad.write_bytes(b"not a real mesh")
+    r = client.post("/api/identify/scan", files=[
+        ("files", ("q.stl", open(q, "rb"), "application/octet-stream")),
+        ("files", ("bad.stl", open(bad, "rb"), "application/octet-stream"))])
+    assert r.status_code == 422
+
+
+def test_identify_scan_upload_cap(tmp_path, monkeypatch):
+    pytest.importorskip("trimesh")
+    import trimesh
+    monkeypatch.setattr("api.main.MAX_UPLOAD_BYTES", 4)
+    q = tmp_path / "q.stl"; trimesh.creation.box().export(str(q))
+    g = tmp_path / "g.stl"; trimesh.creation.box().export(str(g))
+    r = client.post("/api/identify/scan", files=[
+        ("files", ("q.stl", open(q, "rb"), "application/octet-stream")),
+        ("files", ("g.stl", open(g, "rb"), "application/octet-stream"))])
+    assert r.status_code == 413
