@@ -40,7 +40,22 @@ by α in finite samples — no distributional assumptions.
 
 ## Evidence on real data
 
-These are the system's own outputs on the public Poseidon3D and DenPAR datasets.
+Everything below starts from **real, public data** — Poseidon3D intraoral scans and
+DenPAR radiographs. Here is the raw input first, then what the system makes of it.
+
+**The 3D input — real intraoral scans.** 200 arches (maxilla + mandible), deliberately
+hard cases with crowding, missing teeth, and anomalies. Identity and surface both start here:
+
+![Input: a montage of real Poseidon3D intraoral scans](docs/input_arches.png)
+
+![Input: one raw intraoral scan on a turntable — animated](docs/input_arch_spin.gif)
+
+**The 2D input — real radiographs.** 6,400 DenPAR periapical/panoramic images; the change
+certificate reads the bone margin in the highlighted region between two timepoints:
+
+![Input: a real DenPAR radiograph with the bone-margin region the certificate reads](docs/input_radiograph.png)
+
+---
 
 **Identification** — a query re-scan is given its **best rigid alignment** to each
 gallery arch (PCA principal-axis init + **Generalized-ICP** — a global init the
@@ -76,8 +91,12 @@ reports a finite-sample FMR bound), and it works **open-set** — when a query's
 **Photos → a dentist-usable mesh** — no scanner? **3D Gaussian Splatting +
 multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight
 **1.2 M-triangle mesh** (not a point cloud, not smoothed-away Poisson) that matches
-the ground-truth scan to **0.42 mm median** — detailed enough for dental CAD. The
-error heatmap (right) is mostly blue:
+the ground-truth scan to **0.42 mm median** — detailed enough for dental CAD. The input
+is just photos:
+
+![Input: shaded multi-view photos of the arch](docs/input_photos.png)
+
+…and the output is the watertight mesh; the error heatmap (right) is mostly blue:
 
 ![Photos to a high-detail mesh, with error heatmap — animated](docs/recon_turntable.gif)
 
@@ -251,6 +270,8 @@ audit trail**. Governance docs spell out the rest honestly:
 - [RISK.md](RISK.md) — ISO 14971-style hazard analysis
 - [CLINICAL_READINESS.md](CLINICAL_READINESS.md) — what is done vs the regulatory gate
 - [evaluation/REPORT.md](evaluation/REPORT.md) — full ablated evaluation + verdict
+- [evaluation/SOTA.md](evaluation/SOTA.md) — honest placement vs the published state of the art
+- [SECURITY.md](SECURITY.md) — threat model for untrusted medical files + the API
 
 **Bottom line:** the methods are sound and the false-alarm guarantee is real, but
 real-world clinical use still requires longitudinal/cross-session data, a

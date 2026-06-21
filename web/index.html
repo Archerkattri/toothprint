@@ -100,13 +100,13 @@
       <div class="pillar-body">
         <figure class="shot reveal">
           <img src="assets/identification.png" alt="Genuine matches cluster at low distance; impostors sit far away, for both 3D scans and 2D radiographs." loading="lazy" />
-          <figcaption>Genuine and impostor matches never overlap — on real Poseidon3D arches (3D) and DenPAR constellations (2D).</figcaption>
+          <figcaption>Genuine and impostor matches separate cleanly across all 200 Poseidon3D arches (Rank-1 0.995, AUC 0.997) with a conformal false-match-rate bound, and DenPAR constellations (2D).</figcaption>
         </figure>
         <div class="pillar-detail">
           <div class="metric-row">
-            <div class="metric"><span class="metric-k mono">Rank-1 (3D scans, N=50)</span><span class="metric-v mono">1.000</span></div>
-            <div class="metric"><span class="metric-k mono">Genuine dist</span><span class="metric-v mono">≤0.88 mm</span></div>
-            <div class="metric"><span class="metric-k mono">Impostor dist</span><span class="metric-v mono">≥1.22 mm</span></div>
+            <div class="metric"><span class="metric-k mono">Rank-1 (3D scans, N=200)</span><span class="metric-v mono">0.995</span></div>
+            <div class="metric"><span class="metric-k mono">AUC (95% CI)</span><span class="metric-v mono">0.997</span></div>
+            <div class="metric"><span class="metric-k mono">Conformal FMR</span><span class="metric-v mono">≤ α</span></div>
             <div class="metric"><span class="metric-k mono">Rank-1 (2D X-ray, N=400)</span><span class="metric-v mono">1.000</span></div>
           </div>
           <p class="how">
