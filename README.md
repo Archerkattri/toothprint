@@ -57,10 +57,11 @@ gallery, not just a score:
 *sample point* is ~0.8 mm — but that is just the gallery's point spacing, not a pose
 error. Measured against the gallery *surface* (point-to-mesh), a correctly aligned
 genuine re-scan collapses to **0.05 mm — below the 0.06 mm sensor noise**, while an
-impostor's best rigid fit stays **~4 mm** off. The cross-section makes it visible: the
-genuine query traces the gallery outline, the impostor departs it.
+impostor's best rigid fit stays **~4 mm** off. Sweeping a cross-section slab through
+the arch makes it visible at every depth: the genuine query (gold) traces the gallery
+outline (teal) slab after slab; the impostor's best fit departs it.
 
-![Alignment fidelity: point-to-surface distance and cross-section overlay](docs/alignment_proof.png)
+![Alignment fidelity: cross-section slab swept through the arch — animated](docs/alignment_proof.gif)
 
 **Photos → a dentist-usable mesh** — no scanner? **3D Gaussian Splatting +
 multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight
