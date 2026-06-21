@@ -32,7 +32,7 @@ Measured on the public **Poseidon3D** intraoral scans and **DenPAR** radiographs
 | **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=400, EER 0), robust to 20 px jitter & 50% magnification |
 | **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.81 end-to-end** (detector-limited) |
 | **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (global avg 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
-| **Reconstruction** | Photos → a CAD mesh? | watertight 1.2 M-tri mesh, **~0.42 mm median** vs the ground-truth scan |
+| **Reconstruction** | Photos → a CAD mesh? | watertight ~1 M-tri **2DGS surfel** mesh, **~0.3 mm median** vs the ground-truth scan (38% better than 3DGS) |
 
 ![Genuine vs impostor — both modalities](docs/identification_separation_v2.png)
 
@@ -100,13 +100,13 @@ The displacement is measured *differentially* and **de-biased** (subtracting the
 
 ## Reconstruction — photos to a dentist-usable mesh
 
-No scanner? **3D Gaussian Splatting + multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight **1.2 M-triangle** mesh (not a point cloud, not smoothed-away Poisson). The input is just photos:
+No scanner? **2D Gaussian Splatting (oriented surfels) + multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight ~1 M-triangle mesh (not a point cloud, not smoothed-away Poisson). 2DGS disks lie *on* the surface, so meshing from the **median** depth (the first-surface crossing — not the alpha-weighted mean, which averages an arch's front and back walls) is markedly sharper than 3DGS: **~0.3 mm median, 38% better** (and 2.4× better on the hardest arch). The input is just photos:
 
 ![Input: shaded multi-view photos of the arch](docs/input_photos.png)
 
-…the output is the mesh, matching the ground-truth scan to ~0.42 mm median — across five different arches:
+…the output is the mesh, matching the ground-truth scan across five different arches:
 
-![Five reconstructions: ground-truth scan, recon mesh, error heatmap](docs/recon_gallery.png)
+![Five reconstructions: ground-truth scan, 2DGS mesh, error heatmap](docs/recon_gallery.png)
 
 ![Photos to a high-detail mesh, with error heatmap — animated](docs/recon_turntable.gif)
 
