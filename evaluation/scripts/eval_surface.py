@@ -26,13 +26,13 @@ from pathlib import Path
 
 import numpy as np
 
-from dentalmapcert.calibration import ErrorCalibrator
-from dentalmapcert.dataset_loaders import Poseidon3DLoader, load_poseidon3d_points
+from toothprint.bench.dmc.calibration import ErrorCalibrator
+from toothprint.bench.dmc.dataset_loaders import Poseidon3DLoader, load_poseidon3d_points
 from toothprint.surface.error import (
     assign_regions, noise_floor_sq, regional_displacements, surface_displacement,
 )
 
-OUT = Path("/home/krishi/personal-projects/toothprint/evaluation/results/surface.json")
+OUT = Path(__file__).resolve().parents[1] / "results" / "surface.json"
 DATA = "data/poseidon3d/extracted/data"
 ST, CT = 0.35, 0.75  # stable / change decision thresholds (mm)
 

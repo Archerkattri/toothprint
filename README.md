@@ -85,7 +85,7 @@ A query re-scan is given its **best rigid alignment** to each gallery arch (PCA 
 
 ![Identity robustness ablations](docs/identity_ablations.png)
 
-**Same rigor, second modality — 2D radiographs.** The per-tooth landmark constellation (scale-normalised so magnification cancels) recognises a person from a single radiograph just as cleanly: across N=120 DenPAR images, Rank-1 1.000, EER 0, d′ 4.17, with the same conformal bounded-FMR and a *perfect* open-set rejection (FNIR 0.000 @ FPIR 1%):
+**Same rigor, second modality — 2D radiographs.** The per-tooth landmark constellation (scale-normalised so magnification cancels) recognises a person from a single radiograph just as cleanly: across **N=400** DenPAR images, **Rank-1 1.000, EER 0, d′ 4.01**, robust to 20 px jitter and 50% magnification (the committed `id2d.json`; the conformal bounded-FMR and open-set rejection are demonstrated on the 3D modality above, where the matrix backs them):
 
 ![2D radiograph identity at scale: separation, CMC, conformal FMR, open-set](docs/radiograph_identity.png)
 

@@ -15,7 +15,7 @@ import numpy as np
 
 from toothprint.bench.data.denpar_adapter import RealDenparAdapter
 
-OUT = Path("/home/krishi/personal-projects/toothprint/evaluation/results/id2d.json")
+OUT = Path(__file__).resolve().parents[1] / "results" / "id2d.json"
 DATA = "data/denpar/extracted/Dataset"
 
 

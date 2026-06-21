@@ -2,6 +2,7 @@
  "dataset": "poseidon3d",
  "method": "2DGS oriented surfels + multi-view TSDF fusion",
  "baseline": "3DGS + TSDF",
+ "produced_by": "evaluation/scripts/make_2dgs_mesh.py (per-arch median/mean/chamfer vs the ground-truth IOS scan; gallery medians are the committed evidence)",
  "scale_mm": 36.79,
  "main": {
   "arch": "000003",
@@ -43,7 +44,8 @@
   "mean_of_medians_2dgs_mm": 0.313,
   "mean_of_medians_3dgs_mm": 0.535,
   "mean_improvement_vs_3dgs_pct": 38.9,
-  "hardest_arch_improvement_x": 2.4
+  "hardest_arch_improvement_x": 2.4,
+  "improvement_note": "mean_improvement_vs_3dgs_pct is the mean of per-arch improvements (38.9%); the ratio of mean-of-medians is 41.5% \u2014 both valid aggregations of the same gallery"
  },
  "note": "photo->mesh reconstruction; synthetic-free geometry vs the ground-truth IOS scan. Not a certified mechanism."
 }

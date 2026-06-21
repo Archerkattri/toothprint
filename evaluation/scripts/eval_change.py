@@ -20,7 +20,7 @@ from toothprint.bench.data.pair_builder import PairBuilderConfig, build_pairs
 from toothprint.bench.eval.metrics import summarize_decisions
 from toothprint.bench.score.periodontal import scalar_change_score
 
-OUT = Path("/home/krishi/personal-projects/toothprint/evaluation/results/change.json")
+OUT = Path(__file__).resolve().parents[1] / "results" / "change.json"
 DATA = "data/denpar/extracted/Dataset"
 
 
