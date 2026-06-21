@@ -27,7 +27,7 @@ pluggable and optional, so the guarantees run without a GPU.
 
 | Capability | What it answers | Result |
 |---|---|---|
-| **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000** (N=50, EER 0, d′ 3.0), genuine ≤0.88 mm vs impostor ≥1.22 mm — *no overlap*, rigid best-fit (PCA-axis init + Generalized-ICP) |
+| **Identity — 3D scans** | Who is this arch? | **Rank-1 0.995** (all **N=200** subjects, EER 0.005, AUC 0.997 [0.989–0.998]), **conformal false-match rate bounded at α**, open-set FNIR@FPIR=1% **0.030**; alignment fidelity **0.05 mm** |
 | **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=400, EER 0), robust to 20 px jitter (0.985) & 50% magnification |
 | **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.81 end-to-end** (detector-limited) |
 | **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (global avg gets 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
@@ -62,6 +62,16 @@ the arch makes it visible at every depth: the genuine query (gold) traces the ga
 outline (teal) slab after slab; the impostor's best fit departs it.
 
 ![Alignment fidelity: cross-section slab swept through the arch — animated](docs/alignment_proof.gif)
+
+**At scale — all 200 subjects, with the metrics a biometric reviewer expects.** Across
+every Poseidon3D arch (realistic different-sample re-scans), identification is **Rank-1
+0.995**, EER 0.005, **AUC 0.997 (95% CI 0.989–0.998)**. Two results go beyond the usual
+table: the identity decision is **conformal** — a split-conformal accept threshold makes
+the empirical **false-match rate track the target α** (no learned method in dental ID
+reports a finite-sample FMR bound), and it works **open-set** — when a query's person is
+*not* enrolled, it is rejected (FNIR **0.030** at a 1% false-positive identification rate):
+
+![Identity at N=200: separation, CMC, conformal bounded-FMR, open-set DIR](docs/identity_metrics.png)
 
 **Photos → a dentist-usable mesh** — no scanner? **3D Gaussian Splatting +
 multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight
@@ -173,9 +183,28 @@ uvicorn api.main:app --reload      # http://localhost:8000
 
 | Endpoint | Does |
 |---|---|
+| `POST /api/inspect` | Safely parse any uploaded medical file → normalized summary |
 | `POST /api/identify/radiograph` | Match a landmark constellation against a gallery |
 | `POST /api/certify/change` | Certify a radiograph bone-level change |
 | `POST /api/certify/surface` | Certify a 3D surface change |
+| `GET /api/formats` | List supported formats |
+
+## Reads the files a dentist actually has
+
+`toothprint.io` ingests every common dental format behind one safe loader — radiographs
+(**DICOM**, PNG/JPG/TIFF/BMP), intraoral scans (**STL/PLY/OBJ/OFF/GLB/3MF**), and CBCT
+volumes (**NIfTI**, DICOM series) — detected by content (magic bytes), normalized to a
+radiograph / scan / volume in known units, and **hardened against hostile files**
+(decompression bombs, billion-element headers, external-reference smuggling). Install
+the `[io]` extra; the parsers are optional so the certification core stays light.
+
+```python
+from toothprint.io import load
+scan = load("patient_upper.stl")     # -> Scan (vertices in mm)
+xray = load("bitewing.dcm")          # -> Radiograph (MONOCHROME1-corrected, pixel spacing)
+```
+
+Untrusted input is taken seriously — see [SECURITY.md](SECURITY.md) for the threat model.
 
 The frontend (`web/`) is a static, dependency-free single page — open it directly
 or let the API serve it.
@@ -184,11 +213,11 @@ or let the API serve it.
 
 ```
 toothprint/
-  toothprint/        the library — identity · change · surface (100% covered)
-  api/               FastAPI service
+  toothprint/        the library — identity · change · surface · io · clinical (100% covered)
+  api/               FastAPI service (hardened; safe file ingest)
   web/               the console (HTML/CSS/JS, no build step)
   docs/              result figures
-  tests/             100 tests, 100% coverage
+  tests/             170 tests, 100% coverage
 ```
 
 ## Test
