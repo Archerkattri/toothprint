@@ -48,4 +48,5 @@ Per-OS notes:
 open3d/torch make the bundle large (hundreds of MB); the `recon` extra is optional and
 only needed for the photo→mesh feature. The certificate + ingest features work without it.
 
-> Research prototype, not a cleared medical device — see [`../CLINICAL_READINESS.md`].
+> Research prototype, not a cleared medical device — see the Clinical readiness
+> section of the [main README](../README.md#clinical-readiness).

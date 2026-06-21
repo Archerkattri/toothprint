@@ -10,7 +10,6 @@ mesh elements, and volume voxels, plus magic-byte sniffing so a file is parsed b
 """
 from __future__ import annotations
 
-import gzip
 from pathlib import Path
 
 # --- hard caps (deliberately generous for real clinical data, but finite) -------

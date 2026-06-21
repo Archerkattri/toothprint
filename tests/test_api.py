@@ -181,7 +181,7 @@ def test_upload_size_cap(tmp_path, monkeypatch):
 
 def test_studio_served():
     r = client.get("/studio")
-    assert r.status_code == 200 and b"STUDIO" in r.content
+    assert r.status_code == 200 and b"Certificate of" in r.content
 
 
 def _mesh_bytes(tmp_path, name, shape):

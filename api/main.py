@@ -167,7 +167,7 @@ def certify_surface_endpoint(req: SurfaceRequest) -> dict:
 
 
 def _summary(obj, filename: str) -> dict:
-    from toothprint.io import Radiograph, Scan, Volume
+    from toothprint.io import Radiograph, Scan
     base = {"filename": filename, "source_format": obj.source_format}
     if isinstance(obj, Radiograph):
         base.update(kind="radiograph", shape=list(obj.shape),
