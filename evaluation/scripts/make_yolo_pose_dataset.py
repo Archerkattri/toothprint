@@ -14,8 +14,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from dcc.data.denpar_adapter import RealDenparAdapter
-from dcc.landmarks.vitpose_detector import tooth_to_landmarks
+from toothprint.bench.data.denpar_adapter import RealDenparAdapter
+from toothprint.bench.landmarks.vitpose_detector import tooth_to_landmarks
 
 SRC = "data/denpar/extracted/Dataset"
 OUT = Path("outputs/denpar_pose")

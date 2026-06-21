@@ -13,12 +13,12 @@ from pathlib import Path
 
 import numpy as np
 
-from dcc.benchmark.pipeline import evaluate_pairs
-from dcc.certificate.conformal import AsymmetricConformalInterval
-from dcc.data.denpar_adapter import RealDenparAdapter
-from dcc.data.pair_builder import PairBuilderConfig, build_pairs
-from dcc.eval.metrics import summarize_decisions
-from dcc.score.periodontal import scalar_change_score
+from toothprint.bench.benchmark.pipeline import evaluate_pairs
+from toothprint.bench.certificate.conformal import AsymmetricConformalInterval
+from toothprint.bench.data.denpar_adapter import RealDenparAdapter
+from toothprint.bench.data.pair_builder import PairBuilderConfig, build_pairs
+from toothprint.bench.eval.metrics import summarize_decisions
+from toothprint.bench.score.periodontal import scalar_change_score
 
 OUT = Path("/home/krishi/personal-projects/toothprint/evaluation/results/change.json")
 DATA = "data/denpar/extracted/Dataset"

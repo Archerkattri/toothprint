@@ -34,5 +34,11 @@ include = ["toothprint*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
+[tool.coverage.run]
+# toothprint/bench is vendored research/benchmark code (data adapters, perturbations,
+# the registration/conformal reference impls) exercised by evaluation/scripts and the
+# committed result artifacts, not by the unit suite — kept out of the package coverage gate.
+omit = ["toothprint/bench/*"]
+
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]

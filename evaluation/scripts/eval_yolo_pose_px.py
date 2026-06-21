@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from ultralytics import YOLO
 
-from dcc.data.denpar_adapter import RealDenparAdapter
-from dcc.landmarks.vitpose_detector import LANDMARK_NAMES, tooth_to_landmarks
+from toothprint.bench.data.denpar_adapter import RealDenparAdapter
+from toothprint.bench.landmarks.vitpose_detector import LANDMARK_NAMES, tooth_to_landmarks
 
 SRC = "data/denpar/extracted/Dataset"
 WEIGHTS = "runs/pose/outputs/yolo_pose/denpar26s/weights/best.pt"

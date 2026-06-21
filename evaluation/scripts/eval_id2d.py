@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-from dcc.data.denpar_adapter import RealDenparAdapter
+from toothprint.bench.data.denpar_adapter import RealDenparAdapter
 
 OUT = Path("/home/krishi/personal-projects/toothprint/evaluation/results/id2d.json")
 DATA = "data/denpar/extracted/Dataset"

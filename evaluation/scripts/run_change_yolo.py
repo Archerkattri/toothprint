@@ -8,8 +8,8 @@ any recall difference is purely localization quality. Writes
 evaluation/results/change_registration_yolo.json (raw per-tooth rows + sweep), the
 input to analyze.py and make_change_figure.py.
 
-Runs in the shared evaluation environment (dcc package importable, data/ + the
-trained weights on the relative paths below), the same convention as eval_change.py.
+Runs from the toothprint repo (data/ + the trained weights on the relative paths
+below); all imports are standalone (toothprint.bench), the same as eval_change.py.
 """
 from __future__ import annotations
 
@@ -22,13 +22,13 @@ import numpy as np
 from PIL import Image
 from ultralytics import YOLO
 
-from dcc.benchmark.real_image_eval import acquire
-from dcc.certificate.conformal import AsymmetricConformalInterval, classify_interval
-from dcc.data.denpar_adapter import RealDenparAdapter
-from dcc.geometry import mean_point
-from dcc.landmarks.vitpose_detector import tooth_to_landmarks
-from dcc.perturb.image_change import render_crestal_change
-from dcc.score.registration_change import (
+from toothprint.bench.benchmark.real_image_eval import acquire
+from toothprint.bench.certificate.conformal import AsymmetricConformalInterval, classify_interval
+from toothprint.bench.data.denpar_adapter import RealDenparAdapter
+from toothprint.bench.geometry import mean_point
+from toothprint.bench.landmarks.vitpose_detector import tooth_to_landmarks
+from toothprint.bench.perturb.image_change import render_crestal_change
+from toothprint.bench.score.registration_change import (
     measure_bonelevel_change_search, snap_to_margin,
 )
 
