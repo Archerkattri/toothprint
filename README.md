@@ -44,15 +44,23 @@ These are the system's own outputs on the public Poseidon3D and DenPAR datasets.
 
 **Identification** — a query re-scan is given its **best rigid alignment** to each
 gallery arch (PCA principal-axis init + **Generalized-ICP** — a global init the
-self-similar palate can't fool, rigid so no scale collapse), then the *arch surface*
-is coloured by distance to the nearest query point. For the **same person** the whole
-arch reads **blue** — the query explains every part of the surface (**0.5 mm →
-match**); for a **stranger** — *even at its best alignment* — large regions read
-**red**, where its anatomy simply can't account for the gallery's (**4.5 mm → no
-match**). The residual is genuine shape difference, not a pose failure. Recognition
-by teeth:
+self-similar palate can't fool, rigid so no scale collapse), then overlaid as points
+coloured by distance to the arch **surface**. For the **same person** the points sit
+**on** the surface — blue, **0.05 mm from it**, below the scan noise — so the arch
+looks dusted in blue; for a **stranger** the best fit still leaves the cloud
+**floating off** the surface (red, **~4 mm**). You can see the query land on the
+gallery, not just a score:
 
 ![Same-person vs stranger registration — animated](docs/identity_match.gif)
+
+**Is the alignment actually true?** A genuine query's distance to the nearest gallery
+*sample point* is ~0.8 mm — but that is just the gallery's point spacing, not a pose
+error. Measured against the gallery *surface* (point-to-mesh), a correctly aligned
+genuine re-scan collapses to **0.05 mm — below the 0.06 mm sensor noise**, while an
+impostor's best rigid fit stays **~4 mm** off. The cross-section makes it visible: the
+genuine query traces the gallery outline, the impostor departs it.
+
+![Alignment fidelity: point-to-surface distance and cross-section overlay](docs/alignment_proof.png)
 
 **Photos → a dentist-usable mesh** — no scanner? **3D Gaussian Splatting +
 multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight
