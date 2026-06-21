@@ -1,0 +1,10 @@
+{
+ "dataset": "Teeth3DS+ (real intraoral, cross-dataset generalisation)",
+ "n": 120,
+ "rank1": 1.0,
+ "rank5": 1.0,
+ "eer": 0.0,
+ "auc": 1.0,
+ "genuine_mean": 0.09545409193976286,
+ "impostor_min": 0.8987822203165499
+}

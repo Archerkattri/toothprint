@@ -1,0 +1,19 @@
+{
+ "n": 45,
+ "regions": 12,
+ "best_k": 8,
+ "keep_ablation": {
+  "1.0": {
+   "whole_arch_rank1": 1.0,
+   "regional_bestK_rank1": 1.0
+  },
+  "0.5": {
+   "whole_arch_rank1": 0.15555555555555556,
+   "regional_bestK_rank1": 0.2
+  },
+  "0.3": {
+   "whole_arch_rank1": 0.022222222222222223,
+   "regional_bestK_rank1": 0.022222222222222223
+  }
+ }
+}
