@@ -341,6 +341,29 @@ toothprint/
 
 Numbers are measured on the public Poseidon3D (intraoral scans) and DenPAR (radiographs) datasets with **synthetic** perturbations (single-timepoint data — read headline metrics as optimistic ceilings). Datasets and model checkpoints are never committed. ToothPrint is a **validated research prototype, not a cleared medical device** — see the Clinical readiness and Risk sections above.
 
+## Help wanted — real longitudinal data (the one thing I can't do alone)
+
+Every headline here is an *optimistic ceiling* because it's measured on **single-timepoint** public data with synthetic re-scans. The one missing ingredient — **real same-patient data across two timepoints** (or two devices) — is locked behind academic data-use agreements I can't sign for a personal project. This is the binding constraint between ToothPrint and a real-world-validated claim, and it's **open progress: I'm looking for help.**
+
+Two datasets would close it:
+
+- **Multimodal Dental Dataset (PhysioNet)** — 169 patients with multi-visit timestamps + CBCT + 16k periapical radiographs (real longitudinal change). Credentialed access. <https://physionet.org/content/multimodal-dental-dataset/>
+- **3D pre/post-orthodontic models (Zenodo 11392406)** — 1,060 real pre/post 3D intraoral pairs from 435 patients, *our exact modality*. Maintained by **Prof. Liu Yongjin, Tsinghua University — `liuyongjin@tsinghua.edu.cn`**. <https://zenodo.org/records/11392406>
+
+If you're an academic who can legitimately access either, or you know the maintainers and could introduce me, please reach out: **`kattri@snu.ac.kr`**. With real timepoints the change and identity certificates run on real re-acquisitions and every synthetic ceiling becomes a real number — any contribution gratefully credited.
+
+<details><summary>A short email I'd send (or that you could forward on my behalf)</summary>
+
+> **Subject:** Access to [dataset] for an independent dental-imaging project
+>
+> Dear [maintainer],
+>
+> I'm Krishi Attri, a master's student working on an independent, non-commercial project — *ToothPrint*, a conformal-certified system for dental identity and longitudinal change detection. My methods are currently validated only on synthetic perturbations of single-timepoint public scans; your dataset's real same-patient [pre/post · multi-visit] data is exactly what I need to test them on genuine re-acquisitions. I'd be grateful for access under whatever terms you require — I'll use it strictly for non-commercial research, will not redistribute it, and will acknowledge the dataset in any results. Happy to share more about the project. Thank you for considering.
+>
+> — Krishi Attri · `kattri@snu.ac.kr`
+
+</details>
+
 ## License
 
 MIT.
