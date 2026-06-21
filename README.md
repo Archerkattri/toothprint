@@ -79,6 +79,8 @@ A query re-scan is given its **best rigid alignment** to each gallery arch (PCA 
 
 **At scale — all 200 subjects.** Rank-1 0.995, EER 0.005, AUC 0.997 (95% CI 0.989–0.998). Two results go beyond the usual table: the decision is **conformal** (empirical false-match rate tracks the target α — no learned dental-ID method reports a finite-sample FMR bound), and it works **open-set** (a non-enrolled query is rejected — FNIR 0.030 at 1% false-positive identification):
 
+The FMR bound even **survives hard negatives** — re-calibrated against each subject's *nearest* impostor (the ~0.8 mm twin/ortho-like look-alike, not a random gallery arch), empirical FMR still tracks α (0.016 at α=0.01, 0.05 at α=0.05) at a 1–4 % genuine-accept cost (`conformal_fmr_hard_negatives` in `identity_analysis.json`). A literature FMR on random arches is easy; holding it against look-alikes is the honest test.
+
 ![Identity at N=200: separation, CMC, conformal bounded-FMR, open-set DIR](docs/identity_metrics.png)
 
 **Robust — honestly.** Rank-1 holds at **1.0 through 0.4 mm sensor noise and 4× voxel coarsening**, with every query already repositioned (rotation + translation); the one degradation is **tooth-loss / partial overlap** (keep 0.5 → Rank-1 0.23, keep 0.3 → 0.10 — the rigid PCA-init limit), shown not hidden (`evaluation/results/id3d.json`):

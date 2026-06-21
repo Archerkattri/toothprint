@@ -89,6 +89,26 @@ def conformal_fmr(M, alphas, trials=200):
                 "tar": float(np.mean(v["tar"]))} for a, v in out.items()}
 
 
+def conformal_fmr_hard(M, alphas, trials=200):
+    """Conformal FMR calibrated on HARD negatives — each subject's single *nearest*
+    impostor (the twin/ortho-like look-alike, ~0.8 mm here), the worst case for a false
+    match. A literature FMR on random gallery arches is easy; this asks whether the
+    bounded-FMR guarantee survives when the gallery actually contains a look-alike."""
+    n = M.shape[0]
+    out = {float(a): {"emp_fmr": [], "tar": []} for a in alphas}
+    for _ in range(trials):
+        perm = RNG.permutation(n); cal, test = perm[:n // 2], perm[n // 2:]
+        cal_hard = np.array([min(M[i, j] for j in cal if j != i) for i in cal])
+        test_hard = np.array([min(M[i, j] for j in test if j != i) for i in test])
+        test_gen = np.array([M[i, i] for i in test])
+        for a in alphas:
+            k = max(int(np.floor(a * (len(cal_hard) + 1))) - 1, 0)
+            tau = np.sort(cal_hard)[k]
+            out[float(a)]["emp_fmr"].append(float((test_hard < tau).mean()))
+            out[float(a)]["tar"].append(float((test_gen < tau).mean()))
+    return {a: {"emp_fmr": float(np.mean(v["emp_fmr"])), "tar": float(np.mean(v["tar"]))} for a, v in out.items()}
+
+
 def open_set(M, held_out=40, taus=200, trials=40):
     """DIR(rank-1) vs FPIR by holding identities out of the gallery."""
     n = M.shape[0]
@@ -125,17 +145,20 @@ def main():
     cmc_curve = cmc(M)
     alphas = [0.001, 0.005, 0.01, 0.02, 0.05, 0.1]
     conf = conformal_fmr(M, alphas)
+    conf_hard = conformal_fmr_hard(M, alphas)
     os_ = open_set(M)
     fidelity = dict(gen_mean=float(gen_p2s.mean()), gen_median=float(np.median(gen_p2s)),
                     gen_max=float(gen_p2s.max()), imp_mean=float(imp_p2s.mean()), imp_min=float(imp_p2s.min()))
     result = dict(dataset="Poseidon3D N=200", method="PCA-axis init + Generalized-ICP, point-to-point",
                   metrics=bm, cmc=cmc_curve, alignment_fidelity_point_to_surface=fidelity,
                   conformal_fmr={str(k): v for k, v in conf.items()},
+                  conformal_fmr_hard_negatives={str(k): v for k, v in conf_hard.items()},
                   open_set={"fnir_at_fpir_1pct": os_["fnir_at_fpir_1pct"], "held_out": 40})
     (EXP / "identity_analysis.json").write_text(json.dumps(result, indent=1) + "\n")
     print(f"Rank-1 {bm['rank1']:.3f}  Rank-5 {bm['rank5']:.3f}  EER {bm['eer']:.3f}  "
           f"AUC {bm['auc']:.3f} CI{tuple(round(x,3) for x in bm['auc_ci95'])}  d' {bm['dprime']:.2f}")
-    print("conformal FMR:  " + "  ".join(f"a={a}:emp={conf[a]['emp_fmr']:.3f}(TAR {conf[a]['tar']:.2f})" for a in alphas))
+    print("conformal FMR (all impostors): " + "  ".join(f"a={a}:emp={conf[a]['emp_fmr']:.3f}(TAR {conf[a]['tar']:.2f})" for a in alphas))
+    print("conformal FMR (HARD look-alikes): " + "  ".join(f"a={a}:emp={conf_hard[a]['emp_fmr']:.3f}(TAR {conf_hard[a]['tar']:.2f})" for a in alphas))
     print(f"open-set FNIR@FPIR=1%: {os_['fnir_at_fpir_1pct']:.3f}  | p2s genuine {fidelity['gen_mean']:.3f}mm")
 
     # --- figure ---

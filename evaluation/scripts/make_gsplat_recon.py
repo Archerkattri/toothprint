@@ -136,7 +136,7 @@ def main():
     recon, loss = train(views, iters=args.iters)
     gt = np.asarray(mesh.sample_points_uniformly(20000).points)
     # accuracy vs the GT scan (scale-aware align; the unit-normalised mesh -> *scale_mm)
-    from dentalmapcert.surface_error import surface_error_mm
+    from toothprint.bench.dmc.surface_error import surface_error_mm
     err = surface_error_mm(recon, gt, run_icp=True, estimate_scale=True)
     acc = err.point_to_surface_mm * scale_mm
     print(f"reconstructed {len(recon):,} surface gaussians  (final L1 {loss:.4f}, "
