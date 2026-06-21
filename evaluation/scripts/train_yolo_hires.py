@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Fine-tune YOLO26-pose at near-native 1280 px (DenPAR is ~1168 px) for the sharpest
-CEJ/bone-crest localisation — the lever that lifts end-to-end change recall toward the
-0.98 measurement ceiling. Higher resolution gives finer keypoints than the 18 px median
-of the 960 px model; the small backbone keeps it within an 8 GB GPU.
+"""Fine-tune YOLO26-pose at near-native 1280 px (DenPAR is ~1168 px) to test whether
+higher-resolution training sharpens CEJ/bone-crest localisation below the 960 px model's
+18 px median — the lever that would lift end-to-end change recall toward the 0.98 ceiling.
+
+NEGATIVE RESULT (kept on purpose, so it is not re-run): 1280 px did NOT help — CEJ/crest
+median 20.1 px (vs 18.2 px at 960 px) and end-to-end recall 0.87 (vs 0.905). The ~18 px
+floor is the DenPAR annotation-label noise, not model capacity, so a bigger/finer detector
+cannot close it; only better labels or real longitudinal pairs can. The 960 px model
+(train_yolo26_pose.py) remains the detector of record.
 
 Run from the shared evaluation working dir (data/ + outputs/denpar_pose present).
 """

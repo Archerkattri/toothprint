@@ -124,6 +124,7 @@ def main() -> int:
     p.add_argument("--cal-teeth", type=int, default=150)
     p.add_argument("--test-teeth", type=int, default=200)
     p.add_argument("--conf", type=float, default=0.25)
+    p.add_argument("--imgsz", type=int, default=960)
     p.add_argument("--detected-only", action="store_true",
                    help="Drop teeth the detector missed instead of full coverage")
     p.add_argument("--snap", action="store_true")
@@ -132,7 +133,7 @@ def main() -> int:
     offsets = list(range(-64, 65, 4))
 
     adapter = RealDenparAdapter(Path(args.data))
-    yl = YoloLocalizer(args.weights, conf=args.conf, cover_all=not args.detected_only)
+    yl = YoloLocalizer(args.weights, imgsz=args.imgsz, conf=args.conf, cover_all=not args.detected_only)
     rng = np.random.default_rng(0)
 
     predicted, observed = [], []

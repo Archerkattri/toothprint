@@ -101,6 +101,8 @@ Measuring the shift *differentially* (sub-pixel registration of the margin betwe
 
 Localization is what moved: fine-tuning YOLO26-pose on DenPAR (full-image detect-and-localize, one object per tooth with 5 keypoints) roughly halves the CEJ/crest error vs ViTPose, and that precision translates directly into recall — especially on the small 4–8 px changes that matter clinically (0.71 → 0.88). Reproduce with `evaluation/scripts/train_yolo26_pose.py` → `eval_yolo_pose_px.py` → `run_change_yolo.py`.
 
+**Why 0.91 is the honest ceiling, not laziness.** We trained a 2× larger detector at near-native 1280 px (`train_yolo_hires.py`) to push further — it made localization *worse* (20 px vs 18 px) and recall *lower* (0.87). The ~18 px floor is the DenPAR annotation-label noise, not model capacity: a bigger detector can't close the gap to the 0.98 measurement ceiling, only better labels or real longitudinal pairs can. The negative result is kept so nobody re-runs it.
+
 ![YOLO26-pose CEJ/bone-crest localization vs ViTPose](docs/detector_px.png)
 
 **Robust to repositioning.** Between visits a patient is re-seated at a different angle and distance, so the radiograph is rotated and magnified. A single crown reference cancels only a translation; a **multi-anchor affine** model cancels the full motion, dropping the spurious "change" ~8× on real teeth with no real bone change:
