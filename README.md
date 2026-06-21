@@ -31,8 +31,8 @@ Measured on the public **Poseidon3D** intraoral scans and **DenPAR** radiographs
 | **Identity — 3D scans** | Who is this arch? | **Rank-1 0.995** (all **N=200**, EER 0.005, AUC 0.997 [0.989–0.998]), **conformal false-match rate bounded at α**, open-set FNIR@FPIR=1% **0.030**; alignment fidelity **0.05 mm** |
 | **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=400, EER 0), robust to 20 px jitter & 50% magnification |
 | **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.91 end-to-end** (fine-tuned YOLO26-pose detector, up from 0.81) |
-| **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (global avg 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
-| **Reconstruction** | Photos → a CAD mesh? | watertight ~1 M-tri **2DGS surfel** mesh, **~0.3 mm median** vs the ground-truth scan (38% better than 3DGS) |
+| **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (n=8 arches; global avg 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
+| **Reconstruction** | Photos → a CAD mesh? | watertight ~1 M-tri **2DGS surfel** mesh, **~0.3 mm median** vs the ground-truth scan (38% better than 3DGS, n=5 arches) |
 
 ![Genuine vs impostor — both modalities](docs/identification_separation_v2.png)
 
@@ -94,7 +94,7 @@ Localization is what moved: fine-tuning YOLO26-pose on DenPAR (full-image detect
 
 ## Surface — certify 3D change
 
-The displacement is measured *differentially* and **de-biased** (subtracting the reconstruction-noise power, which the naive mean-of-distances would rectify into a false signal), extending usable reconstruction noise from 0.1 mm to **0.4 mm**. It is also **regional**: a real lesion moves a *patch* that a whole-surface average dilutes to nothing (recall 0.00), which a per-region max statistic recovers (0.99) and localizes — with the conformal false-change rate still 0:
+The displacement is measured *differentially* and **de-biased** (subtracting the reconstruction-noise power, which the naive mean-of-distances would rectify into a false signal), extending usable reconstruction noise from 0.1 mm to **0.4 mm**. It is also **regional**: a real lesion moves a *patch* that a whole-surface average dilutes to nothing (recall 0.00), which a per-region max statistic recovers (0.99, n=8 arches) and localizes — with the conformal false-change rate still 0:
 
 ![Surface certificate recall vs reconstruction noise](docs/surface_certificate_v2.png)
 
@@ -199,7 +199,7 @@ The recurring theme: ToothPrint is in the *registration / conformal* family, and
 
 **Surface.** Benchmarked vs **M3C2** (Lague 2013): both localize a lesion the whole-surface average dilutes; M3C2 edges us on raw recall at extreme noise, we add the finite-sample conformal false-change bound it lacks.
 
-**Reconstruction.** SOTA GS→mesh (2DGS, GOF) reports sub-mm Chamfer on DTU/T&T; ours (3DGS + TSDF) reaches 0.42 mm median at arch scale — usable for the surface certificate's edge, though an IOS scan is still better.
+**Reconstruction.** SOTA GS→mesh (2DGS, GOF) reports sub-mm Chamfer on DTU/T&T; ours (2DGS surfels + TSDF) reaches ~0.3 mm median at arch scale (38% better than our 3DGS baseline, n=5 arches) — usable for the surface certificate's edge, though an IOS scan is still better.
 
 **Bottom line:** competitive on saturated metrics, and ahead on the axis nobody occupies — a distribution-free *certificate* on every verdict. The honest gaps (real longitudinal data, the radiograph detector) are data/label limits, not method.
 

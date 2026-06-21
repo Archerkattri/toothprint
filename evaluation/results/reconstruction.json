@@ -1,0 +1,49 @@
+{
+ "dataset": "poseidon3d",
+ "method": "2DGS oriented surfels + multi-view TSDF fusion",
+ "baseline": "3DGS + TSDF",
+ "scale_mm": 36.79,
+ "main": {
+  "arch": "000003",
+  "median_mm": 0.262,
+  "mean_mm": 0.297,
+  "chamfer_mm": 0.307,
+  "verts": 518601,
+  "tris": 1031537
+ },
+ "gallery": [
+  {
+   "arch": "000003",
+   "median_2dgs_mm": 0.264,
+   "median_3dgs_mm": 0.415
+  },
+  {
+   "arch": "000010",
+   "median_2dgs_mm": 0.341,
+   "median_3dgs_mm": 0.817
+  },
+  {
+   "arch": "000031",
+   "median_2dgs_mm": 0.453,
+   "median_3dgs_mm": 0.487
+  },
+  {
+   "arch": "000061",
+   "median_2dgs_mm": 0.259,
+   "median_3dgs_mm": 0.516
+  },
+  {
+   "arch": "000111",
+   "median_2dgs_mm": 0.249,
+   "median_3dgs_mm": 0.438
+  }
+ ],
+ "summary": {
+  "median_of_medians_2dgs_mm": 0.264,
+  "mean_of_medians_2dgs_mm": 0.313,
+  "mean_of_medians_3dgs_mm": 0.535,
+  "mean_improvement_vs_3dgs_pct": 38.9,
+  "hardest_arch_improvement_x": 2.4
+ },
+ "note": "photo->mesh reconstruction; synthetic-free geometry vs the ground-truth IOS scan. Not a certified mechanism."
+}

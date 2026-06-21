@@ -128,6 +128,12 @@ def main():
         last = s[-1]
         print(f"Change end-to-end (YOLO26):   recall@{last['change_px']:.0f}px={last['certified_change']:.2f}, "
               f"stable-FPR={fpr0:.3f} (median 18px localization vs ViTPose 38px)")
+    recon = load("reconstruction")
+    if recon:
+        sm = recon["summary"]
+        print(f"Reconstruction (2DGS): median {sm['mean_of_medians_2dgs_mm']:.2f}mm vs 3DGS "
+              f"{sm['mean_of_medians_3dgs_mm']:.2f}mm ({sm['mean_improvement_vs_3dgs_pct']:.0f}% better, "
+              f"n=5 arches)")
 
 
 if __name__ == "__main__":
