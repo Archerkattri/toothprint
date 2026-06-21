@@ -30,7 +30,7 @@ Measured on the public **Poseidon3D** intraoral scans and **DenPAR** radiographs
 |---|---|---|
 | **Identity — 3D scans** | Who is this arch? | **Rank-1 0.995** (all **N=200**, EER 0.005, AUC 0.997 [0.989–0.998]), **conformal false-match rate bounded at α**, open-set FNIR@FPIR=1% **0.030**; alignment fidelity **0.05 mm** |
 | **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=400, EER 0), robust to 20 px jitter & 50% magnification |
-| **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.81 end-to-end** (detector-limited) |
+| **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.91 end-to-end** (fine-tuned YOLO26-pose detector, up from 0.81) |
 | **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (global avg 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
 | **Reconstruction** | Photos → a CAD mesh? | watertight ~1 M-tri **2DGS surfel** mesh, **~0.3 mm median** vs the ground-truth scan (38% better than 3DGS) |
 
@@ -80,9 +80,13 @@ On a real DenPAR tooth the bone margin recedes between visits and the certificat
 
 ![Change certificate tracking a receding bone margin — animated](docs/change_measurement.gif)
 
-Measuring the shift *differentially* (sub-pixel registration of the margin between timepoints, not by re-detecting landmarks) is near-perfect: recall **0.98** even when the threshold is set so false-progression is a true **0**. The only gap is the fully-automatic pipeline (**0.81**), where the detector's coarse localization attenuates the signal — an honest, isolated data-label limit, not a flaw in the certificate:
+Measuring the shift *differentially* (sub-pixel registration of the margin between timepoints, not by re-detecting landmarks) is near-perfect: recall **0.98** even when the threshold is set so false-progression is a true **0**. The fully-automatic pipeline reaches **0.91** with a fine-tuned **YOLO26-pose** detector that localizes the CEJ/bone-crest to a **median 18 px** (vs the earlier ViTPose's ~38 px and its 0.81). Coarse localization *attenuates* the differentially-measured signal, so a more precise detector recovers most of the remaining gap to the measurement ceiling — the residual is an honest, isolated data-label limit, not a flaw in the certificate:
 
 ![Change certificate recall and conformal false-progression bound](docs/change_certificate_v2.png)
+
+Localization is what moved: fine-tuning YOLO26-pose on DenPAR (full-image detect-and-localize, one object per tooth with 5 keypoints) roughly halves the CEJ/crest error vs ViTPose, and that precision translates directly into recall — especially on the small 4–8 px changes that matter clinically (0.71 → 0.88). Reproduce with `evaluation/scripts/train_yolo26_pose.py` → `eval_yolo_pose_px.py` → `run_change_yolo.py`.
+
+![YOLO26-pose CEJ/bone-crest localization vs ViTPose](docs/detector_px.png)
 
 **Robust to repositioning.** Between visits a patient is re-seated at a different angle and distance, so the radiograph is rotated and magnified. A single crown reference cancels only a translation; a **multi-anchor affine** model cancels the full motion, dropping the spurious "change" ~8× on real teeth with no real bone change:
 
@@ -233,7 +237,7 @@ The recurring theme: ToothPrint is in the *registration / conformal* family, and
 
 **Performance:** identity Rank-1 0.995 / EER 0.005 (N=200 synthetic re-scans) with a conformal FMR bound; conformal false-alarm rate ≤ α in every ablation; change and surface recall are strong only in their good-quality regimes and degrade under noise (quantified in the report).
 
-**Limitations:** validated on synthetic perturbations of single-timepoint data (optimistic ceilings); coarse tooth detection caps end-to-end change recall at ~0.81; 0.84 mm photo reconstruction is still too noisy for a 1 mm global surface change; no demographic/device/pathology diversity.
+**Limitations:** validated on synthetic perturbations of single-timepoint data (optimistic ceilings); tooth-detection localization caps end-to-end change recall at ~0.91 (YOLO26-pose; was ~0.81 with ViTPose); 0.84 mm photo reconstruction is still too noisy for a 1 mm global surface change; no demographic/device/pathology diversity.
 
 **Ethics:** dental biometrics is sensitive personal data — galleries must be consented, encrypted, access-controlled, retention-limited (ToothPrint stores none; it is a library). Bias risk is unverified across age/ethnicity/dentition. A false identification has severe consequences; identifications must stay expert-confirmed with the candidate evidence shown.
 
@@ -281,7 +285,7 @@ Not covered (deployment responsibilities): authn/authz, rate limiting, TLS, HIPA
 
 **What is solid.** The conformal guarantee held in every ablation (α ∈ {0.05, 0.1, 0.2}, all noise levels: change FPR 0.000–0.005, surface 0.000) — distribution-free, finite-sample; the *specificity* is trustworthy. Identity separates cleanly and the separation is real, not an alignment artifact: each query is a different-sample re-scan given its best rigid fit (PCA-init + Generalized-ICP) to every candidate, scored by mean surface distance — N=200 Rank-1 0.995 with the alignment itself exact (0.05 mm point-to-surface, sub-noise). 100% test coverage.
 
-**What blocks clinical use (quantified).** (1) Validation is synthetic, not longitudinal — one scan/radiograph per subject; every headline is an optimistic ceiling. (2) Change end-to-end recall ≈ 0.81, capped by the ~36 px detector localization (a data-label limit, not the certificate). (3) Surface usable to ~0.4 mm reconstruction noise; the 0.84 mm photo reconstruction is still too noisy for a 1 mm global change, and the regional gain on small changes erodes under spatially-correlated noise. (4) One hard arch is the single Rank-1 miss at N=200 (partial-overlap limit). These gaps are **non-code** — real longitudinal/cross-session data, a prospective study, and FDA/CE clearance — and remain the gate.
+**What blocks clinical use (quantified).** (1) Validation is synthetic, not longitudinal — one scan/radiograph per subject; every headline is an optimistic ceiling. (2) Change end-to-end recall ≈ 0.91 with the YOLO26-pose detector (median 18 px localization; up from ≈ 0.81 / ~36 px ViTPose) — still short of the 0.98 measurement ceiling and validated only on synthetic change. (3) Surface usable to ~0.4 mm reconstruction noise; the 0.84 mm photo reconstruction is still too noisy for a 1 mm global change, and the regional gain on small changes erodes under spatially-correlated noise. (4) One hard arch is the single Rank-1 miss at N=200 (partial-overlap limit). These gaps are **non-code** — real longitudinal/cross-session data, a prospective study, and FDA/CE clearance — and remain the gate.
 
 Reproduction scripts and raw results live in the companion repositories (`dental-map-cert`, `dental-change-certificate`).
 

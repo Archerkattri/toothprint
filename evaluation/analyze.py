@@ -26,6 +26,7 @@ def main():
     id3d, id2d = load("id3d"), load("id2d")
     change, surface = load("change"), load("surface")
     reg_gt, reg_det = load("change_registration_gt"), load("change_registration_detector")
+    reg_yolo = load("change_registration_yolo")
 
     fig, axes = plt.subplots(2, 3, figsize=(16, 9))
 
@@ -120,8 +121,13 @@ def main():
     if reg_det:
         s = reg_det["sweep"]; fpr0 = next((x["fpr"] for x in s if x["change_px"] == 0), None)
         last = s[-1]
-        print(f"Change end-to-end (detector): recall@{last['change_px']:.0f}px={last['certified_change']:.2f}, "
+        print(f"Change end-to-end (ViTPose):  recall@{last['change_px']:.0f}px={last['certified_change']:.2f}, "
               f"stable-FPR={fpr0:.3f} (detector-localization-limited)")
+    if reg_yolo:
+        s = reg_yolo["sweep"]; fpr0 = next((x["fpr"] for x in s if x["change_px"] == 0), None)
+        last = s[-1]
+        print(f"Change end-to-end (YOLO26):   recall@{last['change_px']:.0f}px={last['certified_change']:.2f}, "
+              f"stable-FPR={fpr0:.3f} (median 18px localization vs ViTPose 38px)")
 
 
 if __name__ == "__main__":

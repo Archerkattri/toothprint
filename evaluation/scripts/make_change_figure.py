@@ -36,28 +36,31 @@ def progressed_rate(rows, key, q_lo, tau):
 def main():
     gt = load("change_registration_gt")
     det = load("change_registration_detector")
+    yolo = load("change_registration_yolo")
     mags = sorted({float(k) for r in gt["test_rows"] for k in r})
     changes = [m for m in mags if m > 0]
 
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(13, 5.2))
     tau = 0.5  # sensitive sub-mm clinical threshold (px)
 
-    # ---- Left: recall vs magnitude, both localizations -----------------------
+    # ---- Left: recall vs magnitude, all localizations ------------------------
     for d, color, label in [(gt, "#1f77b4", "GT localization (measurement ceiling)"),
-                            (det, "#d6791f", "ViTPose (fully-automatic pipeline)")]:
+                            (yolo, "#11505f", "YOLO26-pose (fully-automatic, 18px)"),
+                            (det, "#d6791f", "ViTPose (fully-automatic, 38px)")]:
+        if not d:
+            continue
         rec = [progressed_rate(d["test_rows"], str(m), d["q_lo"], tau) for m in changes]
         axL.plot(changes, rec, "-o", color=color, lw=2.2, ms=6, label=label)
-    fpr_gt = progressed_rate(gt["test_rows"], "0.0", gt["q_lo"], tau)
     axL.axhline(1.0, color="#999", ls=":", lw=1)
-    axL.set_title(f"Change recall vs magnitude  (tau={tau:g}px, stable FPR={fpr_gt:.1%})", fontsize=12)
+    axL.set_title(f"Change recall vs magnitude  (tau={tau:g}px)", fontsize=12)
     axL.set_xlabel("true crestal change (px)"); axL.set_ylabel("recall (certified-progressed rate)")
     axL.set_ylim(0, 1.05); axL.grid(alpha=.3); axL.legend(loc="lower right", fontsize=9)
     axL.annotate("near-perfect: the differential\nregistration measurement",
-                 xy=(changes[2], 0.99), xytext=(changes[1], 0.55), fontsize=9, color="#1f77b4",
+                 xy=(changes[2], 0.99), xytext=(changes[1], 0.62), fontsize=9, color="#1f77b4",
                  arrowprops=dict(arrowstyle="->", color="#1f77b4"))
-    axL.annotate("detector localization attenuates\nthe signal — the only gap",
-                 xy=(changes[-2], 0.80), xytext=(changes[1], 0.30), fontsize=9, color="#d6791f",
-                 arrowprops=dict(arrowstyle="->", color="#d6791f"))
+    axL.annotate("a precise detector (YOLO26-pose)\ncloses most of the gap",
+                 xy=(changes[-2], 0.89), xytext=(changes[1], 0.34), fontsize=9, color="#11505f",
+                 arrowprops=dict(arrowstyle="->", color="#11505f"))
 
     # ---- Right: measurement recall / FPR frontier over tau --------------------
     taus = np.linspace(0.2, 3.0, 29)
