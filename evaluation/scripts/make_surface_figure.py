@@ -51,7 +51,9 @@ def main():
                  fontsize=8, color="#1a7f4b", arrowprops=dict(arrowstyle="->", color="#2ca02c"))
     axA.axvline(0.84, color="#e6a93f", ls=":", lw=1.0, alpha=0.7)
     axA.annotate("old point cloud (0.84)", xy=(0.84, 0.12), fontsize=7, color="#b07d12")
-    axA.set_title("A · De-bias extends usable noise\n(global change)", fontsize=11)
+    axA.axvspan(0, 0.42, color="#2ca02c", alpha=0.07)            # good zone: still usable
+    axA.text(0.04, 0.10, "✔ usable\n(recall 1.0)", fontsize=8, color="#1a7f4b")
+    axA.set_title("A · We stay perfect to 0.4 mm scan noise\n(de-biased, global change)", fontsize=10.5)
     axA.set_xlabel("reconstruction noise σ (mm)"); axA.set_ylabel("recall @ 1 mm")
     axA.set_ylim(-0.03, 1.05); axA.grid(alpha=.3); axA.legend(loc="center left", fontsize=8)
 
@@ -60,10 +62,12 @@ def main():
     axB.plot(xr, yr, "-o", color="#1f77b4", lw=2.4, ms=6, label="regional (max over regions)")
     axB.plot(xg, yg, "-s", color="#888", lw=2.0, ms=5, label="global (whole-surface avg)")
     axB.axvline(0.75, color="#bbb", ls=":", lw=1)
-    axB.set_title("B · Localized patch change\n(σ=0.2 mm, incoherent)", fontsize=11)
+    axB.set_title("B · We catch the lesion the average misses\n(σ=0.2 mm, localized)", fontsize=10.5)
     axB.set_xlabel("localized change magnitude (mm)"); axB.set_ylabel("recall")
     axB.set_ylim(-0.03, 1.05); axB.grid(alpha=.3); axB.legend(loc="center right", fontsize=8)
-    axB.annotate("global dilutes a patch\nchange to nothing", xy=(1.5, 0.02), xytext=(0.9, 0.30),
+    axB.annotate("✔ regional catches it (0.99)", xy=(1.0, 0.99), xytext=(0.5, 0.74),
+                 fontsize=8.5, color="#1a7f4b", arrowprops=dict(arrowstyle="->", color="#1f77b4"))
+    axB.annotate("global average dilutes\nit to nothing (0.00)", xy=(1.5, 0.02), xytext=(0.85, 0.22),
                  fontsize=8, color="#666", arrowprops=dict(arrowstyle="->", color="#888"))
 
     # C — regional under correlated noise: honest residual ----------------------
@@ -76,8 +80,8 @@ def main():
     axC.annotate("correlated noise still\ncosts small changes", xy=(1.0, y9[5]), xytext=(1.1, 0.62),
                  fontsize=8, color="#6a4ca0", arrowprops=dict(arrowstyle="->", color="#9467bd"))
 
-    fig.suptitle("ToothPrint — 3D surface-change certificate on real Poseidon3D arches "
-                 "(false-change = 0 in every panel)", fontsize=12)
+    fig.suptitle("3D surface change: we catch a real lesion the whole-arch average misses — "
+                 "and never report a false change (rate = 0 in every panel)", fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.94])
     for out in [R.parents[1] / "web" / "assets" / "surface_certificate.png",
                 R.parents[1] / "docs" / "surface_certificate_v2.png"]:

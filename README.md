@@ -24,17 +24,32 @@ Every verdict is **conformal**: it fires only when the interval around the measu
 
 ## Results
 
-Measured on the public **Poseidon3D** intraoral scans and **DenPAR** radiographs, with synthetic perturbations (single-timepoint data — read headline numbers as optimistic ceilings).
+**The verdict first — not just the data.** Every mechanism is held to the bar that
+actually matters (recognise the right person, flag real change without crying wolf,
+rebuild a usable mesh), and here is whether we clear it:
 
-| Capability | What it answers | Result |
-|---|---|---|
-| **Identity — 3D scans** | Who is this arch? | **Rank-1 0.995** (all **N=200**, EER 0.005, AUC 0.997 [0.989–0.998]), **conformal false-match rate bounded at α**, open-set FNIR@FPIR=1% **0.030**; alignment fidelity **0.05 mm** |
-| **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=400, EER 0), robust to 20 px jitter & 50% magnification |
-| **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.91 end-to-end** (fine-tuned YOLO26-pose detector, up from 0.81) |
-| **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (n=8 arches; global avg 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
-| **Reconstruction** | Photos → a CAD mesh? | watertight ~1 M-tri **2DGS surfel** mesh, **~0.3 mm median** vs the ground-truth scan (38% better than 3DGS, n=5 arches) |
+![Is ToothPrint good? — every mechanism vs the bar that matters](docs/scorecard.png)
 
-![Genuine vs impostor — both modalities](docs/identification_separation_v2.png)
+The detail behind each verdict (measured on the public **Poseidon3D** scans and **DenPAR**
+radiographs with synthetic perturbations — single-timepoint data, so headline numbers are
+optimistic ceilings):
+
+| Capability | What "good" requires | Result | |
+|---|---|---|:--:|
+| **Identity — 3D scans** | a stranger never outranks you | **Rank-1 0.995** (N=200, EER 0.005, AUC 0.997 [0.989–0.998]), **conformal FMR ≤ α**, open-set FNIR@FPIR=1% **0.030**, fidelity **0.05 mm** | ✅ |
+| **Identity — 2D radiographs** | pick the right person out of hundreds | **Rank-1 1.000** (N=400, EER 0), robust to 20 px jitter & 50% magnification | ✅ |
+| **Change — measurement** | flag a real shift, never cry wolf | recall **0.98 @ 0% false-progression** | ✅ |
+| **Change — fully automatic** | same, detector finds the teeth | **0.91 end-to-end** (YOLO26-pose, up from 0.81; 0.98 ceiling) | 🔄 |
+| **Surface certificate** | catch a lesion a global average misses | **0.99** localized vs **0.00** naive (n=8), to **0.4 mm** noise, **0% false-change** | ✅ |
+| **Reconstruction** | sharp enough for clinical use (≈0.5 mm) | **~0.3 mm** median 2DGS mesh, 38% better than 3DGS (n=5) | ✅ |
+
+Specificity (never crying wolf) is **oracle-level by design** — the conformal false-positive
+rate is provably ≤ α in finite samples, and held a true **0** in most tests. The one place
+still climbing is change *sensitivity* under a real detector. Below, each mechanism shows
+**what good looks like and that we hit it**, starting with: a stranger's best impostor never
+beats your genuine match —
+
+![Genuine vs impostor — a stranger never wins](docs/identification_separation_v2.png)
 
 ## The data
 

@@ -51,8 +51,16 @@ def main():
             continue
         rec = [progressed_rate(d["test_rows"], str(m), d["q_lo"], tau) for m in changes]
         axL.plot(changes, rec, "-o", color=color, lw=2.2, ms=6, label=label)
+    # "what good means": catch a clinically-meaningful change (>= ~1 mm = ~10 px) and
+    # catch almost all of it. Shade the good zone + mark the bar so the figure reads as
+    # pass/fail, not just curves.
+    axL.axhspan(0.9, 1.05, color="#1a7f4b", alpha=0.06)
+    axL.axhline(0.9, color="#1a7f4b", ls="--", lw=1.2)
+    axL.text(changes[0], 0.915, "the bar: catch ≥ 90%", fontsize=8.5, color="#1a7f4b")
+    axL.axvspan(10, max(changes) * 1.02, color="#999", alpha=0.05)
+    axL.text(11, 0.06, "clinically meaningful (≳ 1 mm)", fontsize=8, color="#666", rotation=0)
     axL.axhline(1.0, color="#999", ls=":", lw=1)
-    axL.set_title(f"Change recall vs magnitude  (tau={tau:g}px)", fontsize=12)
+    axL.set_title(f"Can we catch a real change? — measurement clears the bar (tau={tau:g}px)", fontsize=11.5)
     axL.set_xlabel("true crestal change (px)"); axL.set_ylabel("recall (certified-progressed rate)")
     axL.set_ylim(0, 1.05); axL.grid(alpha=.3); axL.legend(loc="lower right", fontsize=9)
     axL.annotate("near-perfect: the differential\nregistration measurement",
@@ -80,7 +88,7 @@ def main():
     axR.set_xlabel("clinical threshold tau (px)"); axR.set_ylabel("rate")
     axR.set_ylim(0, 1.05); axR.grid(alpha=.3); axR.legend(loc="center left", fontsize=9)
 
-    fig.suptitle("ToothPrint — bone-level change certificate on real DenPAR radiographs",
+    fig.suptitle("Bone-level change: we flag a real shift (left) without ever crying wolf (right)",
                  fontsize=13)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
 
