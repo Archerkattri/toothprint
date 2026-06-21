@@ -88,6 +88,14 @@ reports a finite-sample FMR bound), and it works **open-set** — when a query's
 
 ![Identity at N=200: separation, CMC, conformal bounded-FMR, open-set DIR](docs/identity_metrics.png)
 
+**And it's robust — honestly.** Sweeping the re-scan conditions: identity holds **Rank-1
+1.0** through heavy sensor noise (to 0.8 mm), large repositioning (to 0.8 rad ≈ 46°), and
+sparse scans (down to 1000 points). The one place it degrades is **tooth-loss / partial
+overlap** — losing 20 % of the arch drops Rank-1 to 0.93, and 40 %+ breaks it (the rigid
+PCA init needs most of the arch). That's the real limitation, shown rather than hidden:
+
+![Identity robustness ablations: noise, repositioning, tooth-loss, density](docs/identity_ablations.png)
+
 **Photos → a dentist-usable mesh** — no scanner? **3D Gaussian Splatting +
 multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight
 **1.2 M-triangle mesh** (not a point cloud, not smoothed-away Poisson) that matches
