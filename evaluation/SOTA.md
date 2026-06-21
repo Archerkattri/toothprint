@@ -41,9 +41,14 @@ label-resolution limit, not a certificate flaw. P0 improvement: HRNet-W32 / YOLO
 | Localized lesion vs whole-surface average | — | regional recall **0.99** vs **0.00** global. |
 | **Conformal false-change bound** | rare in imaging change-detection. | false-change rate ≤ α by max-calibration. |
 
-**Where we lead:** de-biasing extends usable reconstruction noise 0.1→0.4 mm, regional
-localization, and a conformal FPR bound. **To benchmark next:** head-to-head vs **M3C2**
-on the same synthetic displacement.
+**Benchmarked vs M3C2** (a 0.5 mm lesion over 2 % of the arch, recall @ 5 % false-change,
+noise swept 0.1→0.6 mm): the **whole-surface average collapses** (1.0→0.10 — the dilution
+failure mode), while **M3C2 (1.0→0.50) and ours (1.0→0.17) both localize it**. Honest
+verdict: M3C2 is a strong localized baseline and edges us on *raw recall* at extreme noise;
+we do **not** claim to beat it there. Our genuine, complementary edge is the **finite-sample
+conformal false-change bound** (M3C2 reports a distance, not a calibrated decision with a
+guaranteed FPR) plus the de-biasing that holds usable noise to ~0.4 mm. Both crush the
+whole-surface average — which is the real lesson: localized + certified, not a global mean.
 
 ## Reconstruction (photos → mesh)
 

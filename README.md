@@ -147,6 +147,15 @@ median**, right at this certificate's usable-noise edge — a big step from the 
 
 ![Surface certificate recall vs reconstruction noise, with the honest correlated-noise caveat](docs/surface_certificate_v2.png)
 
+**Benchmarked against M3C2** (the geomorphology-standard change distance), on a 0.5 mm
+lesion over just 2 % of the arch: the **whole-surface average dilutes it away** (recall
+collapses to 0.10 under noise), while **M3C2 and our regional method both localize it**.
+Honestly, M3C2 edges us on raw recall at extreme noise — we don't claim to beat it there;
+our complementary edge is the **finite-sample conformal false-change bound** it lacks (the
+dotted α line), so our verdict is *certified*, not just a distance:
+
+![Localized surface change vs the M3C2 baseline](docs/surface_sota.png)
+
 ## How it works
 
 One stack, three certificates:
