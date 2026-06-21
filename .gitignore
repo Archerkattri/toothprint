@@ -10,6 +10,10 @@ outputs/
 *.ply
 *.obj
 
+# ...but toothprint/bench/data is vendored CODE (data adapters), not a dataset — keep it
+!toothprint/bench/data/
+!toothprint/bench/data/**
+
 # Python
 __pycache__/
 *.py[cod]
