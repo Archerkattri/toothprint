@@ -28,7 +28,7 @@ recapture"). It is designed to defer, not to over-claim.
 
 | Mechanism | Method | Validation data |
 |---|---|---|
-| Identity (3D) | FPFH → RANSAC → ICP, smallest-RMSE | Poseidon3D intraoral scans (single session/subject) |
+| Identity (3D) | rigid best-fit (PCA-axis init + Generalized-ICP), smallest mean surface distance | Poseidon3D intraoral scans (single session/subject) |
 | Identity (2D) | landmark constellation, scale-norm rigid ICP | DenPAR radiographs (single timepoint) |
 | Change | sub-pixel differential registration + conformal | DenPAR + synthetic rendered change |
 | Surface | scale-aware ICP / Poisson error + conformal | Poseidon3D + synthetic displacement |

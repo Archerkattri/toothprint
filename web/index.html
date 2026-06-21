@@ -104,15 +104,17 @@
         </figure>
         <div class="pillar-detail">
           <div class="metric-row">
-            <div class="metric"><span class="metric-k mono">Rank-1 (3D scans)</span><span class="metric-v mono">1.000</span></div>
-            <div class="metric"><span class="metric-k mono">Genuine RMSE</span><span class="metric-v mono">0.10 mm</span></div>
-            <div class="metric"><span class="metric-k mono">Impostor RMSE</span><span class="metric-v mono">0.55 mm</span></div>
+            <div class="metric"><span class="metric-k mono">Rank-1 (3D scans, N=50)</span><span class="metric-v mono">1.000</span></div>
+            <div class="metric"><span class="metric-k mono">Genuine dist</span><span class="metric-v mono">≤0.88 mm</span></div>
+            <div class="metric"><span class="metric-k mono">Impostor dist</span><span class="metric-v mono">≥1.22 mm</span></div>
             <div class="metric"><span class="metric-k mono">Rank-1 (2D X-ray, N=400)</span><span class="metric-v mono">1.000</span></div>
           </div>
           <p class="how">
-            <strong>3D:</strong> FPFH descriptors → RANSAC → ICP → smallest RMSE
-            wins. <strong>2D:</strong> the per-tooth landmark constellation,
-            scale-normalised so magnification cancels, aligned by rigid ICP.
+            <strong>3D:</strong> the query is given its best rigid fit to each arch
+            (PCA-axis init → Generalized-ICP) → smallest mean surface distance wins,
+            so the score is shape, not pose. <strong>2D:</strong> the per-tooth
+            landmark constellation, scale-normalised so magnification cancels, aligned
+            by rigid ICP.
           </p>
         </div>
       </div>
@@ -278,7 +280,7 @@
         <div class="pipe-arrow" aria-hidden="true">→</div>
         <div class="pipe-step reveal"><span class="pipe-k mono">detect</span><p>Teeth + landmarks (ViTPose) or arch point cloud</p></div>
         <div class="pipe-arrow" aria-hidden="true">→</div>
-        <div class="pipe-step reveal"><span class="pipe-k mono">register</span><p>2D/3D ICP · FPFH · sub-pixel template matching</p></div>
+        <div class="pipe-step reveal"><span class="pipe-k mono">register</span><p>rigid best-fit (Generalized-ICP) · sub-pixel template matching</p></div>
         <div class="pipe-arrow" aria-hidden="true">→</div>
         <div class="pipe-step reveal"><span class="pipe-k mono">certify</span><p>Conformal interval → identity, change, surface</p></div>
       </div>

@@ -12,7 +12,7 @@ institution / a regulator (cannot be done in software).
 
 | Item | Status |
 |---|---|
-| Sound, current methods (registration, conformal, FPFH/ICP, Gaussian Splatting) | ✅ |
+| Sound, current methods (rigid best-fit via PCA-init + Generalized-ICP, conformal prediction, Gaussian Splatting) | ✅ |
 | Finite-sample false-alarm guarantee, verified ≤ α across ablations | ✅ |
 | No fallbacks — failures raise, not degrade | ✅ |
 | First-class abstention ("uncertain / recapture") | ✅ |

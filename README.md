@@ -27,7 +27,7 @@ pluggable and optional, so the guarantees run without a GPU.
 
 | Capability | What it answers | Result |
 |---|---|---|
-| **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000** (N=50, EER 0), genuine ≤0.89 mm vs impostor ≥1.20 mm — *no overlap*, best-fit aligned |
+| **Identity — 3D scans** | Who is this arch? | **Rank-1 1.000** (N=50, EER 0, d′ 3.0), genuine ≤0.88 mm vs impostor ≥1.22 mm — *no overlap*, rigid best-fit (PCA-axis init + Generalized-ICP) |
 | **Identity — 2D radiographs** | Who is this X-ray? | **Rank-1 1.000** (N=400, EER 0), robust to 20 px jitter (0.985) & 50% magnification |
 | **Change certificate** | Did the bone level change? | measurement recall **0.98 @ 0% false-progression**; **0.81 end-to-end** (detector-limited) |
 | **Surface certificate** | Did the 3D surface change? | **localized** change recall **0.99** (global avg gets 0.00), usable to **0.4 mm** recon noise, **0% false-change** |
@@ -42,12 +42,15 @@ by α in finite samples — no distributional assumptions.
 
 These are the system's own outputs on the public Poseidon3D and DenPAR datasets.
 
-**Identification** — a query re-scan (gold) is given its **best rigid alignment**
-to each gallery arch (PCA-axis init + ICP — rigid, so no scale collapse), then
-coloured by distance to the surface. For the **same person** its points hug the
-surface (blue, **0.7 mm → match**); for a **stranger** — *even at its best
-alignment* — they float off it (red, **4.3 mm → no match**). The residual is
-genuine shape difference, not a pose failure. Recognition by teeth:
+**Identification** — a query re-scan is given its **best rigid alignment** to each
+gallery arch (PCA principal-axis init + **Generalized-ICP** — a global init the
+self-similar palate can't fool, rigid so no scale collapse), then the *arch surface*
+is coloured by distance to the nearest query point. For the **same person** the whole
+arch reads **blue** — the query explains every part of the surface (**0.5 mm →
+match**); for a **stranger** — *even at its best alignment* — large regions read
+**red**, where its anatomy simply can't account for the gallery's (**4.5 mm → no
+match**). The residual is genuine shape difference, not a pose failure. Recognition
+by teeth:
 
 ![Same-person vs stranger registration — animated](docs/identity_match.gif)
 
@@ -112,9 +115,12 @@ scan / radiograph ─▶ detect ─▶ register ─▶ certify
 ```
 
 - **Identity (3D):** give the query its *best rigid alignment* to each gallery arch
-  (PCA-axis init → multi-threshold ICP, rigid so no scale collapse), then pick the
-  arch with the smallest mean surface distance — fair to every candidate, so the
-  score is shape, not pose (`identity.align_rigid` / `identify_surface`).
+  (PCA principal-axis init → multi-scale **Generalized-ICP**, rigid so no scale
+  collapse), then pick the arch with the smallest mean surface distance — fair to
+  every candidate, so the score is shape, not pose (`identity.align_rigid` /
+  `identify_surface`). Feature-based global registration (FGR) was evaluated and
+  rejected: the self-similar palate makes FPFH features ambiguous, dropping Rank-1
+  to 0.62 — the shape-driven principal-axis init is both reliable and fair.
 - **Identity (2D):** the per-tooth landmark constellation, scale-normalised so
   magnification cancels, aligned by rigid ICP.
 - **Change:** the bone-level shift is measured *differentially* — sub-pixel
@@ -132,14 +138,15 @@ scan / radiograph ─▶ detect ─▶ register ─▶ certify
 
 ```python
 import numpy as np
-from toothprint.identity import enroll, identify_scan, identification_metrics
+from toothprint.identity import identify_surface, identification_metrics
 from toothprint.change import ConformalCertifier, certify_change, bone_vector
 from toothprint.surface import surface_error, certify_surface_change
 
-# Identify a person from a 3D arch against a gallery
-gallery = [enroll(points, voxel_size=0.5) for points in enrolled_scans]
-rmse_row = identify_scan(query_points, gallery, voxel_size=0.5)
-person = labels[int(np.argmin(rmse_row))]
+# Identify a person from a 3D arch against a gallery — each candidate gets the
+# query's best rigid fit (PCA-axis init + Generalized-ICP); smallest mean surface
+# distance wins, so the score is shape, not pose.
+distances = identify_surface(query_points, gallery_scans, voxel_size=0.5)
+person = labels[int(np.argmin(distances))]
 
 # Certify a surface change against calibrated reconstruction noise
 certifier = ConformalCertifier.fit(measured_stable, true_stable, alpha=0.1)

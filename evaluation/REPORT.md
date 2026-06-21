@@ -25,7 +25,7 @@ harness in the companion repositories.
 
 | Mechanism | Metric | Result | Caveat |
 |---|---|---|---|
-| Identity — 3D scans (**N=50**, best-fit aligned) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | realistic *different-sample* re-scan; genuine ≤0.89 mm vs impostor ≥1.20 mm (**no overlap**); robust to non-rigid deform ≤0.2 mm |
+| Identity — 3D scans (**N=50**, best-fit aligned) | Rank-1 / EER / AUC / d′ | **1.000 / 0.000 / 1.000 / 3.04** | realistic *different-sample* re-scan; PCA-axis init + Generalized-ICP; genuine ≤0.88 mm vs impostor ≥1.22 mm (**no overlap**); robust to non-rigid deform ≤0.2 mm |
 | Identity — 2D radiographs (**N=400**, both splits, ≥4 teeth) | Rank-1 / EER / AUC | **1.000 / 0.000 / 1.000** | robust to 20 px jitter (0.985) & 50 % magnification; partly by-design invariance |
 | Surface certificate — global change (de-biased) | recall @1 mm (σ≤0.4 mm) / FPR | **1.000 / 0.000** | usable recon-noise **0.1 → 0.4 mm** (de-biasing, was 0.1); 0.84 mm photo-recon still too noisy |
 | Surface certificate — **localized** change (regional) | recall @1 mm (σ=0.2 mm) / FPR | **0.99 / 0.000** | global average gets **0.00** (dilutes); regional max localizes it; FPR ≤ α via max-calibration |
@@ -60,11 +60,15 @@ landmark labels than the dataset provides, not better code.
    1.0 to 30 % arch coverage). Crucially, the 3D result was **re-validated with a
    fair alignment**: each query is a *different-sample* re-scan (not the same points
    transformed) and is given its **best rigid fit** to *every* gallery arch
-   (`identity.align_rigid`: PCA-axis init + ICP, no scale collapse) before scoring
-   by mean surface distance. Even at its best alignment the nearest impostor stays
-   at **≥1.20 mm** while the genuine sits at **≤0.89 mm** — *no overlap* (N=50, EER
-   0). The earlier FPFH + inlier-RMSE path could be fooled by a poor alignment; this
-   one cannot.
+   (`identity.align_rigid`: PCA principal-axis init + multi-scale **Generalized-ICP**,
+   no scale collapse) before scoring by mean surface distance. Even at its best
+   alignment the nearest impostor stays at **≥1.22 mm** while the genuine sits at
+   **≤0.88 mm** — *no overlap* (N=50, EER 0, d′ 3.04). Two registration choices were
+   made empirically, not by reputation: feature-based global registration (FGR) was
+   tried and **rejected** — the self-similar palate/teeth make FPFH features
+   ambiguous, collapsing Rank-1 to 0.62 — and the *refinement* was upgraded to
+   Generalized-ICP (plane-to-plane). The earlier FPFH + inlier-RMSE path could be
+   fooled by a poor alignment; this one cannot.
 3. **Engineering is production-grade**: the integrated library is at 100 % test
    coverage (100 tests), with a clean API and a finite-sample-correct certifier.
 

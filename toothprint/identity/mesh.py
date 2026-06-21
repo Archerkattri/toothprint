@@ -1,10 +1,12 @@
 """3D dental identification from intraoral-scan point clouds.
 
 The registration-based pipeline that is state of the art for dental biometrics:
-preprocess -> FPFH features -> coarse RANSAC alignment -> fine ICP -> the gallery
-arch with the smallest registration RMSE is the identity. A person's dental arch
-(crown contours, cusps, gingival margin) is an individual "tooth print"; a genuine
-re-scan registers to a low RMSE, an impostor's anatomy cannot.
+preprocess -> FPFH features -> global alignment (Fast Global Registration) ->
+fine refinement (Generalized-ICP) -> the gallery arch the query best-fits, by mean
+surface distance, is the identity (:func:`align_rigid` / :func:`identify_surface`).
+A person's dental arch (crown contours, cusps, gingival margin) is an individual
+"tooth print"; a genuine re-scan best-fits to ~scan noise, an impostor's anatomy
+cannot. (The original FPFH+RANSAC+ICP inlier-RMSE path is kept as :func:`identify`.)
 """
 from __future__ import annotations
 
@@ -59,15 +61,18 @@ def register_rmse(query, query_fpfh, gallery, gallery_fpfh, voxel_size: float = 
 
 
 def align_rigid(query_points: np.ndarray, gallery_points: np.ndarray, voxel_size: float = 0.5):
-    """Deterministic robust **rigid** best-fit of a query scan onto a gallery scan.
+    """Robust **rigid** best-fit of a query scan onto a gallery scan.
 
-    PCA-axis initialisation — the four proper-rotation sign hypotheses of the arch's
-    principal axes — followed by multi-threshold point-to-plane ICP, keeping the
-    alignment with the smallest mean surface distance. Rigid (no scale, so the query
-    can't collapse onto an arbitrary cloud) and deterministic (no RANSAC randomness),
-    so the residual is a *fair* biometric: ~scan noise for a genuine re-scan, the
-    morphological gap for an impostor — and an impostor that reads high does so
-    because the shape differs, not because the pose was mis-estimated.
+    PCA principal-axis initialisation — the four proper-rotation sign hypotheses of
+    the arch's principal axes, a *global* init driven by the whole shape (so it needs
+    no lucky starting pose, and — unlike feature-based global registration like FGR —
+    it is not fooled by the self-similar palate and teeth) — each refined by
+    multi-scale Generalized-ICP (Segal et al. 2009, plane-to-plane, the most accurate
+    ICP variant), keeping the alignment with the smallest mean surface distance.
+    Deterministic (no RANSAC randomness); rigid (no scale, so the query can't collapse
+    onto an arbitrary cloud). The residual is therefore a *fair* biometric: ~scan
+    noise for a genuine re-scan, the morphological gap for an impostor — and an
+    impostor that reads high does so because the shape differs, not the pose.
 
     Returns ``(aligned_query_points, mean_surface_distance_mm)``.
     """
@@ -82,20 +87,21 @@ def align_rigid(query_points: np.ndarray, gallery_points: np.ndarray, voxel_size
     _, _, Vq = np.linalg.svd(q - qc, full_matrices=False)
     _, _, Vg = np.linalg.svd(g - gc, full_matrices=False)
     dG, dQ = np.linalg.det(Vg), np.linalg.det(Vq)
-    gp = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(g))
-    gp.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 3, max_nn=30))
     qo = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(q))
     qo.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 3, max_nn=30))
-    best_T, best_md = np.eye(4), np.inf
+    go = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(g))
+    go.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 3, max_nn=30))
+    best_md, best_T = np.inf, np.eye(4)
     for sx, sy in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
         sz = sx * sy * dG * dQ                          # forces a proper rotation (det +1)
         Rr = Vg.T @ np.diag([sx, sy, sz]) @ Vq
         T = np.eye(4); T[:3, :3] = Rr; T[:3, 3] = gc - Rr @ qc
-        for thr in (3.0, 1.2, 0.5):
-            T = reg.registration_icp(qo, gp, thr, T, reg.TransformationEstimationPointToPlane(),
-                                     reg.ICPConvergenceCriteria(max_iteration=60)).transformation
+        for thr in (voxel_size * 4, voxel_size * 2, voxel_size):
+            T = reg.registration_generalized_icp(
+                qo, go, thr, T, reg.TransformationEstimationForGeneralizedICP(),
+                reg.ICPConvergenceCriteria(max_iteration=60)).transformation
         al = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(q)).transform(T)
-        md = float(np.asarray(al.compute_point_cloud_distance(gp)).mean())
+        md = float(np.asarray(al.compute_point_cloud_distance(go)).mean())
         if md < best_md:
             best_md, best_T = md, T
     aligned = np.asarray(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(q)).transform(best_T).points)
