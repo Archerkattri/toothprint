@@ -66,7 +66,31 @@ def identify_surface(query_points: np.ndarray, gallery_point_sets, voxel_size: f
 
     ``gallery_point_sets`` is a sequence of ``(N, 3)`` arrays. Each candidate is given
     a strong alignment first (:func:`align_rigid`), so the returned per-gallery distance
-    row reflects shape, not pose; the argmin is the identity.
+    row reflects shape, not pose; the argmin is the identity. For the sharpest score use
+    :func:`score_to_surface` when the gallery is available as a mesh.
     """
     return np.array([align_rigid(query_points, np.asarray(g), voxel_size)[1]
                      for g in gallery_point_sets])
+
+
+def score_to_surface(query_points: np.ndarray, gallery_vertices: np.ndarray,
+                     gallery_faces: np.ndarray, voxel_size: float = 0.5) -> float:
+    """Best rigid fit, then mean distance from the query to the gallery *surface* (mm).
+
+    The nearest-gallery-*point* distance used by :func:`identify_surface` has a floor at
+    ~half the gallery's point spacing — it can never read zero even for a perfect match.
+    Measuring against the gallery *triangle surface* (raycast) removes that floor: a
+    genuine re-scan reads ~scan noise (sub-0.1 mm), an impostor stays millimetres off,
+    so the genuine/impostor separation is far sharper. Needs the gallery as a mesh
+    (vertices + faces, e.g. from :func:`toothprint.io.load_scan`).
+    """
+    import open3d as o3d
+
+    aligned, _ = align_rigid(query_points, gallery_vertices, voxel_size)
+    mesh = o3d.t.geometry.TriangleMesh(
+        o3d.core.Tensor(np.asarray(gallery_vertices, np.float32)),
+        o3d.core.Tensor(np.asarray(gallery_faces, np.uint32)))
+    scene = o3d.t.geometry.RaycastingScene()
+    scene.add_triangles(mesh)
+    d = scene.compute_distance(o3d.core.Tensor(np.asarray(aligned, np.float32))).numpy()
+    return float(d.mean())

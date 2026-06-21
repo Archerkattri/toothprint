@@ -143,3 +143,23 @@ def test_identify_surface_genuine_is_best():
     query = _reproject(_subject(seed=2), seed=4)
     row = identify_surface(query, gallery, voxel_size=1.0)
     assert int(np.argmin(row)) == 1     # subject 2 (gallery index 1) is the match
+
+
+def test_score_to_surface_genuine_sub_noise_impostor_high():
+    pytest.importorskip("open3d")
+    trimesh = pytest.importorskip("trimesh")
+    from toothprint.identity.mesh import score_to_surface
+    rng = np.random.default_rng(0)
+    gen = trimesh.creation.icosphere(subdivisions=3, radius=10.0)
+    gen.vertices = gen.vertices * np.array([1.0, 0.7, 0.5])      # anisotropic -> stable axes
+    imp = trimesh.creation.icosphere(subdivisions=3, radius=10.0)
+    imp.vertices = imp.vertices * np.array([0.6, 1.0, 0.85])     # a different shape
+    qbase = np.asarray(gen.sample(3000))                          # query = surface re-sample
+    ax = rng.normal(size=3); ax /= np.linalg.norm(ax); a = 0.2
+    K = np.array([[0, -ax[2], ax[1]], [ax[2], 0, -ax[0]], [-ax[1], ax[0], 0]])
+    R = np.eye(3) + np.sin(a) * K + (1 - np.cos(a)) * (K @ K)
+    q = qbase @ R.T + rng.uniform(-4, 4, 3) + rng.normal(0, 0.05, qbase.shape)
+    d_gen = score_to_surface(q, np.asarray(gen.vertices), np.asarray(gen.faces), voxel_size=1.0)
+    d_imp = score_to_surface(q, np.asarray(imp.vertices), np.asarray(imp.faces), voxel_size=1.0)
+    # point-to-surface removes the sampling floor: genuine ~scan-noise, impostor far above
+    assert d_gen < 0.3 and d_imp > 3.0 * d_gen
