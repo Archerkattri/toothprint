@@ -1,0 +1,48 @@
+{
+ "n_heldout": 50,
+ "emb_dim": 256,
+ "method": "DGCNN + sub-centre ArcFace",
+ "note": "held-out = subjects unseen in training; gicp_rank1 is the committed whole-arch baseline",
+ "keep_ablation": {
+  "1.0": {
+   "embedding_rank1": 0.96,
+   "gicp_rank1": 1.0
+  },
+  "0.5": {
+   "embedding_rank1": 0.52,
+   "gicp_rank1": 0.23333333333333334
+  },
+  "0.3": {
+   "embedding_rank1": 0.1,
+   "gicp_rank1": 0.1
+  }
+ },
+ "main": {
+  "n": 50,
+  "rank1": 0.96,
+  "rank5": 1.0,
+  "auc": 0.9967918367346938,
+  "eer": 0.0163265306122449,
+  "dprime": 4.332963466644287
+ },
+ "conformal_fmr": {
+  "0.01": {
+   "emp_fmr": 0.014183333333333333,
+   "emp_fmr_p95": 0.03508333333333331,
+   "tar": 0.8978
+  },
+  "0.05": {
+   "emp_fmr": 0.054725,
+   "emp_fmr_p95": 0.09008333333333331,
+   "tar": 1.0
+  },
+  "0.1": {
+   "emp_fmr": 0.1043,
+   "emp_fmr_p95": 0.1500833333333333,
+   "tar": 1.0
+  }
+ },
+ "open_set": {
+  "fnir_at_fpir_1pct": 0.6897058823529411
+ }
+}

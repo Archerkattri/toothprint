@@ -91,6 +91,8 @@ The FMR bound even **survives hard negatives** — re-calibrated against each su
 
 ![2D radiograph identity at scale: separation, CMC, conformal FMR, open-set](docs/radiograph_identity.png)
 
+**A learned 3D embedding — the literature's open gap, now built.** The classical GICP matcher is near-perfect at full coverage but, being a *rigid per-pair* fit, collapses under tooth loss. So alongside it a **DGCNN + sub-centre ArcFace** encoder (`toothprint/identity/embedding.py`) learns a metric on Poseidon3D. Evaluated on **50 subjects held entirely out of training** (unseen people — generalisation, not memorisation): **Rank-1 0.96, AUC 0.997**, and — the point — it is **2.2× more robust to partial overlap** than GICP at 50 % tooth loss (**0.52 vs 0.23**), exactly where the rigid method falls apart. GICP still wins at full coverage (1.0 vs 0.96), so the two are complementary: a *retrieve-by-embedding → refine-by-GICP* hybrid is the natural synthesis. No prior dental-identity work reports a learned 3D embedding (reproduce: `evaluation/scripts/train_embedding.py` → `eval_embedding.py`; result in `embedding_identity.json`).
+
 ## Change — certify a bone-level shift
 
 On a real DenPAR tooth the bone margin recedes between visits and the certificate's **sub-pixel registration** tracks it live (green = baseline, red = now), flipping to *changed* once it clears the clinical threshold — false progression bounded by α:
