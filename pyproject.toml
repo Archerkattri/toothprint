@@ -20,6 +20,10 @@ dependencies = [
 [project.optional-dependencies]
 api = ["fastapi>=0.110", "uvicorn>=0.27", "python-multipart>=0.0.9"]
 recon = ["torch>=2.4", "gsplat>=1.4"]  # Gaussian-Splatting reconstruction front end
+io = [  # every medical format a dentist/oral-radiologist uses (radiographs, scans, CBCT)
+    "pydicom>=2.4", "nibabel>=5.1", "trimesh>=4.0", "tifffile>=2023.7",
+    "Pillow>=10.0", "lxml>=4.9", "pylibjpeg>=2.0", "pylibjpeg-libjpeg", "pylibjpeg-openjpeg",
+]
 dev = ["pytest>=8", "pytest-cov"]
 plots = ["matplotlib>=3.7"]
 
@@ -28,3 +32,6 @@ include = ["toothprint*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]

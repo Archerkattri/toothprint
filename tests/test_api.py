@@ -58,3 +58,120 @@ def test_certify_surface_labels():
 def test_index_served():
     r = client.get("/")
     assert r.status_code == 200 and b"ToothPrint" in r.content
+
+
+# --- hardening: bounded + finite input -------------------------------------
+
+def test_formats_endpoint():
+    r = client.get("/api/formats")
+    assert r.status_code == 200 and "scan" in r.json()["supported"]
+
+
+def test_security_headers_present():
+    r = client.get("/api/health")
+    assert r.headers["x-content-type-options"] == "nosniff"
+    assert r.headers["x-frame-options"] == "DENY"
+
+
+def test_reject_nonfinite_points():
+    # raw body: 1e309 is valid JSON but parses to +inf -> must be rejected cleanly (422, not 500)
+    body = ('{"query": [[1e309, 0.0], [1.0, 2.0]], '
+            '"gallery": [{"label": "a", "points": [[0.0, 0.0], [1.0, 1.0]]}]}')
+    r = client.post("/api/identify/radiograph", content=body,
+                    headers={"content-type": "application/json"})
+    assert r.status_code == 422
+
+
+def test_reject_wrong_point_dim():
+    r = client.post("/api/identify/radiograph", json={
+        "query": [[0.0, 1.0, 2.0]],
+        "gallery": [{"label": "a", "points": [[0.0, 0.0]]}]})
+    assert r.status_code == 422
+
+
+def test_reject_empty_gallery():
+    r = client.post("/api/identify/radiograph", json={
+        "query": [[0.0, 0.0]], "gallery": []})
+    assert r.status_code == 422
+
+
+def test_reject_alpha_out_of_range():
+    for a in (0.0, 1.0, -0.1, 1.5):
+        r = client.post("/api/certify/change", json={
+            "measured_px": 5.0, "q_lo": 0.5, "q_hi": 0.5, "alpha": a})
+        assert r.status_code == 422
+
+
+def test_reject_inverted_quantiles():
+    r = client.post("/api/certify/surface", json={
+        "measured_mm": 1.0, "q_lo": 0.9, "q_hi": 0.1})
+    assert r.status_code == 422
+    r2 = client.post("/api/certify/change", json={
+        "measured_px": 5.0, "q_lo": 0.9, "q_hi": 0.1})
+    assert r2.status_code == 422
+
+
+def test_inspect_volume(tmp_path):
+    pytest.importorskip("nibabel")
+    import nibabel as nib
+    vol = np.random.default_rng(0).random((8, 9, 7)).astype(np.float32)
+    p = tmp_path / "v.nii.gz"
+    nib.save(nib.Nifti1Image(vol, np.diag([0.3, 0.3, 0.3, 1])), str(p))
+    with open(p, "rb") as fh:
+        r = client.post("/api/inspect", files={"file": ("v.nii.gz", fh, "application/octet-stream")})
+    assert r.status_code == 200 and r.json()["kind"] == "volume"
+    assert r.json()["shape"] == [8, 9, 7]
+
+
+def test_oversize_request_rejected():
+    huge = [[0.0, 0.0]] * 6000          # > MAX_POINTS
+    r = client.post("/api/identify/radiograph", json={
+        "query": huge, "gallery": [{"label": "a", "points": [[0.0, 0.0]]}]})
+    assert r.status_code == 422
+
+
+# --- safe file ingest ------------------------------------------------------
+
+def test_inspect_scan(tmp_path):
+    pytest.importorskip("trimesh")
+    import trimesh
+    p = tmp_path / "m.stl"
+    trimesh.creation.box(extents=[10, 12, 8]).export(str(p))
+    with open(p, "rb") as fh:
+        r = client.post("/api/inspect", files={"file": ("m.stl", fh, "application/octet-stream")})
+    assert r.status_code == 200 and r.json()["kind"] == "scan"
+    assert r.json()["n_faces"] == 12
+
+
+def test_inspect_radiograph(tmp_path):
+    pytest.importorskip("PIL")
+    from PIL import Image
+    p = tmp_path / "x.png"
+    Image.fromarray((np.random.default_rng(0).random((40, 48)) * 255).astype(np.uint8)).save(str(p))
+    with open(p, "rb") as fh:
+        r = client.post("/api/inspect", files={"file": ("x.png", fh, "image/png")})
+    assert r.status_code == 200 and r.json()["kind"] == "radiograph"
+    assert r.json()["shape"] == [40, 48]
+
+
+def test_inspect_rejects_garbage(tmp_path):
+    p = tmp_path / "j.xyz"; p.write_bytes(b"\x00\x01 not a medical file")
+    with open(p, "rb") as fh:
+        r = client.post("/api/inspect", files={"file": ("j.xyz", fh, "application/octet-stream")})
+    assert r.status_code == 422
+
+
+def test_request_body_size_cap(monkeypatch):
+    monkeypatch.setattr("api.main.MAX_REQUEST_BYTES", 5)
+    r = client.post("/api/certify/change", json={"measured_px": 5.0, "q_lo": 0.5, "q_hi": 0.5})
+    assert r.status_code == 413
+
+
+def test_upload_size_cap(tmp_path, monkeypatch):
+    pytest.importorskip("trimesh")
+    import trimesh
+    monkeypatch.setattr("api.main.MAX_UPLOAD_BYTES", 4)
+    p = tmp_path / "m.stl"; trimesh.creation.box().export(str(p))
+    with open(p, "rb") as fh:
+        r = client.post("/api/inspect", files={"file": ("m.stl", fh, "application/octet-stream")})
+    assert r.status_code == 413
