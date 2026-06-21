@@ -1,0 +1,22 @@
+{
+ "n_heldout": 50,
+ "topK": 5,
+ "method": "embedding retrieve -> GICP refine",
+ "keep_ablation": {
+  "1.0": {
+   "embedding_rank1": 0.9,
+   "hybrid_rank1": 1.0,
+   "gicp_wholearch_rank1": 1.0
+  },
+  "0.5": {
+   "embedding_rank1": 0.32,
+   "hybrid_rank1": 0.36,
+   "gicp_wholearch_rank1": 0.23333333333333334
+  },
+  "0.3": {
+   "embedding_rank1": 0.12,
+   "hybrid_rank1": 0.06,
+   "gicp_wholearch_rank1": 0.1
+  }
+ }
+}
