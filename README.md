@@ -100,13 +100,12 @@ is just photos:
 
 ![Photos to a high-detail mesh, with error heatmap — animated](docs/recon_turntable.gif)
 
-**Change measurement in action** — the detector only *roughly* localises the tooth
-(coarse, on these large radiographs) — pinpoint landmarks aren't needed. The
-certificate finds the bone-margin patch and reads the recession between two
-timepoints by **sub-pixel registration** (here 20.7 px measured vs 22 px true),
-then certifies it conformally:
+**Change measurement in action** — on a real DenPAR tooth, the bone margin recedes
+between visits and the certificate's **sub-pixel registration** tracks it live
+(green = baseline, red = now), reading the recession to ~0.1 px and flipping to
+*changed* once it clears the clinical threshold — false progression bounded by α:
 
-![Change certificate measuring a real bone-level change](docs/change_measurement.png)
+![Change certificate tracking a receding bone margin — animated](docs/change_measurement.gif)
 
 **Change certificate** — measuring the bone-level shift *differentially* (sub-pixel
 registration of the margin between timepoints, not by re-detecting landmarks) is
