@@ -95,6 +95,8 @@ The FMR bound even **survives hard negatives** — re-calibrated against each su
 
 **The synthesis — retrieve-by-embedding → refine-by-GICP.** Shortlist the top-5 gallery arches by embedding distance (robust retrieval), then re-rank that shortlist by GICP surface distance (precise refinement). On the same held-out subjects this lifts full-coverage Rank-1 from the embedding's 0.90 to a perfect **1.000** — recovering GICP's precision *and* keeping the embedding's robust retrieval, the best of both. (Under severe tooth loss the rigid refine becomes unreliable and should fall back to the embedding on poor fit — a fitness gate is the honest next step.) `evaluation/scripts/eval_hybrid.py`, `hybrid_identity.json`.
 
+**Multimodal fusion on real paired data.** On the open Figshare CBCT+oral-scan set, every patient has two genuinely independent biometrics — the intraoral **crown** surface (IOS) and the CBCT **bone/root** geometry. Scored separately and **fused at the score level** under one decision (20 real paired patients): IOS Rank-1 **1.000**, CBCT **0.950**, **fused 1.000** — fusion fixes the weaker modality's miss. A prototype (single-timepoint, small N), but the *two modalities are real and paired*, which the disjoint Poseidon3D/DenPAR sets could never provide. `evaluation/scripts/eval_multimodal.py`, `multimodal_identity.json`.
+
 ## Change — certify a bone-level shift
 
 On a real DenPAR tooth the bone margin recedes between visits and the certificate's **sub-pixel registration** tracks it live (green = baseline, red = now), flipping to *changed* once it clears the clinical threshold — false progression bounded by α:
