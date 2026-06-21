@@ -70,6 +70,10 @@ A query re-scan is given its **best rigid alignment** to each gallery arch (PCA 
 
 ![Identity robustness ablations](docs/identity_ablations.png)
 
+**Same rigor, second modality — 2D radiographs.** The per-tooth landmark constellation (scale-normalised so magnification cancels) recognises a person from a single radiograph just as cleanly: across N=120 DenPAR images, Rank-1 1.000, EER 0, d′ 4.17, with the same conformal bounded-FMR and a *perfect* open-set rejection (FNIR 0.000 @ FPIR 1%):
+
+![2D radiograph identity at scale: separation, CMC, conformal FMR, open-set](docs/radiograph_identity.png)
+
 ## Change — certify a bone-level shift
 
 On a real DenPAR tooth the bone margin recedes between visits and the certificate's **sub-pixel registration** tracks it live (green = baseline, red = now), flipping to *changed* once it clears the clinical threshold — false progression bounded by α:
