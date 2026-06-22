@@ -1,0 +1,16 @@
+{
+ "n": 80,
+ "note": "CorrNet trained on Poseidon3D, evaluated on Teeth3DS+ (cross-dataset learned generalization, realistic whole-tooth dropout)",
+ "results": {
+  "teeth_keep0.5": {
+   "rank1": 0.425,
+   "std": 0.018,
+   "auc": 0.897
+  },
+  "teeth_keep0.3": {
+   "rank1": 0.242,
+   "std": 0.093,
+   "auc": 0.801
+  }
+ }
+}
