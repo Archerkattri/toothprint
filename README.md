@@ -80,18 +80,21 @@ Use the package as a library, FastAPI service, or desktop Studio shell. The inge
 The top-level story is dental first, chart second:
 
 <p align="center">
-  <img src="docs/input_arch_spin.gif" width="31%" alt="Rotating intraoral scan input">
-  <img src="docs/identity_match.gif" width="31%" alt="Same-person versus stranger registration evidence">
-  <img src="docs/change_measurement.gif" width="31%" alt="Bone-level change certificate on a radiograph">
+  <img src="docs/input_arch_spin.gif" width="30%" alt="Rotating intraoral scan input">
+  <img src="docs/change_measurement.gif" width="62%" alt="Bone-level change certificate on a radiograph">
 </p>
 
 <p align="center">
-  <img src="docs/recon_turntable.gif" width="46%" alt="Photos to mesh reconstruction turntable">
+  <img src="docs/identity_match.gif" width="88%" alt="Same-person versus stranger registration evidence">
+</p>
+
+<p align="center">
+  <img src="docs/recon_turntable.gif" width="88%" alt="Photos to mesh reconstruction turntable">
+</p>
+
+<p align="center">
   <img src="docs/studio.png" width="46%" alt="ToothPrint Studio live examination">
-</p>
-
-<p align="center">
-  <img src="docs/studio_certificate.png" width="72%" alt="Exported ToothPrint PDF report with inputs, findings, method, provenance, and limitations">
+  <img src="docs/studio_certificate.png" width="46%" alt="Exported ToothPrint PDF report with inputs, findings, method, provenance, and limitations">
 </p>
 
 ## Quick start
