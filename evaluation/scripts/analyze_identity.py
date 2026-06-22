@@ -163,7 +163,7 @@ def main():
 
     # --- figure ---
     gen, imp = split_scores(M)
-    fig, ax = plt.subplots(1, 4, figsize=(19, 4.4))
+    fig, ax = plt.subplots(2, 2, figsize=(11.5, 9.4)); ax = ax.ravel()
     hi = np.percentile(np.r_[gen, imp], 99.5); bins = np.linspace(0, hi, 60)
     ax[0].hist(imp, bins=bins, color="#d6543c", alpha=0.55, density=True, label=f"impostor ({len(imp):,})")
     ax[0].hist(gen, bins=bins, color="#2ca06b", alpha=0.85, density=True, label=f"genuine ({len(gen)})")
@@ -183,9 +183,9 @@ def main():
     ax[3].set_title(f"Open-set · DIR vs FPIR\nFNIR@FPIR=1%: {os_['fnir_at_fpir_1pct']:.3f}", fontsize=10)
     ax[3].set_xlabel("false-positive identification rate"); ax[3].set_ylabel("detection+identification rate")
     fig.suptitle("Identity on all 200 Poseidon3D subjects — standard metrics, conformal bounded-FMR, and open-set",
-                 fontsize=13, y=1.0)
-    fig.patch.set_facecolor("white"); fig.tight_layout(rect=[0, 0, 1, 0.93])
-    out = Path(__file__).resolve().parents[2] / "docs" / "identity_metrics.png"; fig.savefig(out, dpi=115); plt.close(fig)
+                 fontsize=14, fontweight="bold", y=0.985)
+    fig.patch.set_facecolor("white"); fig.tight_layout(rect=[0, 0, 1, 0.955])
+    out = Path(__file__).resolve().parents[2] / "docs" / "identity_metrics.png"; fig.savefig(out, dpi=140); plt.close(fig)
     print("wrote", out)
 
 

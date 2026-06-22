@@ -167,7 +167,7 @@ The 2D radiograph constellation experiment is auxiliary but consistent: on 400 D
 \end{figure*}
 
 \subsection{Rigid Matching Fails Under Whole-Tooth Dropout}
-Partial overlap is the dominant failure mode. At 50\% retention, rigid GICP falls to Rank-1 0.23; at 30\% retention it falls to 0.10. The failure is not only the distance statistic. If the initialization and correspondence are wrong, robust statistics over the wrong alignment cannot recover the identity. Table~\ref{tab:partial} shows the main comparison.
+Partial overlap is the dominant failure mode. At 50\% retention, rigid GICP falls to Rank-1 0.23; at 30\% retention it falls to 0.10. The failure is not only the distance statistic. If the initialization and correspondence are wrong, robust statistics over the wrong alignment cannot recover the identity. Table~\ref{tab:partial} and Figure~\ref{fig:partial} show the main comparison.
 
 \begin{table}[t]
 \centering
@@ -187,6 +187,13 @@ CorrNet, planar crop & -- & 0.913 & 0.800 \\
 \caption{Rank-1 under partial coverage. Whole-tooth dropout is the primary realistic setting. CorrNet improves the 50\%-retention regime by 3.8$\times$ over rigid GICP.}
 \label{tab:partial}
 \end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../docs/partial_overlap.png}
+\caption{Identification under realistic whole-tooth dropout on held-out subjects. Rigid GICP collapses from Rank-1 1.00 at full coverage to 0.23 at 50\% tooth loss, while learned point correspondence (CorrNet) recovers it to 0.867 (a $3.8\times$ improvement) and degrades gracefully to 0.567 at 70\% loss. Values match Table~\ref{tab:partial}.}
+\label{fig:partial}
+\end{figure}
 
 \subsection{Correspondence Helps Beyond Architecture Alone}
 The untrained correspondence control reaches Rank-1 0.72 at keep-0.5. This is important: some of the gain comes from the architecture of local matching plus rigid verification, not only from learned descriptor semantics. Training still contributes substantially, raising the realistic keep-0.5 result to 0.867 and AUC to 0.984.
