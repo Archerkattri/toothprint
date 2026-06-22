@@ -46,7 +46,8 @@ async def _validation_error(request: Request, exc: RequestValidationError):
 @app.middleware("http")
 async def _guard(request, call_next):
     cl = request.headers.get("content-length")
-    if cl and cl.isdigit() and int(cl) > MAX_REQUEST_BYTES and not request.url.path.startswith("/api/inspect"):
+    upload_paths = ("/api/inspect", "/api/identify/scan")
+    if cl and cl.isdigit() and int(cl) > MAX_REQUEST_BYTES and not request.url.path.startswith(upload_paths):
         return JSONResponse(status_code=413, content={"detail": "request body too large"})
     resp = await call_next(request)
     resp.headers["X-Content-Type-Options"] = "nosniff"
