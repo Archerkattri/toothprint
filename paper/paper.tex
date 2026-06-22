@@ -78,6 +78,12 @@ We evaluate three regimes. In \emph{full coverage}, $Q$ is a synthetically reacq
 For a threshold $\tau$, accepting the nearest candidate when $\min_i \score(Q,P_i)\le \tau$ induces a false-match rate (FMR) on impostor queries and a false-negative identification rate (FNIR) on genuine queries. We report Rank-1 accuracy, area under the ROC curve (AUC), equal error rate (EER), detection-error-tradeoff (DET) curves, and FNIR at FMR=1\%.
 
 \section{Methods}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.97\linewidth]{../docs/pipeline.png}
+\caption{The unified \method\ pipeline. A query is detected into an arch point cloud or per-tooth landmarks, retrieved against the gallery by a global embedding, verified on the shortlist by learned point correspondence with a rigid Procrustes residual, and certified by a split-conformal threshold $\hat{\tau}_\alpha$: the nearest candidate is accepted as subject $\hat{i}$ only if its score clears the threshold (false-match rate $\le\alpha$), otherwise the system abstains.}
+\label{fig:pipeline}
+\end{figure*}
 \subsection{Rigid Surface Verification}
 The rigid verifier aligns a query $Q$ to each gallery surface $P_i$. We initialize with PCA principal axes and enumerate proper-rotation hypotheses to reduce sensitivity to the arch's bilateral symmetry. Each candidate is refined with multi-scale GICP. The score is the mean point-to-surface distance from aligned query points to the gallery surface:
 \begin{equation}
@@ -123,7 +129,7 @@ A query is then accepted as subject
 and the system abstains otherwise. The bound is the precise sense in which an accept decision is \emph{certified}: it caps the population false-match rate at the target level from a finite calibration set, with no distributional assumption beyond exchangeability. It is, however, a \emph{marginal} guarantee tied to the calibration distribution---it does not condition on a specific gallery subject, and it must be recalibrated for a new site, scanner, or population. We also evaluate a hard-negative variant in which calibration impostors are each subject's nearest impostors rather than random impostors, which holds the FMR target against the worst-case neighbors at the cost of genuine accept rate.
 
 \subsection{Unified Retrieve--Verify--Certify Pipeline}
-The full pipeline uses the embedding for recall, keeping the top-$k$ gallery candidates, then verifies that shortlist with correspondence scores and applies the conformal threshold. This separates the roles of representation learning: global descriptors retrieve candidates quickly; correspondence supplies the final geometric evidence.
+The full pipeline uses the embedding for recall, keeping the top-$k$ gallery candidates, then verifies that shortlist with correspondence scores and applies the conformal threshold. This separates the roles of representation learning: global descriptors retrieve candidates quickly; correspondence supplies the final geometric evidence. Figure~\ref{fig:pipeline} summarizes the stages and the accept/abstain decision.
 
 \section{Experimental Protocol}
 \paragraph{Datasets.}
