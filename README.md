@@ -1,8 +1,6 @@
 <div align="center">
 
-# 🦷 ToothPrint
-
-### Certified dental-imaging intelligence — recognise a person by their teeth, and certify what changed.
+[![ToothPrint — recognise a person by their teeth, and certify what changed](docs/banner.svg)](https://github.com/Archerkattri/toothprint)
 
 **`identity`** · **`change`** · **`surface`** — three reads of one durable signal, each returning a *certificate* instead of a guess.
 
