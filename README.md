@@ -6,7 +6,7 @@
 
 **`identity`** · **`change`** · **`surface`** — three reads of one durable signal, each returning a *certificate* instead of a guess.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-0d9488.svg)](#license)
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-0d9488.svg)](LICENSE)
 [![Methods paper](https://img.shields.io/badge/paper-PDF-1f2a37.svg)](paper/paper.pdf)
 [![Reproduce](https://img.shields.io/badge/reproduce-smoke%20test-0d9488.svg)](REPRODUCE.md)
 [![Conformal](https://img.shields.io/badge/guarantee-FMR%20%E2%89%A4%20%CE%B1-d97706.svg)](#the-certificate)
@@ -34,17 +34,19 @@ Every verdict is **conformal**: it fires only when the interval around the measu
 
 **The verdict first — not just the data.** Every mechanism is held to the bar that actually matters (recognise the right person, flag real change without crying wolf, rebuild a usable mesh), and here is whether we clear it:
 
-![Is ToothPrint good? — every mechanism vs the bar that matters](docs/scorecard.png)
-
 | Capability | What "good" requires | Result | |
 |---|---|---|:--:|
 | **Identity — 3D scans** | a stranger never outranks you | **Rank-1 0.995** (N=200, EER 0.005, AUC 0.997), conformal **FMR ≤ α**, open-set FNIR **0.030**, fidelity **0.05 mm** | ✅ |
 | **Identity — partial overlap** | survive missing teeth | **Rank-1 0.87 at 50% tooth loss** (learned correspondence; ~3.8× rigid GICP's 0.23) | ✅ |
 | **Identity — 2D radiographs** | pick the right person out of hundreds | **Rank-1 1.000** (N=400, EER 0), robust to jitter & magnification | ✅ |
+| **Identity — certified decision** | one accept/abstain verdict, bounded FMR | unified **FNIR@FMR=1% 0.00** full-coverage; abstains under heavy tooth loss | ✅ |
+| **Identity — dental work** | identify by the restoration pattern | **0.93 CBCT · 0.91–0.99 radiograph** (forensic chart; n=55 / 165) | ✅ |
+| **Multimodal fusion** | combine independent biometrics | quality-weighted fusion **beats best single** (oracle bound 1.0, complementary) | ✅ |
 | **Change — measurement** | flag a real shift, never cry wolf | recall **0.98 @ 0% false-progression** | ✅ |
 | **Change — fully automatic** | detector finds the teeth | **0.91 end-to-end** (YOLO26-pose; 0.98 ceiling) | 🔄 |
 | **Surface certificate** | catch a lesion a global average misses | **0.99** localized vs **0.00** naive (n=8), to **0.4 mm** noise, **0% false-change** | ✅ |
 | **Reconstruction** | sharp enough for clinical use (≈0.5 mm) | **~0.3 mm** median 2DGS mesh, 38% better than 3DGS (n=5) | ✅ |
+| **Cross-dataset generalization** | works on a second real dataset | Teeth3DS Rank-1 1.0 (registration); learned descriptors carry an honest domain gap (0.87→0.42) | 🔄 |
 
 Specificity (never crying wolf) is **oracle-level by design** — the conformal false-positive rate is provably ≤ α in finite samples, and held a true **0** in most tests. *All identity numbers are measured on public single-timepoint scans with synthetic re-scans/crops, so read them as in-simulation ceilings — the one binding gate is [real cross-session data](#help-wanted--real-longitudinal-data).*
 
@@ -352,20 +354,26 @@ docs/         result figures
 - **Multimodal Dental Dataset (PhysioNet)** — 169 patients, multi-visit timestamps + CBCT + 16k periapical radiographs. Credentialed. <https://physionet.org/content/multimodal-dental-dataset/>
 - **3D pre/post-orthodontic models (Zenodo 11392406)** — 1,060 real pre/post 3D intraoral pairs from 435 patients, *our exact modality*. Maintained by **Prof. Liu Yongjin, Tsinghua University — `liuyongjin@tsinghua.edu.cn`**. <https://zenodo.org/records/11392406>
 
-If you're an academic who can legitimately access either, or can introduce me to the maintainers, please reach out: **`kattri@snu.ac.kr`**. Any contribution gratefully credited.
+**How you can help:** if you can legitimately access either dataset, or you know the maintainers — **send or forward the note below to them**, and point them back to me for the reply at **`krishiattriwork@gmail.com`**. An introduction is worth as much as the data itself. Any contribution gratefully credited.
 
-<details><summary>A short email I'd send (or that you could forward)</summary>
+<details><summary>📧 The note to send / forward to the dataset maintainer</summary>
 
-> **Subject:** Access to [dataset] for an independent dental-imaging project
+> **Subject:** Introduction — dataset access for an independent dental-imaging researcher
 >
 > Dear [maintainer],
 >
-> I'm Krishi Attri, a master's student working on an independent, non-commercial project — *ToothPrint*, a conformal-certified system for dental identity and longitudinal change detection. My methods are currently validated only on synthetic perturbations of single-timepoint public scans; your dataset's real same-patient [pre/post · multi-visit] data is exactly what I need to test them on genuine re-acquisitions. I'd be grateful for access under whatever terms you require — I'll use it strictly for non-commercial research, will not redistribute it, and will acknowledge the dataset in any results. Happy to share more. Thank you for considering.
+> I'd like to introduce **Krishi Attri**, a master's student building *ToothPrint* — an independent, non-commercial, conformal-certified system for dental identity and longitudinal change detection. The methods are currently validated only on *synthetic* perturbations of single-timepoint public scans, and your **[dataset]**'s real same-patient **[pre/post · multi-visit]** data is exactly what's needed to test them on genuine re-acquisitions.
 >
-> — Krishi Attri · `kattri@snu.ac.kr`
+> Would you be open to granting access under whatever terms you require? Krishi will use it strictly for non-commercial research, will not redistribute it, and will acknowledge the dataset in any results. **You can reach Krishi directly at `krishiattriwork@gmail.com`** to arrange access or ask anything about the project.
+>
+> Thank you for considering.
+
+*Writing on your own behalf rather than forwarding? Just swap the opening for "I'm Krishi Attri, …" — either way, replies come to `krishiattriwork@gmail.com`.*
 
 </details>
 
 ## License
 
-MIT.
+**[PolyForm Noncommercial License 1.0.0](LICENSE)** — free for *everyone* for any **non-commercial** purpose. That explicitly includes research, education, personal projects, and **non-profit / public health & safety organizations — hospitals, clinics, forensic labs — regardless of how they are funded** (the license's *Noncommercial Organizations* clause). Use it, modify it, share it, build on it.
+
+What is **not** permitted: selling the software, folding it into a paid product or service, or any use for commercial advantage — so no one can fork ToothPrint and resell it (to hospitals or anyone). Need a commercial license? Ask: **`krishiattriwork@gmail.com`**.
