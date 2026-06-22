@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ToothPrint — Certificate of Dental Analysis</title>
 <style>
-  /* A forensic-odontology lab report, not a dashboard. Cool clinical paper, an
-     authentic document serif, one institutional ink, and a letterpress certification
-     stamp that presses only when the conformal interval clears the threshold. */
+  /* A forensic-odontology lab report, not a dashboard: cool clinical paper, a document
+     serif, one institutional ink. Findings are stated plainly and accumulate into a
+     record; the whole sheet prints to a self-contained PDF report. */
   :root{
     --desk:#e7eaec; --sheet:#ffffff; --ink:#1b2329; --slate:#5c6b73; --faint:#8b979d;
     --rule:#d7dde0; --teal:#11505f; --teal-soft:#e7eef0;
@@ -21,11 +21,8 @@
   body{background:var(--desk);color:var(--ink);font-family:var(--serif);line-height:1.5;
     background-image:linear-gradient(#e4e7e9,#eceef0);min-height:100vh;padding:30px 16px}
   .sheet{max-width:1080px;margin:0 auto;background:var(--sheet);border:1px solid #cdd4d7;
-    box-shadow:0 1px 0 #fff inset,0 18px 50px -30px rgba(20,40,50,.55);padding:0}
+    box-shadow:0 1px 0 #fff inset,0 18px 50px -30px rgba(20,40,50,.55)}
   .lab{font-family:var(--sans)}
-  .eyebrow{font-family:var(--sans);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--slate)}
-
-  /* letterhead */
   header{padding:26px 40px 0}
   .head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
   .mark{font-family:var(--sans);font-weight:700;font-size:25px;letter-spacing:.04em}
@@ -39,7 +36,6 @@
   .meta .live{margin-left:auto;color:var(--faint)}
   .meta .live.on{color:var(--certified)}
 
-  /* body: specimen | analyses */
   .body{display:grid;grid-template-columns:0.82fr 1.18fr;gap:0}
   @media(max-width:820px){.body{grid-template-columns:1fr}}
   .col{padding:24px 40px 30px}
@@ -61,7 +57,6 @@
   .record td.v{font-family:var(--mono);font-size:13px;color:var(--ink)}
   .err{font-family:var(--sans);font-size:12.5px;color:var(--alert);margin-top:10px;display:none}
 
-  /* analyses */
   .analysis{border-bottom:1px solid var(--rule);padding:16px 0}
   .analysis:first-of-type{padding-top:0}
   .analysis h3{font-family:var(--sans);font-size:15px;margin:0 0 4px;font-weight:600;display:flex;align-items:baseline;gap:10px}
@@ -77,8 +72,7 @@
     background:var(--teal);color:#fff;padding:8px 16px;border-radius:2px;cursor:pointer}
   button.outline{background:#fff;color:var(--teal)}
   button:disabled{opacity:.45;cursor:not-allowed}
-  .finding{font-family:var(--serif);font-size:14.5px;margin-top:12px;display:none;padding-left:14px;
-    border-left:3px solid var(--rule)}
+  .finding{font-family:var(--serif);font-size:14.5px;margin-top:12px;display:none;padding-left:14px;border-left:3px solid var(--rule)}
   .finding.show{display:block}
   .finding .verdict{font-weight:700;font-size:16px}
   .finding .detail{font-family:var(--mono);font-size:12.5px;color:var(--slate);margin-top:5px}
@@ -86,34 +80,38 @@
   .v-uncertain{color:var(--uncertain);border-left-color:var(--uncertain)!important}
   .v-alert{color:var(--alert);border-left-color:var(--alert)!important}
 
-  /* the certificate block + stamp */
-  .cert{margin:0;padding:24px 40px 30px;border-top:3px double var(--rule);background:#fcfdfd;
-    display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center}
-  .cert .body-txt{font-family:var(--serif)}
-  .cert h4{font-family:var(--sans);text-transform:uppercase;letter-spacing:.16em;font-size:12px;
-    color:var(--teal);margin:0 0 10px;font-weight:600}
-  .cert .finding-line{font-size:17px;min-height:24px}
-  .cert .fine{font-family:var(--mono);font-size:12px;color:var(--slate);margin-top:8px;line-height:1.7}
+  /* findings of record + report */
+  .cert{margin:0;padding:22px 40px 28px;border-top:3px double var(--rule);background:#fcfdfd}
+  .cert-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:16px}
+  .cert h4{font-family:var(--sans);text-transform:uppercase;letter-spacing:.16em;font-size:12px;color:var(--teal);margin:0;font-weight:600}
+  .flog{margin-top:8px}
+  .flog .empty{font-family:var(--serif);font-size:14.5px;color:var(--slate);font-style:italic;padding:6px 0}
+  .frow{display:grid;grid-template-columns:96px 1fr auto;gap:16px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--rule)}
+  .frow:last-child{border-bottom:none}
+  .fstat{font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+  .ftext{font-family:var(--serif);font-size:14.5px;color:var(--ink)}
+  .ftext .m{font-family:var(--mono);font-size:12px;color:var(--slate);display:block;margin-top:3px}
+  .ftime{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}
+  .frow.v-certified .fstat{color:var(--certified)} .frow.v-uncertain .fstat{color:var(--uncertain)} .frow.v-alert .fstat{color:var(--alert)}
+  .cert-note{font-family:var(--mono);font-size:12px;color:var(--slate);margin-top:16px;line-height:1.7}
   .sig{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink);margin-top:14px}
-  .sig small{display:block;font-style:normal;font-family:var(--sans);font-size:10.5px;
-    letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin-top:3px}
-  .stamp{width:128px;height:128px;flex:none;display:flex;align-items:center;justify-content:center;
-    border:2.5px solid var(--faint);border-radius:6px;transform:rotate(-7deg);opacity:.32;
-    color:var(--faint);text-align:center;font-family:var(--sans);transition:.25s}
-  .stamp .in{border:1.5px solid currentColor;border-radius:3px;width:108px;height:108px;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-  .stamp .t{font-weight:700;letter-spacing:.14em;font-size:14px;text-transform:uppercase}
-  .stamp .s{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;line-height:1.4}
-  .stamp.pressed{opacity:.9;mix-blend-mode:multiply}
-  .stamp.pressed.v-certified{color:var(--certified);border-color:var(--certified)}
-  .stamp.pressed.v-uncertain{color:var(--uncertain);border-color:var(--uncertain)}
-  .stamp.pressed.v-alert{color:var(--alert);border-color:var(--alert)}
-  .stamp.press-anim{animation:press .3s ease-out}
-  @keyframes press{0%{transform:rotate(-7deg) scale(1.35);opacity:0}60%{transform:rotate(-7deg) scale(.96)}100%{transform:rotate(-7deg) scale(1)}}
+  .sig small{display:block;font-style:normal;font-family:var(--sans);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin-top:3px}
 
   footer{padding:16px 40px 26px;border-top:1px solid var(--rule);font-family:var(--sans);
     font-size:11.5px;color:var(--faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
   input[type=file]{display:none}
+
+  /* the printed report: a clean, self-contained PDF (controls/affordances removed) */
+  .print-only{display:none}
+  @media print{
+    @page{margin:16mm 14mm}
+    body{background:#fff;padding:0}
+    .sheet{box-shadow:none;border:none;max-width:100%}
+    .specimen,.controls,.err,#report,.meta .live,.finding{display:none!important}
+    .col.left{border-right:none}
+    .analysis,.frow,.record{break-inside:avoid}
+    .print-only{display:block}
+  }
 </style>
 </head>
 <body>
@@ -141,9 +139,7 @@
           <div class="sub">DICOM · STL · PLY · OBJ · 3MF · NIfTI · PNG / JPG / TIFF.<br>Read by content, parsed under a safety gate. Click to select.</div>
         </div>
       </div>
-      <div class="record" id="record">
-        <table id="recordtbl"></table>
-      </div>
+      <div class="record" id="record"><table id="recordtbl"></table></div>
       <div class="err" id="ingesterr"></div>
       <input type="file" id="file">
     </div>
@@ -193,13 +189,23 @@
   </div>
 
   <div class="cert">
-    <div class="body-txt">
-      <h4>Certificate</h4>
-      <div class="finding-line" id="certline">No analysis on record. Submit a specimen and run an examination.</div>
-      <div class="fine" id="certfine">Each finding is conformal: it is issued only when the interval around the measurement lies entirely past the threshold, so the false-alarm rate is bounded by α in finite samples — distribution-free, no model assumptions.</div>
-      <div class="sig">ToothPrint Conformal Certifier<small>Automated examiner · research prototype</small></div>
+    <div class="cert-head">
+      <h4>Findings of record</h4>
+      <button class="outline" id="report" disabled>Generate report (PDF)</button>
     </div>
-    <div class="stamp" id="stamp"><div class="in"><span class="t">Pending</span><span class="s">await<br>finding</span></div></div>
+    <div class="flog" id="flog"><div class="empty">No analysis on record yet. Submit a specimen and run an examination above.</div></div>
+    <div class="cert-note">Each finding is <b>conformal</b>: issued only when the interval around the measurement lies entirely past the threshold, so the false-alarm rate is bounded by α in finite samples — distribution-free, no model assumptions.</div>
+    <div class="sig">ToothPrint Conformal Certifier<small>Automated examiner · research prototype · findings advisory, expert confirmation required</small></div>
+
+    <div class="print-only">
+      <div class="cert-note" style="margin-top:18px">
+        <b>Method.</b> Identity: best rigid fit (PCA-init + Generalized-ICP / learned point correspondence), smallest surface distance.
+        Bone-level change: reference-cancelled sub-pixel crestal registration. Surface change: de-biased regional displacement vs calibrated noise.
+        Every verdict carries a conformal interval with finite-sample false-alarm rate ≤ α.<br>
+        <b>Provenance.</b> All computation is local to this machine; no specimen leaves the device. This report records the inputs and parameters exactly as examined.<br>
+        <b>Limitations.</b> Validated on public single-timepoint data with synthetic perturbations; numbers are optimistic ceilings. Not a cleared medical device — advisory only, expert-confirmed.
+      </div>
+    </div>
   </div>
 
   <footer>
@@ -211,6 +217,7 @@
 <script>
 const $ = s => document.querySelector(s);
 const API = location.origin;
+const findings = [];
 
 (function caseId(){
   const n = Math.floor(performance.now()).toString(36).toUpperCase().slice(-5);
@@ -229,14 +236,23 @@ function vkind(label){
   if(label === "uncertain") return "uncertain";
   return "certified";
 }
-function issue(label, line){
-  const k = vkind(label), st = $("#stamp");
-  $("#certline").className = "finding-line v-" + k;
-  $("#certline").textContent = line;
-  st.className = "stamp pressed press-anim v-" + k;
-  st.innerHTML = `<div class="in"><span class="t">${k === "alert" ? "Flagged" : k === "uncertain" ? "Review" : "Certified"}</span><span class="s">conformal<br>α-bounded</span></div>`;
-  setTimeout(() => st.classList.remove("press-anim"), 320);
+const STAT = { certified:"Certified", uncertain:"Review", alert:"Flagged" };
+
+// record a finding into the running log + enable the report
+function record(label, section, text, mono){
+  const k = vkind(label), time = new Date().toTimeString().slice(0, 8);
+  findings.push({ k, section, text, mono, time });
+  const log = $("#flog");
+  if(findings.length === 1) log.innerHTML = "";
+  const row = document.createElement("div");
+  row.className = "frow v-" + k;
+  row.innerHTML = `<span class="fstat">${STAT[k]}</span>`
+    + `<span class="ftext">${text}<span class="m">${mono}</span></span>`
+    + `<span class="ftime">${time}</span>`;
+  log.appendChild(row);
+  $("#report").disabled = false;
 }
+$("#report").addEventListener("click", () => window.print());
 
 // specimen ingest
 const drop = $("#drop");
@@ -276,32 +292,36 @@ $("#idrun").addEventListener("click", async () => {
   try{
     const j = await (await fetch(API + "/api/identify/scan", { method: "POST", body: fd })).json();
     if(j.detail) throw new Error(j.detail);
-    const k = vkind(j.verdict);
+    const k = vkind(j.verdict), match = j.match.split(/[\\/]/).pop();
     $("#idv").className = "finding show v-" + k;
-    $("#idv").innerHTML = `<span class="verdict">${j.verdict} — ${j.match.split(/[\\/]/).pop()}</span>`
+    $("#idv").innerHTML = `<span class="verdict">${j.verdict} — ${match}</span>`
       + `<div class="detail">closest surface ${j.distance_mm} mm · ` + j.ranking.map(x => `${x.label.split(/[\\/]/).pop()} ${x.distance_mm}`).join(" · ") + `</div>`;
-    issue(j.verdict, `Identity: ${j.verdict} — reference ${j.match.split(/[\\/]/).pop()} at ${j.distance_mm} mm.`);
+    record(j.verdict, "§1 Identity",
+      `<b>§ 1 Identity</b> — ${j.verdict}: reference <b>${match}</b>.`,
+      `closest surface ${j.distance_mm} mm · ranking ${j.ranking.map(x => x.label.split(/[\\/]/).pop() + " " + x.distance_mm).join(" · ")}`);
   }catch(e){ $("#idv").className = "finding show v-alert"; $("#idv").innerHTML = `<span class="verdict">Examination failed</span><div class="detail">${e.message || e}</div>`; }
   $("#idrun").disabled = false; $("#idrun").textContent = "Examine";
 });
 
 // change / surface certificates
-async function certify(path, payload, box, name, unitWord){
+async function certify(path, payload, box, name){
   try{
     const j = await (await fetch(API + path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) })).json();
     if(j.detail) throw new Error((j.detail[0] && j.detail[0].msg) || j.detail);
     const k = vkind(j.label), iv = j.interval_px || j.interval_mm, unit = j.interval_px ? "px" : "mm";
-    const measured = j.measured_px ?? j.measured_mm;
+    const measured = j.measured_px ?? j.measured_mm, ivt = iv.map(x => (+x).toFixed(2)).join(", ");
     $(box).className = "finding show v-" + k;
     $(box).innerHTML = `<span class="verdict">Finding: ${j.label}</span>`
-      + `<div class="detail">measured ${measured} ${unit} · interval [${iv.map(x => (+x).toFixed(2)).join(", ")}] ${unit}</div>`;
-    issue(j.label, `${name}: ${j.label} — measured ${measured} ${unit}, conformal interval [${iv.map(x => (+x).toFixed(2)).join(", ")}] ${unit}.`);
+      + `<div class="detail">measured ${measured} ${unit} · interval [${ivt}] ${unit}</div>`;
+    const params = Object.entries(payload).map(([a, b]) => `${a} ${b}`).join(" · ");
+    record(j.label, name, `<b>${name}</b> — finding: <b>${j.label}</b>.`,
+      `measured ${measured} ${unit} · conformal interval [${ivt}] ${unit} · ${params}`);
   }catch(e){ $(box).className = "finding show v-alert"; $(box).innerHTML = `<span class="verdict">Rejected</span><div class="detail">${e.message || e}</div>`; }
 }
 $("#crun").addEventListener("click", () => certify("/api/certify/change", {
-  measured_px: +$("#c_m").value, q_lo: +$("#c_lo").value, q_hi: +$("#c_hi").value, tau: +$("#c_tau").value, alpha: +$("#c_a").value }, "#cv", "Bone-level change"));
+  measured_px: +$("#c_m").value, q_lo: +$("#c_lo").value, q_hi: +$("#c_hi").value, tau: +$("#c_tau").value, alpha: +$("#c_a").value }, "#cv", "§ 2 Bone-level change"));
 $("#srun").addEventListener("click", () => certify("/api/certify/surface", {
-  measured_mm: +$("#s_m").value, q_lo: +$("#s_lo").value, q_hi: +$("#s_hi").value, alpha: +$("#s_a").value }, "#sv", "Surface change"));
+  measured_mm: +$("#s_m").value, q_lo: +$("#s_lo").value, q_hi: +$("#s_hi").value, alpha: +$("#s_a").value }, "#sv", "§ 3 Surface change"));
 </script>
 </body>
 </html>
