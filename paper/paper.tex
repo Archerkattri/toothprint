@@ -22,8 +22,8 @@
 
 \title{\vspace{-1.4em}\textbf{\color{ink}Certified Dental Biometric Verification Under Partial Overlap}}
 \author{Krishi Attri\\
-\small Independent research\\
-\small \texttt{kattri@snu.ac.kr}\quad
+\small Seoul National University\,$\cdot$\,Independent research\\
+\small \texttt{krishiattriwork@gmail.com}\quad
 \href{https://github.com/Archerkattri/toothprint}{github.com/Archerkattri/toothprint}}
 \date{\vspace{-1em}}
 
@@ -63,8 +63,8 @@ Public intraoral scan datasets have primarily been released for segmentation, la
 \paragraph{Point-cloud registration and descriptors.}
 ICP and its variants remain a standard surface-registration tool. Generalized ICP \citep{segal2009gicp} combines point-to-plane and ICP ideas in a probabilistic framework and is a natural baseline for dental surfaces. Learned point-cloud features such as DGCNN/EdgeConv \citep{wang2019dgcnn} and metric-learning heads such as ArcFace and sub-center ArcFace \citep{deng2019arcface,deng2020subcenter} motivate our embedding baselines. Correspondence networks and transformer-based point matching \citep{qin2022geotransformer} show that local descriptors can support partial matching; we adapt this idea to dental arches where crop-induced correspondences are available without manual labels.
 
-\paragraph{Conformal prediction for biometric decisions.}
-Conformal prediction provides finite-sample, distribution-free calibration under exchangeability \citep{vovk2005algorithmic,angelopoulos2021gentle}. In this work we use split conformal calibration as a decision wrapper over dental similarity scores. The guarantee is intentionally modest: it controls the empirical false-match rate under the calibration distribution, and it should be recalibrated for a new site, scanner, or population.
+\paragraph{Open-set recognition and conformal calibration.}
+Open-set recognition formalizes the requirement that a classifier reject queries from classes unseen at enrollment rather than force every input into a known label \citep{scheirer2013openset}; certified dental verification is the biometric instance of this reject option. We realize it with conformal prediction, which provides finite-sample, distribution-free calibration under exchangeability \citep{vovk2005algorithmic,angelopoulos2021gentle}. We use split conformal calibration as a decision wrapper over dental similarity scores. The guarantee is intentionally modest: it controls the false-match rate under the calibration distribution, and it should be recalibrated for a new site, scanner, or population.
 
 \section{Problem Formulation}
 Let an enrolled gallery contain subjects $G=\{(y_i,P_i)\}_{i=1}^{N}$, where $P_i\subset\R^3$ is a point cloud sampled from an upper dental arch and $y_i$ is the subject identity. A query $Q\subset\R^3$ may be full coverage or partial. A verifier produces a dissimilarity score
@@ -75,7 +75,7 @@ where smaller is more similar. Closed-set retrieval ranks gallery subjects by $\
 
 We evaluate three regimes. In \emph{full coverage}, $Q$ is a synthetically reacquired version of the full arch. In \emph{partial overlap}, $Q$ retains only a fraction $\rho$ of teeth or points. We report $\rho=0.5$ and $\rho=0.3$ as the main stress tests. In \emph{cross-dataset transfer}, a model trained on Poseidon3D is evaluated on Teeth3DS+ without retraining.
 
-For a threshold $\tau$, accepting the nearest candidate when $\min_i \score(Q,P_i)\le \tau$ induces a false-match rate on impostor queries and a false-non-identification rate on genuine queries. We report Rank-1, AUC, EER, DET curves, and FNIR at FMR=1\%.
+For a threshold $\tau$, accepting the nearest candidate when $\min_i \score(Q,P_i)\le \tau$ induces a false-match rate (FMR) on impostor queries and a false-negative identification rate (FNIR) on genuine queries. We report Rank-1 accuracy, area under the ROC curve (AUC), equal error rate (EER), detection-error-tradeoff (DET) curves, and FNIR at FMR=1\%.
 
 \section{Methods}
 \subsection{Rigid Surface Verification}
@@ -106,13 +106,21 @@ At test time, we compute descriptors for $Q$ and $P_i$, keep mutual nearest-neig
 Scoring all query points, not only matched points, penalizes an impostor that finds a few accidental local correspondences but fails to align the full partial arch.
 
 \subsection{Conformal Accept/Abstain Rule}
-Let calibration impostor scores be $\{u_k\}_{k=1}^n$, where smaller scores are more match-like. To target FMR $\alpha$, choose the lower-tail quantile threshold $\hat{\tau}_\alpha$ using split conformal calibration. A query is accepted as subject $\hat{i}$ only if
+Let $\{u_k\}_{k=1}^n$ be calibration impostor scores (smaller is more match-like), assumed exchangeable with the score $u_\star$ of a new impostor query. To control the false-match rate at level $\alpha$, we set the accept threshold to the order statistic
 \begin{equation}
-  \hat{i}=\arg\min_i \score(Q,P_i),
-  \qquad
-  \score(Q,P_{\hat{i}})\le \hat{\tau}_\alpha .
+  \hat{\tau}_\alpha = u_{(\lfloor (n+1)\alpha \rfloor)},
 \end{equation}
-Otherwise the system abstains. We also evaluate a hard-negative variant in which calibration impostors are each subject's nearest impostors rather than random impostors.
+the $\lfloor (n+1)\alpha\rfloor$-th smallest calibration impostor score. Under exchangeability the rank of $u_\star$ among the $n+1$ scores is uniform, which yields the finite-sample, distribution-free guarantee
+\begin{equation}
+  \Pr\!\big(u_\star \le \hat{\tau}_\alpha\big) \le \alpha .
+\end{equation}
+A query is then accepted as subject
+\begin{equation}
+  \hat{i}=\arg\min_i \score(Q,P_i)
+  \quad\text{iff}\quad
+  \score(Q,P_{\hat{i}})\le \hat{\tau}_\alpha ,
+\end{equation}
+and the system abstains otherwise. The bound is the precise sense in which an accept decision is \emph{certified}: it caps the population false-match rate at the target level from a finite calibration set, with no distributional assumption beyond exchangeability. It is, however, a \emph{marginal} guarantee tied to the calibration distribution---it does not condition on a specific gallery subject, and it must be recalibrated for a new site, scanner, or population. We also evaluate a hard-negative variant in which calibration impostors are each subject's nearest impostors rather than random impostors, which holds the FMR target against the worst-case neighbours at the cost of genuine accept rate.
 
 \subsection{Unified Retrieve--Verify--Certify Pipeline}
 The full pipeline uses the embedding for recall, keeping the top-$k$ gallery candidates, then verifies that shortlist with correspondence scores and applies the conformal threshold. This separates the roles of representation learning: global descriptors retrieve candidates quickly; correspondence supplies the final geometric evidence.
