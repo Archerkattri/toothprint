@@ -1,0 +1,45 @@
+{
+ "n_patients": 30,
+ "regime": "hard (jitter 0.03, keep 0.8)",
+ "best_single_rank1": 0.833,
+ "oracle_rank1_any_modality": 1.0,
+ "oracle_headroom_over_best_single": 0.167,
+ "ios_crowns": {
+  "rank1": 0.8333333333333334,
+  "auc": 0.9588888888888889,
+  "gen_mean": 0.03251055263783071,
+  "imp_min": 0.031121718784104087
+ },
+ "cbct_bone": {
+  "rank1": 0.5333333333333333,
+  "auc": 0.7372030651340996,
+  "gen_mean": 0.047792751025897764,
+  "imp_min": 0.0356996735907246
+ },
+ "dental_work": {
+  "rank1": 0.6333333333333333,
+  "auc": 0.8739463601532567,
+  "gen_mean": 0.03184613039475832,
+  "imp_min": 0.020077435527727207
+ },
+ "equal_all_three": {
+  "rank1": 0.7333333333333333,
+  "auc": 0.926896551724138,
+  "gen_mean": -3.2607654112583995,
+  "imp_min": -4.634986754135712
+ },
+ "equal_ios+work": {
+  "rank1": 0.8,
+  "auc": 0.9590804597701149,
+  "gen_mean": -2.157841427369171,
+  "imp_min": -2.509550937688494
+ },
+ "qweighted_all_three": {
+  "rank1": 0.8666666666666667,
+  "auc": 0.8883908045977011,
+  "gen_mean": -0.12483683539743813,
+  "imp_min": -0.15635290306446237
+ },
+ "best_fusion_rank1": 0.867,
+ "fusion_gain_over_best_single": 0.034
+}
