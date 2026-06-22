@@ -1,0 +1,11 @@
+{
+ "3D identity \u00b7 GICP \u00b7 full coverage (N=200)": {
+  "eer": 0.005
+ },
+ "Multimodal \u00b7 IOS crowns \u00b7 hard regime (N=30)": {
+  "eer": 0.1333
+ },
+ "Learned correspondence \u00b7 50% tooth loss (N=50)": {
+  "eer": 0.1
+ }
+}

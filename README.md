@@ -83,6 +83,10 @@ The FMR bound even **survives hard negatives** — re-calibrated against each su
 
 ![Identity at N=200: separation, CMC, conformal bounded-FMR, open-set DIR](docs/identity_metrics.png)
 
+**Full DET curves — a first for dental identity.** The dedicated literature reports only Rank-N; these are the biometric-standard Detection-Error-Tradeoff curves (FNMR vs FMR) per pillar. Full-coverage 3D identity sits on the floor (EER **0.5 %** — the single hard arch), the learned correspondence holds a real operating curve even at **50 % tooth loss** (EER 10 %), and the degraded multimodal regime is drawn honestly (EER 13 %). `evaluation/scripts/make_det.py`, `docs/det_curves.png`.
+
+![DET curves per identity pillar — first full DET for dental identity](docs/det_curves.png)
+
 **Robust — honestly.** Rank-1 holds at **1.0 through 0.4 mm sensor noise and 4× voxel coarsening**, with every query already repositioned (rotation + translation); the one degradation is **tooth-loss / partial overlap** (keep 0.5 → Rank-1 0.23, keep 0.3 → 0.10 — the rigid PCA-init limit), shown not hidden (`evaluation/results/id3d.json`):
 
 ![Identity robustness ablations](docs/identity_ablations.png)
