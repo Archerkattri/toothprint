@@ -1,0 +1,21 @@
+{
+ "n_heldout": 50,
+ "topk": 5,
+ "pipeline": "embedding-retrieve(top-5) -> CorrNet-verify -> conformal accept/abstain",
+ "coverage": {
+  "1.0": {
+   "unified_fnir_at_fmr1pct": 0.0,
+   "std": 0.0
+  },
+  "0.5": {
+   "unified_fnir_at_fmr1pct": 0.735,
+   "std": 0.138
+  }
+ },
+ "reference_openset_keep0.5": {
+  "embedding_only": 0.872,
+  "gicp_only": 0.779,
+  "hybrid_gicp_decide": 0.789,
+  "source": "openset_hybrid.json \u2014 the methods that collapsed at partial overlap"
+ }
+}
