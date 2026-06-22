@@ -31,7 +31,9 @@ def record_change_scores(baseline: dict, followup: dict) -> dict[str, float]:
     return scores
 
 
-def scalar_change_score(baseline: dict, followup: dict, tooth_id: str | None = None) -> float:
+def scalar_change_score(
+    baseline: dict, followup: dict, tooth_id: str | None = None
+) -> float:
     scores = record_change_scores(baseline, followup)
     if tooth_id is not None:
         return scores[str(tooth_id)]

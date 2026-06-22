@@ -13,6 +13,7 @@ TS = "2026-06-21T00:00:00Z"
 
 # --- calibration -----------------------------------------------------------
 
+
 def _stable(n=120, seed=0):
     rng = np.random.default_rng(seed)
     return rng.normal(0, 1.0, n), np.zeros(n)
@@ -46,6 +47,7 @@ def test_data_fingerprint_stable_and_sensitive():
 
 # --- quality ---------------------------------------------------------------
 
+
 def test_assess_radiograph_usable():
     rng = np.random.default_rng(0)
     img = rng.integers(0, 255, (256, 256)).astype(float)  # sharp, high contrast
@@ -57,7 +59,9 @@ def test_assess_radiograph_blurred_and_lowcontrast():
     flat = np.full((256, 256), 100.0)  # no sharpness, no contrast
     r = assess_radiograph(flat)
     assert not r.usable
-    assert any("blurred" in i for i in r.issues) and any("contrast" in i for i in r.issues)
+    assert any("blurred" in i for i in r.issues) and any(
+        "contrast" in i for i in r.issues
+    )
 
 
 def test_assess_radiograph_too_small():
@@ -98,6 +102,7 @@ def test_assess_scan_bad_shape():
 
 # --- audit -----------------------------------------------------------------
 
+
 def test_input_fingerprint():
     a = np.arange(10.0)
     assert input_fingerprint(a) == input_fingerprint(a.copy())
@@ -116,6 +121,7 @@ def test_audit_log_record_and_export(tmp_path):
 
 # --- decision --------------------------------------------------------------
 
+
 def _cal():
     m, t = _stable()
     return SiteCalibration.fit(m, t, site_id="A", created_utc=TS, alpha=0.1)
@@ -124,24 +130,47 @@ def _cal():
 def test_clinical_certify_changed_and_audits():
     log = AuditLog()
     q = QualityReport(usable=True, metrics={}, issues=[])
-    d = clinical_certify(50.0, site_cal=_cal(), tau=2.0, quality=q, input_fingerprint="fp",
-                         operator="drX", timestamp_utc=TS, audit_log=log)
+    d = clinical_certify(
+        50.0,
+        site_cal=_cal(),
+        tau=2.0,
+        quality=q,
+        input_fingerprint="fp",
+        operator="drX",
+        timestamp_utc=TS,
+        audit_log=log,
+    )
     assert isinstance(d, ClinicalDecision) and d.label == "changed" and d.quality_ok
     assert len(log) == 1 and d.provenance["operator"] == "drX"
 
 
 def test_clinical_certify_stable_no_log():
     q = QualityReport(usable=True, metrics={}, issues=[])
-    d = clinical_certify(0.0, site_cal=_cal(), tau=2.0, quality=q, input_fingerprint="fp",
-                         operator="drX", timestamp_utc=TS)
+    d = clinical_certify(
+        0.0,
+        site_cal=_cal(),
+        tau=2.0,
+        quality=q,
+        input_fingerprint="fp",
+        operator="drX",
+        timestamp_utc=TS,
+    )
     assert d.label == "stable"
 
 
 def test_clinical_certify_abstains_on_bad_quality():
     log = AuditLog()
     q = QualityReport(usable=False, metrics={}, issues=["too blurred"])
-    d = clinical_certify(50.0, site_cal=_cal(), tau=2.0, quality=q, input_fingerprint="fp",
-                         operator="drX", timestamp_utc=TS, audit_log=log)
+    d = clinical_certify(
+        50.0,
+        site_cal=_cal(),
+        tau=2.0,
+        quality=q,
+        input_fingerprint="fp",
+        operator="drX",
+        timestamp_utc=TS,
+        audit_log=log,
+    )
     assert d.label == REFER and not d.quality_ok
     assert np.isnan(d.interval[0]) and len(log) == 1
     assert "too blurred" in d.provenance["quality_issues"]

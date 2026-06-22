@@ -3,8 +3,13 @@ import pytest
 
 from toothprint.surface.certificate import SurfaceCertificate, certify_surface_change
 from toothprint.surface.error import (
-    assign_regions, chamfer_distance, icp_align, noise_floor_sq,
-    regional_displacements, surface_displacement, surface_error,
+    assign_regions,
+    chamfer_distance,
+    icp_align,
+    noise_floor_sq,
+    regional_displacements,
+    surface_displacement,
+    surface_error,
 )
 from toothprint.change.conformal import CHANGED, STABLE, UNCERTAIN, ConformalCertifier
 
@@ -17,6 +22,7 @@ def _sphere(n=2000, r=10.0, seed=0):
 
 
 # --- error -----------------------------------------------------------------
+
 
 def test_chamfer_self_zero():
     p = _sphere(500)
@@ -70,6 +76,7 @@ def test_surface_error_no_icp_path():
 
 # --- differential displacement (de-biased) ---------------------------------
 
+
 def _displace(pts, mm):
     c = pts.mean(0)
     u = (pts - c) / np.clip(np.linalg.norm(pts - c, axis=1, keepdims=True), 1e-9, None)
@@ -80,11 +87,16 @@ def test_noise_floor_sq_estimates_power():
     rng = np.random.default_rng(0)
     base = _sphere(2000)
     sigma = 0.2
-    pairs = [(base + rng.normal(0, sigma, base.shape), base + rng.normal(0, sigma, base.shape))
-             for _ in range(8)]
+    pairs = [
+        (
+            base + rng.normal(0, sigma, base.shape),
+            base + rng.normal(0, sigma, base.shape),
+        )
+        for _ in range(8)
+    ]
     f = noise_floor_sq(pairs)
     # E[mean ||n1 - n0||^2] = 3 axes * 2 * sigma^2 = 6 sigma^2
-    assert abs(f - 6 * sigma ** 2) < 0.02
+    assert abs(f - 6 * sigma**2) < 0.02
 
 
 def test_noise_floor_sq_empty_raises():
@@ -103,14 +115,21 @@ def test_surface_displacement_debiases_noise_to_zero():
     rng = np.random.default_rng(1)
     base = _sphere(2000)
     sigma = 0.2
-    floor = noise_floor_sq([(base + rng.normal(0, sigma, base.shape),
-                             base + rng.normal(0, sigma, base.shape)) for _ in range(12)])
+    floor = noise_floor_sq(
+        [
+            (
+                base + rng.normal(0, sigma, base.shape),
+                base + rng.normal(0, sigma, base.shape),
+            )
+            for _ in range(12)
+        ]
+    )
     a = base + rng.normal(0, sigma, base.shape)
     b = base + rng.normal(0, sigma, base.shape)  # no real change
     raw = float(np.linalg.norm(b - a, axis=1).mean())
     debiased = surface_displacement(a, b, noise_floor_sq=floor)
-    assert raw > 0.4                  # rectified-noise floor is large
-    assert debiased < 0.1             # de-biasing removes it
+    assert raw > 0.4  # rectified-noise floor is large
+    assert debiased < 0.1  # de-biasing removes it
 
 
 def test_surface_displacement_recovers_change_under_noise():
@@ -119,8 +138,15 @@ def test_surface_displacement_recovers_change_under_noise():
     rng = np.random.default_rng(2)
     base = _sphere(2000)
     sigma = 0.2
-    floor = noise_floor_sq([(base + rng.normal(0, sigma, base.shape),
-                             base + rng.normal(0, sigma, base.shape)) for _ in range(12)])
+    floor = noise_floor_sq(
+        [
+            (
+                base + rng.normal(0, sigma, base.shape),
+                base + rng.normal(0, sigma, base.shape),
+            )
+            for _ in range(12)
+        ]
+    )
     t0 = base + rng.normal(0, sigma, base.shape)
     t1 = _displace(base, 1.0) + rng.normal(0, sigma, base.shape)
     assert abs(surface_displacement(t0, t1, noise_floor_sq=floor) - 1.0) < 0.1
@@ -137,18 +163,21 @@ def test_surface_displacement_empty_raises():
 
 
 def test_surface_displacement_nonfinite_raises():
-    a = _sphere(10); b = _sphere(10).copy(); b[0, 0] = np.inf
+    a = _sphere(10)
+    b = _sphere(10).copy()
+    b[0, 0] = np.inf
     with pytest.raises(ValueError, match="finite"):
         surface_displacement(a, b)
 
 
 # --- regional (localized-change) detection ---------------------------------
 
+
 def test_assign_regions_partitions_deterministically():
     pts = _sphere(2000)
     lab = assign_regions(pts, n_regions=12, seed=0)
     assert lab.shape == (2000,) and lab.min() >= 0 and lab.max() < 12
-    assert len(np.unique(lab)) == 12              # FPS spreads centres; all non-empty
+    assert len(np.unique(lab)) == 12  # FPS spreads centres; all non-empty
     assert np.array_equal(lab, assign_regions(pts, n_regions=12, seed=0))
 
 
@@ -169,20 +198,32 @@ def test_regional_localizes_change_that_global_dilutes():
     # a localized 1mm change: push one region's patch radially outward
     patch = lab == 0
     t1 = base.copy()
-    t1[patch] = base[patch] + base[patch] / np.linalg.norm(base[patch], axis=1, keepdims=True) * 1.0
-    stable = [(base + rng.normal(0, sigma, base.shape), base + rng.normal(0, sigma, base.shape))
-              for _ in range(8)]
-    floors = [noise_floor_sq([(a[lab == r], b[lab == r]) for a, b in stable]) for r in range(K)]
+    t1[patch] = (
+        base[patch]
+        + base[patch] / np.linalg.norm(base[patch], axis=1, keepdims=True) * 1.0
+    )
+    stable = [
+        (
+            base + rng.normal(0, sigma, base.shape),
+            base + rng.normal(0, sigma, base.shape),
+        )
+        for _ in range(8)
+    ]
+    floors = [
+        noise_floor_sq([(a[lab == r], b[lab == r]) for a, b in stable])
+        for r in range(K)
+    ]
     a = base + rng.normal(0, sigma, base.shape)
     b = t1 + rng.normal(0, sigma, base.shape)
     d = regional_displacements(a, b, lab, floors)
-    assert d.argmax() == 0 and d[0] > 0.8         # localizes + recovers ~full 1mm
+    assert d.argmax() == 0 and d[0] > 0.8  # localizes + recovers ~full 1mm
     g = surface_displacement(a, b, noise_floor_sq=noise_floor_sq(stable))
-    assert g < 0.5 and d.max() > 2 * g            # global dilutes; regional recovers it
+    assert g < 0.5 and d.max() > 2 * g  # global dilutes; regional recovers it
 
 
 def test_regional_displacements_validation():
-    base = _sphere(50); lab = assign_regions(base, 4)
+    base = _sphere(50)
+    lab = assign_regions(base, 4)
     with pytest.raises(ValueError, match="equal shape"):
         regional_displacements(base, _sphere(51), lab, [0, 0, 0, 0])
     with pytest.raises(ValueError, match="one entry per point"):
@@ -191,12 +232,13 @@ def test_regional_displacements_validation():
 
 def test_regional_empty_region_reads_zero():
     base = _sphere(50)
-    lab = np.zeros(50, int)                        # region 1 has no points
+    lab = np.zeros(50, int)  # region 1 has no points
     d = regional_displacements(base, base.copy(), lab, [0.0, 0.0])
     assert d[1] == 0.0
 
 
 # --- certificate -----------------------------------------------------------
+
 
 def test_certify_surface_labels():
     tight = ConformalCertifier(q_lo=0.1, q_hi=0.1, alpha=0.1)
@@ -215,14 +257,18 @@ def test_certify_surface_returns_dataclass():
 def test_certify_surface_bad_thresholds():
     cert = ConformalCertifier(q_lo=0.1, q_hi=0.1, alpha=0.1)
     with pytest.raises(ValueError, match="must be <"):
-        certify_surface_change(0.5, cert, stable_threshold_mm=0.9, change_threshold_mm=0.5)
+        certify_surface_change(
+            0.5, cert, stable_threshold_mm=0.9, change_threshold_mm=0.5
+        )
 
 
 # --- meshing (open3d) ------------------------------------------------------
 
+
 def test_poisson_refine_denoises_sphere():
-    o3d = pytest.importorskip("open3d")
+    pytest.importorskip("open3d")
     from toothprint.surface.meshing import poisson_refine
+
     clean = _sphere(6000, seed=6)
     noisy = clean + np.random.default_rng(7).normal(0, 0.3, clean.shape)
     refined = poisson_refine(noisy, depth=8)
@@ -233,6 +279,7 @@ def test_poisson_refine_denoises_sphere():
 
 def test_poisson_refine_validation_raises():
     from toothprint.surface.meshing import poisson_refine
+
     with pytest.raises(ValueError, match=r"\(N, 3\)"):
         poisson_refine(np.zeros((50, 2)))
     with pytest.raises(ValueError, match="at least 30"):
@@ -245,6 +292,7 @@ def test_poisson_refine_validation_raises():
 def test_poisson_refine_open3d_missing_raises(monkeypatch):
     import sys
     from toothprint.surface.meshing import poisson_refine
+
     monkeypatch.setitem(sys.modules, "open3d", None)
     with pytest.raises(RuntimeError, match="open3d is required"):
         poisson_refine(_sphere(50))
@@ -253,8 +301,12 @@ def test_poisson_refine_open3d_missing_raises(monkeypatch):
 def test_poisson_refine_empty_mesh_raises(monkeypatch):
     o3d = pytest.importorskip("open3d")
     from toothprint.surface.meshing import poisson_refine
+
     empty = (o3d.geometry.TriangleMesh(), o3d.utility.DoubleVector([]))
-    monkeypatch.setattr(o3d.geometry.TriangleMesh, "create_from_point_cloud_poisson",
-                        staticmethod(lambda *a, **k: empty))
+    monkeypatch.setattr(
+        o3d.geometry.TriangleMesh,
+        "create_from_point_cloud_poisson",
+        staticmethod(lambda *a, **k: empty),
+    )
     with pytest.raises(RuntimeError, match="empty mesh"):
         poisson_refine(_sphere(200))

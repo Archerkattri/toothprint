@@ -8,17 +8,18 @@ this package routes through these guards: hard caps on file size, decoded pixels
 mesh elements, and volume voxels, plus magic-byte sniffing so a file is parsed by
 *what it is*, not the extension an attacker chose.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
 
 # --- hard caps (deliberately generous for real clinical data, but finite) -------
-MAX_FILE_BYTES = 1_024 ** 3            # 1 GiB: refuse anything larger up front
-MAX_IMAGE_PIXELS = 120_000_000         # ~120 MP radiograph (a 12k x 10k panoramic)
-MAX_MESH_VERTICES = 25_000_000         # dense IOS arches are < 2 M
+MAX_FILE_BYTES = 1_024**3  # 1 GiB: refuse anything larger up front
+MAX_IMAGE_PIXELS = 120_000_000  # ~120 MP radiograph (a 12k x 10k panoramic)
+MAX_MESH_VERTICES = 25_000_000  # dense IOS arches are < 2 M
 MAX_MESH_FACES = 50_000_000
-MAX_VOLUME_VOXELS = 1_500_000_000      # ~1150^3 CBCT
-MAX_DECOMPRESSED_BYTES = 2 * 1024 ** 3  # zip/codec-bomb ceiling
+MAX_VOLUME_VOXELS = 1_500_000_000  # ~1150^3 CBCT
+MAX_DECOMPRESSED_BYTES = 2 * 1024**3  # zip/codec-bomb ceiling
 
 
 class IOError_(ValueError):
@@ -76,6 +77,7 @@ def gzip_member_size(path: Path) -> int:
     with open(path, "rb") as fh:
         fh.seek(-4, 2)
         import struct
+
         return struct.unpack("<I", fh.read(4))[0]
 
 
@@ -86,7 +88,9 @@ def guard_pixels(n_pixels: int) -> None:
 
 def guard_mesh(n_vertices: int, n_faces: int) -> None:
     if n_vertices > MAX_MESH_VERTICES:
-        raise FileTooLarge(f"mesh has {n_vertices} vertices (> {MAX_MESH_VERTICES} cap)")
+        raise FileTooLarge(
+            f"mesh has {n_vertices} vertices (> {MAX_MESH_VERTICES} cap)"
+        )
     if n_faces > MAX_MESH_FACES:
         raise FileTooLarge(f"mesh has {n_faces} faces (> {MAX_MESH_FACES} cap)")
 

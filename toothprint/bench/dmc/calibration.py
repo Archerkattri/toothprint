@@ -20,10 +20,11 @@ class ErrorCalibrator:
         residuals = sorted(float(x) for x in residuals_mm)
         if residuals[0] < 0.0:
             raise ValueError("residuals must be non-negative")
-        index = min(len(residuals) - 1, max(0, ceil((len(residuals) + 1) * (1.0 - alpha)) - 1))
+        index = min(
+            len(residuals) - 1, max(0, ceil((len(residuals) + 1) * (1.0 - alpha)) - 1)
+        )
         return cls(radius_mm=residuals[index], alpha=alpha)
 
     def interval(self, estimate_mm: float) -> tuple[float, float]:
         estimate = max(0.0, float(estimate_mm))
         return (max(0.0, estimate - self.radius_mm), estimate + self.radius_mm)
-

@@ -22,11 +22,11 @@ from pathlib import Path
 from typing import Iterator
 
 # Keypoint index → 0-based index into the 11 triplets (x, y, v)
-_KP_CEJ_LEFT = 0    # kp1
-_KP_CEJ_RIGHT = 1   # kp2
+_KP_CEJ_LEFT = 0  # kp1
+_KP_CEJ_RIGHT = 1  # kp2
 _KP_CREST_MESIAL = 3  # kp4
 _KP_CREST_DISTAL = 4  # kp5
-_KP_APEX = 6        # kp7
+_KP_APEX = 6  # kp7
 
 
 @dataclass(frozen=True)
@@ -109,7 +109,9 @@ class PerioKptAdapter:
                 labels_dir = fold_dir / subset / "labels"
                 if not images_dir.is_dir():
                     continue
-                for record in self._iter_image_label_dir(images_dir, labels_dir, split="experiment"):
+                for record in self._iter_image_label_dir(
+                    images_dir, labels_dir, split="experiment"
+                ):
                     if record.image_id not in seen:
                         seen.add(record.image_id)
                         yield record
@@ -165,6 +167,7 @@ class PerioKptAdapter:
 # ------------------------------------------------------------------
 # YOLO label parsing
 # ------------------------------------------------------------------
+
 
 def _parse_yolo_label(label_path: Path, width: int, height: int) -> list[dict]:
     """Return DenPAR-style teeth list from a YOLO keypoint label file."""
@@ -236,6 +239,7 @@ def _parse_yolo_line(line: str, width: int, height: int, index: int) -> dict | N
 # Image size reading (stdlib only; PIL not required)
 # ------------------------------------------------------------------
 
+
 def _read_image_size(image_path: Path) -> tuple[int, int]:
     """Return (width, height) for PNG or JPEG without external dependencies."""
     suffix = image_path.suffix.lower()
@@ -278,16 +282,30 @@ def _jpeg_size(path: Path) -> tuple[int, int]:
         marker = data[i + 1]
         i += 2
         # SOF markers: 0xC0-0xC3, 0xC5-0xC7, 0xC9-0xCB, 0xCD-0xCF
-        if marker in {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}:
+        if marker in {
+            0xC0,
+            0xC1,
+            0xC2,
+            0xC3,
+            0xC5,
+            0xC6,
+            0xC7,
+            0xC9,
+            0xCA,
+            0xCB,
+            0xCD,
+            0xCE,
+            0xCF,
+        }:
             # length (2) + precision (1) + height (2) + width (2)
             if i + 6 > len(data):
                 break
-            h = struct.unpack(">H", data[i + 3: i + 5])[0]
-            w = struct.unpack(">H", data[i + 5: i + 7])[0]
+            h = struct.unpack(">H", data[i + 3 : i + 5])[0]
+            w = struct.unpack(">H", data[i + 5 : i + 7])[0]
             return w, h
         # Skip this segment
         if i + 1 >= len(data):
             break
-        seg_len = struct.unpack(">H", data[i: i + 2])[0]
+        seg_len = struct.unpack(">H", data[i : i + 2])[0]
         i += seg_len
     return 0, 0

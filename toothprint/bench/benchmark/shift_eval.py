@@ -4,22 +4,28 @@ Compares standard symmetric conformal vs weighted conformal under:
   - Perturbation-family shift (different acquisition noise std)
   - Cross-source shift (different dataset)
 """
+
 from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 
-from toothprint.bench.certificate.conformal import ConformalInterval, AsymmetricConformalInterval
-from toothprint.bench.certificate.weighted_conformal import WeightedConformalInterval, perturbation_shift_weights, cross_source_weights
+from toothprint.bench.certificate.conformal import ConformalInterval
+from toothprint.bench.certificate.weighted_conformal import (
+    WeightedConformalInterval,
+    perturbation_shift_weights,
+    cross_source_weights,
+)
 
 
 @dataclass(frozen=True)
 class ShiftEvalResult:
     """Coverage comparison under a specific shift."""
+
     shift_type: str
-    standard_coverage: float      # empirical coverage with standard conformal
-    weighted_coverage: float      # empirical coverage with weighted conformal
-    standard_mean_width: float    # mean interval width (standard)
-    weighted_mean_width: float    # mean interval width (weighted)
+    standard_coverage: float  # empirical coverage with standard conformal
+    weighted_coverage: float  # empirical coverage with weighted conformal
+    standard_mean_width: float  # mean interval width (standard)
+    weighted_mean_width: float  # mean interval width (weighted)
     n_test: int
     alpha: float
 

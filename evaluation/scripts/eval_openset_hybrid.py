@@ -17,7 +17,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import open3d as o3d
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))

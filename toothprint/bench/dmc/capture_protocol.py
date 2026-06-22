@@ -98,7 +98,9 @@ def missing_views(
         Empty list if all required views are present.
     """
     captured = set(captured_view_names)
-    return [spec for spec in protocol if spec.required and spec.view_name not in captured]
+    return [
+        spec for spec in protocol if spec.required and spec.view_name not in captured
+    ]
 
 
 def coverage_per_region(
@@ -149,7 +151,9 @@ def coverage_per_region(
     """
     # Auto-detect quality tags from images when paths are provided.
     if image_paths_per_view:
-        from toothprint.bench.dmc.image_quality import analyze_view_quality  # lazy import
+        from toothprint.bench.dmc.image_quality import (
+            analyze_view_quality,
+        )  # lazy import
 
         merged_tags: dict[str, list[str]] = dict(quality_tags_per_view)
         for view_name, img_path in image_paths_per_view.items():
@@ -194,13 +198,14 @@ def coverage_per_region(
             x_min, y_min, z_min, x_max, y_max, z_max = (float(v) for v in bbox)
             pts = reconstruction_points  # type: ignore[union-attr]
             mask = (
-                (pts[:, 0] >= x_min) & (pts[:, 0] <= x_max)
-                & (pts[:, 1] >= y_min) & (pts[:, 1] <= y_max)
-                & (pts[:, 2] >= z_min) & (pts[:, 2] <= z_max)
+                (pts[:, 0] >= x_min)
+                & (pts[:, 0] <= x_max)
+                & (pts[:, 1] >= y_min)
+                & (pts[:, 1] <= y_max)
+                & (pts[:, 2] >= z_min)
+                & (pts[:, 2] <= z_max)
             )
-            pts_in_region = [
-                (float(p[0]), float(p[1]), float(p[2])) for p in pts[mask]
-            ]
+            pts_in_region = [(float(p[0]), float(p[1]), float(p[2])) for p in pts[mask]]
             score = coverage_from_point_cloud(region, pts_in_region, bbox)
             region_coverage[region] = score.coverage_fraction
             continue

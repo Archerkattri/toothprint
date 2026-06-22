@@ -6,10 +6,10 @@ a researcher tunes tau on data that later appears in eval.
 
 The registry uses a deterministic hash of (image_id, salt) to assign splits.
 """
+
 from __future__ import annotations
 import hashlib
 from enum import Enum
-from pathlib import Path
 
 
 class Split(str, Enum):
@@ -58,6 +58,8 @@ def split_records(
             image_id = getattr(rec, id_attr)
         except AttributeError:
             image_id = rec[id_attr]
-        split = assign_split(image_id, salt=salt, train_frac=train_frac, val_frac=val_frac)
+        split = assign_split(
+            image_id, salt=salt, train_frac=train_frac, val_frac=val_frac
+        )
         result[split.value].append(rec)
     return result

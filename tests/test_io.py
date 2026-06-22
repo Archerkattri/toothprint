@@ -1,4 +1,5 @@
 """Medical-format I/O: round-trip every format a dentist uses + the security guards."""
+
 import numpy as np
 import pytest
 
@@ -10,10 +11,11 @@ trimesh = pytest.importorskip("trimesh")
 pydicom = pytest.importorskip("pydicom")
 nibabel = pytest.importorskip("nibabel")
 PIL = pytest.importorskip("PIL")
-from PIL import Image
+from PIL import Image  # noqa: E402
 
 
 # --- fixtures: synthesize tiny real files ----------------------------------
+
 
 def _box(tmp_path, ext):
     p = tmp_path / f"m.{ext}"
@@ -30,7 +32,12 @@ def _img(tmp_path, ext, shape=(40, 48)):
 
 def _dicom(tmp_path, photometric="MONOCHROME2", spacing=(0.1, 0.1)):
     from pydicom.dataset import FileDataset, FileMetaDataset
-    from pydicom.uid import ExplicitVRLittleEndian, generate_uid, SecondaryCaptureImageStorage
+    from pydicom.uid import (
+        ExplicitVRLittleEndian,
+        generate_uid,
+        SecondaryCaptureImageStorage,
+    )
+
     arr = (np.random.default_rng(1).integers(0, 4096, (40, 48))).astype(np.uint16)
     meta = FileMetaDataset()
     meta.MediaStorageSOPClassUID = SecondaryCaptureImageStorage
@@ -58,6 +65,7 @@ def _nifti(tmp_path, name="v.nii.gz", shape=(12, 14, 10)):
 
 # --- meshes ----------------------------------------------------------------
 
+
 @pytest.mark.parametrize("ext", ["stl", "ply", "obj", "off", "glb"])
 def test_load_scan_formats(tmp_path, ext):
     s = io.load(str(_box(tmp_path, ext)))
@@ -81,6 +89,7 @@ def test_scan_to_open3d_mesh_and_cloud(tmp_path):
 
 # --- radiographs -----------------------------------------------------------
 
+
 @pytest.mark.parametrize("ext", ["png", "jpg", "tif", "bmp"])
 def test_load_radiograph_raster(tmp_path, ext):
     p, arr = _img(tmp_path, ext)
@@ -90,13 +99,16 @@ def test_load_radiograph_raster(tmp_path, ext):
 
 
 def test_detect_raster_by_extension_fallback(tmp_path):
-    p = tmp_path / "x.png"; p.write_bytes(b"no recognizable magic here at all")
-    assert detect(str(p)) == ("png", RADIOGRAPH)   # unknown magic, known extension
+    p = tmp_path / "x.png"
+    p.write_bytes(b"no recognizable magic here at all")
+    assert detect(str(p)) == ("png", RADIOGRAPH)  # unknown magic, known extension
 
 
 def test_radiograph_color_to_luminance(tmp_path):
     p = tmp_path / "c.png"
-    Image.fromarray((np.random.default_rng(0).random((30, 30, 3)) * 255).astype(np.uint8)).save(str(p))
+    Image.fromarray(
+        (np.random.default_rng(0).random((30, 30, 3)) * 255).astype(np.uint8)
+    ).save(str(p))
     assert io.load(str(p)).pixels.ndim == 2
 
 
@@ -114,11 +126,14 @@ def test_load_dicom_monochrome2(tmp_path):
 
 
 def test_normalized_constant_image_is_zero():
-    r = io.Radiograph(pixels=np.ones((4, 4), np.float32), pixel_spacing_mm=None, source_format="x")
+    r = io.Radiograph(
+        pixels=np.ones((4, 4), np.float32), pixel_spacing_mm=None, source_format="x"
+    )
     assert np.allclose(r.normalized, 0.0)
 
 
 # --- volumes ---------------------------------------------------------------
+
 
 def test_load_nifti(tmp_path):
     p, vol = _nifti(tmp_path)
@@ -133,9 +148,15 @@ def test_load_nifti_plain_nii(tmp_path):
 
 
 def test_load_dicom_series(tmp_path):
-    d = tmp_path / "series"; d.mkdir()
+    d = tmp_path / "series"
+    d.mkdir()
     from pydicom.dataset import FileDataset, FileMetaDataset
-    from pydicom.uid import ExplicitVRLittleEndian, generate_uid, SecondaryCaptureImageStorage
+    from pydicom.uid import (
+        ExplicitVRLittleEndian,
+        generate_uid,
+        SecondaryCaptureImageStorage,
+    )
+
     for k in range(4):
         meta = FileMetaDataset()
         meta.MediaStorageSOPClassUID = SecondaryCaptureImageStorage
@@ -146,11 +167,12 @@ def test_load_dicom_series(tmp_path):
         ds.BitsAllocated, ds.BitsStored, ds.SamplesPerPixel = 16, 12, 1
         ds.PhotometricInterpretation, ds.PixelRepresentation = "MONOCHROME2", 0
         ds.ImagePositionPatient = [0.0, 0.0, float(k)]
-        ds.PixelSpacing = [0.2, 0.2]; ds.SliceThickness = 0.5
+        ds.PixelSpacing = [0.2, 0.2]
+        ds.SliceThickness = 0.5
         ds.PixelData = (np.ones((16, 16), np.uint16) * k).tobytes()
         ds.save_as(str(d / f"s{k}.dcm"), enforce_file_format=True)
     (d / "notdicom.txt").write_text("ignore me")
-    (d / "subdir").mkdir()                          # non-file entry is skipped
+    (d / "subdir").mkdir()  # non-file entry is skipped
     v = io.load(str(d))
     assert v.shape == (4, 16, 16) and v.spacing_mm == (0.5, 0.2, 0.2)
     assert v.meta["n_slices"] == 4
@@ -158,10 +180,12 @@ def test_load_dicom_series(tmp_path):
 
 # --- detection + dispatch --------------------------------------------------
 
+
 def test_magic_beats_extension(tmp_path):
     p, _ = _img(tmp_path, "png")
-    fake = tmp_path / "fake.stl"; fake.write_bytes(p.read_bytes())
-    assert isinstance(io.load(str(fake)), io.Radiograph)   # PNG magic wins
+    fake = tmp_path / "fake.stl"
+    fake.write_bytes(p.read_bytes())
+    assert isinstance(io.load(str(fake)), io.Radiograph)  # PNG magic wins
 
 
 def test_detect_categories(tmp_path):
@@ -178,8 +202,10 @@ def test_ascii_stl_detected(tmp_path):
 
 # --- security guards -------------------------------------------------------
 
+
 def test_empty_file_rejected(tmp_path):
-    p = tmp_path / "e.png"; p.write_bytes(b"")
+    p = tmp_path / "e.png"
+    p.write_bytes(b"")
     with pytest.raises(io.CorruptFile):
         io.load(str(p))
 
@@ -190,7 +216,8 @@ def test_missing_file_rejected(tmp_path):
 
 
 def test_unsupported_format_rejected(tmp_path):
-    p = tmp_path / "j.xyz"; p.write_bytes(b"\x00\x01garbage")
+    p = tmp_path / "j.xyz"
+    p.write_bytes(b"\x00\x01garbage")
     with pytest.raises(io.UnsupportedFormat):
         io.load(str(p))
 
@@ -262,7 +289,8 @@ def test_dicom_series_requires_directory(tmp_path):
 
 
 def test_dicom_series_empty_dir(tmp_path):
-    d = tmp_path / "empty"; d.mkdir()
+    d = tmp_path / "empty"
+    d.mkdir()
     (d / "x.txt").write_text("nothing")
     with pytest.raises(io.CorruptFile):
         io.load_dicom_series(str(d))
@@ -271,12 +299,14 @@ def test_dicom_series_empty_dir(tmp_path):
 def test_non_finite_vertices_rejected(tmp_path, monkeypatch):
     p = _box(tmp_path, "ply")
     import trimesh as tm
+
     real = tm.load
 
     def fake(*a, **k):
         m = real(*a, **k)
         m.vertices[0] = [np.inf, 0, 0]
         return m
+
     monkeypatch.setattr(tm, "load", fake)
     with pytest.raises(io.CorruptFile):
         io.load_scan(str(p))
@@ -284,15 +314,22 @@ def test_non_finite_vertices_rejected(tmp_path, monkeypatch):
 
 # --- adversarial / fuzz: defensive parser branches -------------------------
 
+
 def test_dicom_unreadable_bytes(tmp_path):
-    p = tmp_path / "x.dcm"; p.write_bytes(b"\x12\x34not a dicom at all" * 4)
+    p = tmp_path / "x.dcm"
+    p.write_bytes(b"\x12\x34not a dicom at all" * 4)
     with pytest.raises(io.CorruptFile):
         io.load(str(p))
 
 
 def test_dicom_color_to_luminance(tmp_path):
     from pydicom.dataset import FileDataset, FileMetaDataset
-    from pydicom.uid import ExplicitVRLittleEndian, generate_uid, SecondaryCaptureImageStorage
+    from pydicom.uid import (
+        ExplicitVRLittleEndian,
+        generate_uid,
+        SecondaryCaptureImageStorage,
+    )
+
     arr = (np.random.default_rng(3).integers(0, 256, (20, 24, 3))).astype(np.uint8)
     meta = FileMetaDataset()
     meta.MediaStorageSOPClassUID = SecondaryCaptureImageStorage
@@ -314,35 +351,41 @@ def test_dicom_no_extension_detected_as_volume_then_loaded(tmp_path):
     noext = tmp_path / "anon0001"
     noext.write_bytes(p.read_bytes())
     assert detect(str(noext)) == ("dicom", VOLUME)
-    assert isinstance(io.load(str(noext)), io.Radiograph)   # single file -> radiograph
+    assert isinstance(io.load(str(noext)), io.Radiograph)  # single file -> radiograph
 
 
 def test_corrupt_tiff_rejected(tmp_path):
-    p = tmp_path / "b.tif"; p.write_bytes(b"II*\x00" + b"\xff" * 40)
+    p = tmp_path / "b.tif"
+    p.write_bytes(b"II*\x00" + b"\xff" * 40)
     with pytest.raises(io.IOError_):
         io.load(str(p))
 
 
 def test_corrupt_png_rejected(tmp_path):
-    p = tmp_path / "b.png"; p.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 40)
+    p = tmp_path / "b.png"
+    p.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 40)
     with pytest.raises(io.IOError_):
         io.load(str(p))
 
 
 def test_pil_decompression_bomb_rejected(tmp_path, monkeypatch):
     p, _ = _img(tmp_path, "png", shape=(80, 80))
-    monkeypatch.setattr(_limits, "MAX_IMAGE_PIXELS", 16)   # PIL itself raises the bomb
+    monkeypatch.setattr(_limits, "MAX_IMAGE_PIXELS", 16)  # PIL itself raises the bomb
     with pytest.raises(io.FileTooLarge):
         io.load(str(p))
 
 
-@pytest.mark.parametrize("magic,ext,expect", [
-    (b"GIF89a" + b"\x00" * 20, "gif", "gif"),
-    (b"RIFF\x00\x00\x00\x00WEBP" + b"\x00" * 8, "webp", "webp"),
-    (b"OFF\n0 0 0\n", "off", "off"),
-])
+@pytest.mark.parametrize(
+    "magic,ext,expect",
+    [
+        (b"GIF89a" + b"\x00" * 20, "gif", "gif"),
+        (b"RIFF\x00\x00\x00\x00WEBP" + b"\x00" * 8, "webp", "webp"),
+        (b"OFF\n0 0 0\n", "off", "off"),
+    ],
+)
 def test_detect_minor_formats(tmp_path, magic, ext, expect):
-    p = tmp_path / f"f.{ext}"; p.write_bytes(magic)
+    p = tmp_path / f"f.{ext}"
+    p.write_bytes(magic)
     fmt, _ = detect(str(p))
     assert fmt == expect
 
@@ -350,12 +393,14 @@ def test_detect_minor_formats(tmp_path, magic, ext, expect):
 def test_nifti_detected_by_magic_without_extension(tmp_path):
     p, _ = _nifti(tmp_path, name="vol.nii")
     raw = p.read_bytes()
-    q = tmp_path / "scan_blob"; q.write_bytes(raw)
+    q = tmp_path / "scan_blob"
+    q.write_bytes(raw)
     assert detect(str(q)) == ("nifti", VOLUME)
 
 
 def test_3mf_not_a_zip_rejected(tmp_path):
-    p = tmp_path / "bad.3mf"; p.write_bytes(b"PK\x03\x04 but truncated zip")
+    p = tmp_path / "bad.3mf"
+    p.write_bytes(b"PK\x03\x04 but truncated zip")
     with pytest.raises(io.IOError_):
         io.load_scan(str(p))
 
@@ -384,13 +429,15 @@ def test_nifti_gz_bomb_guard(tmp_path, monkeypatch):
 
 
 def test_corrupt_nifti_rejected(tmp_path):
-    p = tmp_path / "bad.nii"; p.write_bytes(b"\x00" * 10 + b"garbage nifti header")
+    p = tmp_path / "bad.nii"
+    p.write_bytes(b"\x00" * 10 + b"garbage nifti header")
     with pytest.raises(io.IOError_):
         io.load_volume(str(p))
 
 
 def test_dicom_series_size_cap(tmp_path, monkeypatch):
-    d = tmp_path / "series"; d.mkdir()
+    d = tmp_path / "series"
+    d.mkdir()
     p, _ = _dicom(tmp_path)
     (d / "s0.dcm").write_bytes(p.read_bytes())
     monkeypatch.setattr(_limits, "MAX_DECOMPRESSED_BYTES", 4)
@@ -400,7 +447,12 @@ def test_dicom_series_size_cap(tmp_path, monkeypatch):
 
 def _bare_dicom(tmp_path, name):
     from pydicom.dataset import FileDataset, FileMetaDataset
-    from pydicom.uid import ExplicitVRLittleEndian, generate_uid, SecondaryCaptureImageStorage
+    from pydicom.uid import (
+        ExplicitVRLittleEndian,
+        generate_uid,
+        SecondaryCaptureImageStorage,
+    )
+
     meta = FileMetaDataset()
     meta.MediaStorageSOPClassUID = SecondaryCaptureImageStorage
     meta.MediaStorageSOPInstanceUID = generate_uid()
@@ -431,6 +483,7 @@ def test_dicom_multiframe_grayscale_takes_first(tmp_path):
 
 
 def test_detect_directory_rejected(tmp_path):
-    d = tmp_path / "adir"; d.mkdir()
+    d = tmp_path / "adir"
+    d.mkdir()
     with pytest.raises(io.UnsupportedFormat):
-        detect(str(d))           # a directory is not a regular file
+        detect(str(d))  # a directory is not a regular file

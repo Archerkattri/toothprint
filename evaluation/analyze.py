@@ -8,7 +8,6 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
 
 R = Path(__file__).resolve().parent / "results"
 
@@ -104,14 +103,14 @@ def main():
         n = change["ablations"]
         print(f"Change cert: FPR<=alpha at all alpha? "
               f"{all(n[f'alpha_{a}']['fpr'] <= a for a in [0.05,0.1,0.2])}")
-        print(f"  recall @2mm change vs noise: " + ", ".join(f"{nz}px={n[f'noise_{nz}']['recall']:.2f}" for nz in [1,3,5,8]))
+        print("  recall @2mm change vs noise: " + ", ".join(f"{nz}px={n[f'noise_{nz}']['recall']:.2f}" for nz in [1,3,5,8]))
     if surface:
         a = surface["ablations"]
-        print(f"Surface recall@1mm (de-biased) vs recon noise: " +
+        print("Surface recall@1mm (de-biased) vs recon noise: " +
               ", ".join(f"{nz}mm={_rec1(a[f'noise_{nz}']):.2f}" for nz in [0.05,0.2,0.4,0.84]))
         if "correlated" in surface:
             c = surface["correlated"]
-            print(f"  correlated-noise caveat (0.2mm): " +
+            print("  correlated-noise caveat (0.2mm): " +
                   ", ".join(f"corr{cc}={_rec1(c[f'corr_{cc}']):.2f}" for cc in [0.0,0.5,1.0]))
     if reg_gt:
         s = reg_gt["sweep"]; fpr0 = next((x["fpr"] for x in s if x["change_px"] == 0), None)

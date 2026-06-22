@@ -3,6 +3,7 @@
 Each perturbation takes a point cloud (Nx3 array) and returns a perturbed version.
 Applied before coverage_from_point_cloud to simulate degraded captures.
 """
+
 from __future__ import annotations
 import numpy as np
 from dataclasses import dataclass
@@ -10,7 +11,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class PerturbResult:
-    points: np.ndarray          # (N, 3) perturbed points
+    points: np.ndarray  # (N, 3) perturbed points
     family: str
     params: dict
 
@@ -30,7 +31,11 @@ def pose_jitter(
         return PerturbResult(
             points=points.copy(),
             family="pose_jitter",
-            params={"rotation_deg": rotation_deg, "translation_mm": translation_mm, "seed": seed},
+            params={
+                "rotation_deg": rotation_deg,
+                "translation_mm": translation_mm,
+                "seed": seed,
+            },
         )
     rng = np.random.default_rng(seed)
     centroid = points.mean(axis=0)
@@ -42,11 +47,13 @@ def pose_jitter(
 
     # Rodrigues rotation formula
     theta = np.deg2rad(rotation_deg)
-    K = np.array([
-        [0.0,     -axis[2],  axis[1]],
-        [axis[2],  0.0,     -axis[0]],
-        [-axis[1], axis[0],  0.0   ],
-    ])
+    K = np.array(
+        [
+            [0.0, -axis[2], axis[1]],
+            [axis[2], 0.0, -axis[0]],
+            [-axis[1], axis[0], 0.0],
+        ]
+    )
     R = np.eye(3) + np.sin(theta) * K + (1.0 - np.cos(theta)) * (K @ K)
 
     rotated = centered @ R.T
@@ -61,7 +68,11 @@ def pose_jitter(
     return PerturbResult(
         points=perturbed,
         family="pose_jitter",
-        params={"rotation_deg": rotation_deg, "translation_mm": translation_mm, "seed": seed},
+        params={
+            "rotation_deg": rotation_deg,
+            "translation_mm": translation_mm,
+            "seed": seed,
+        },
     )
 
 
@@ -138,8 +149,14 @@ def missing_view(
     coherent region — the part of the arch facing the missing camera.
     """
     if points.shape[0] == 0:
-        return PerturbResult(points=points.copy(), family="missing_view",
-                             params={"view_direction": view_direction, "occlusion_fraction": occlusion_fraction})
+        return PerturbResult(
+            points=points.copy(),
+            family="missing_view",
+            params={
+                "view_direction": view_direction,
+                "occlusion_fraction": occlusion_fraction,
+            },
+        )
     vd = np.array(view_direction, dtype=float)
     norm = np.linalg.norm(vd)
     if norm > 0:
@@ -150,7 +167,10 @@ def missing_view(
     return PerturbResult(
         points=points[mask].copy(),
         family="missing_view",
-        params={"view_direction": list(view_direction), "occlusion_fraction": occlusion_fraction},
+        params={
+            "view_direction": list(view_direction),
+            "occlusion_fraction": occlusion_fraction,
+        },
     )
 
 

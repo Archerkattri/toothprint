@@ -22,9 +22,19 @@ def distance(a: Sequence[float], b: Sequence[float]) -> float:
     return sqrt(dx * dx + dy * dy)
 
 
-def translate_point(point: Sequence[float], dx: float = 0.0, dy: float = 0.0, scale: float = 1.0) -> Point:
-    return [round(float(point[0]) * scale + dx, 10), round(float(point[1]) * scale + dy, 10)]
+def translate_point(
+    point: Sequence[float], dx: float = 0.0, dy: float = 0.0, scale: float = 1.0
+) -> Point:
+    return [
+        round(float(point[0]) * scale + dx, 10),
+        round(float(point[1]) * scale + dy, 10),
+    ]
 
 
-def translate_points(points: Iterable[Sequence[float]], dx: float = 0.0, dy: float = 0.0, scale: float = 1.0) -> list[Point]:
+def translate_points(
+    points: Iterable[Sequence[float]],
+    dx: float = 0.0,
+    dy: float = 0.0,
+    scale: float = 1.0,
+) -> list[Point]:
     return [translate_point(point, dx=dx, dy=dy, scale=scale) for point in points]

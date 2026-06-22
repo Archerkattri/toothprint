@@ -7,6 +7,7 @@ The key idea: assign weight w_i to each calibration residual based on how
 likely that calibration point is under the test distribution. The coverage
 guarantee becomes: P(Y in interval) >= 1-alpha, under the test distribution.
 """
+
 from __future__ import annotations
 import numpy as np
 from dataclasses import dataclass
@@ -23,6 +24,7 @@ class WeightedConformalInterval:
     alpha : float
         Miscoverage level.
     """
+
     quantile: float
     alpha: float
 
@@ -52,7 +54,6 @@ class WeightedConformalInterval:
         if not 0.0 < alpha < 1.0:
             raise ValueError("alpha must be in (0, 1)")
 
-        n = len(residuals)
         res = np.array([abs(float(r)) for r in residuals])
         w = np.array([float(wt) for wt in weights])
         if not np.all(np.isfinite(res)):
@@ -137,7 +138,10 @@ def perturbation_shift_weights(
         sigma = 1.06 * s * (n ** (-0.2)) if s > 0 else 1.0
 
     def kde(x_eval: float, data: np.ndarray) -> float:
-        return float(np.mean(np.exp(-0.5 * ((data - x_eval) / sigma) ** 2)) / (sigma * np.sqrt(2 * np.pi)))
+        return float(
+            np.mean(np.exp(-0.5 * ((data - x_eval) / sigma) ** 2))
+            / (sigma * np.sqrt(2 * np.pi))
+        )
 
     weights = [kde(x, np.array([test_noise_std])) / (kde(x, cal) + 1e-10) for x in cal]
     return weights
@@ -162,7 +166,4 @@ def cross_source_weights(
     downweight_ratio : float
         Weight assigned to out-of-source calibration points.
     """
-    return [
-        1.0 if src == test_source else downweight_ratio
-        for src in cal_sources
-    ]
+    return [1.0 if src == test_source else downweight_ratio for src in cal_sources]

@@ -12,6 +12,7 @@ the CEJ and surrounding anatomy fixed — a faithful image-space analogue of
 localized crestal bone loss. The warp is a Gaussian-weighted inverse remap
 (scipy ``map_coordinates``), restricted to a window around the crest for speed.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -67,8 +68,8 @@ def render_crestal_change(
     length = float(np.hypot(dx, dy))
     if length < 1e-9:
         raise ValueError("CEJ and crest midpoints coincide; bone vector undefined")
-    ux, uy = dx / length, dy / length          # along bone (apical) unit vector
-    nx, ny = -uy, ux                           # across-tooth unit vector
+    ux, uy = dx / length, dy / length  # along bone (apical) unit vector
+    nx, ny = -uy, ux  # across-tooth unit vector
     vx, vy = ux * float(delta_px), uy * float(delta_px)
 
     sa = sigma_along if sigma_along is not None else max(0.6 * length, 8.0)
@@ -87,7 +88,7 @@ def render_crestal_change(
     rel_x, rel_y = xs - kx, ys - ky
     d_along = rel_x * ux + rel_y * uy
     d_perp = rel_x * nx + rel_y * ny
-    weight = np.exp(-(d_along ** 2 / (2.0 * sa * sa) + d_perp ** 2 / (2.0 * sp * sp)))
+    weight = np.exp(-(d_along**2 / (2.0 * sa * sa) + d_perp**2 / (2.0 * sp * sp)))
     # Inverse map: output[q] samples input at q - v*w(q), moving the margin by v.
     src_x = xs - vx * weight
     src_y = ys - vy * weight

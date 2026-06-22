@@ -25,6 +25,7 @@ Ball-Pivoting interpolates the actual points (best raw-detail preservation,
 0.129mm on clean input) but yields non-watertight, noise-sensitive meshes, so
 it is offered as an option for clean inputs where watertightness is not needed.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -74,19 +75,27 @@ def poisson_surface_reconstruction(
     try:
         import open3d as o3d  # noqa: PLC0415
     except ImportError as exc:
-        raise RuntimeError("open3d is required for Poisson surface reconstruction") from exc
+        raise RuntimeError(
+            "open3d is required for Poisson surface reconstruction"
+        ) from exc
 
     if depth < 1:
         raise ValueError("depth must be a positive integer")
 
     pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(pts))
-    pcd.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=normal_radius, max_nn=30))
+    pcd.estimate_normals(
+        o3d.geometry.KDTreeSearchParamHybrid(radius=normal_radius, max_nn=30)
+    )
     pcd.orient_normals_consistent_tangent_plane(20)
 
-    mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=depth)
+    mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
+        pcd, depth=depth
+    )
     densities = np.asarray(densities)
     if densities.size and 0.0 < density_quantile < 1.0:
-        mesh.remove_vertices_by_mask(densities < np.quantile(densities, density_quantile))
+        mesh.remove_vertices_by_mask(
+            densities < np.quantile(densities, density_quantile)
+        )
     if len(mesh.triangles) == 0:
         raise RuntimeError("Poisson produced an empty mesh")
     refined = mesh.sample_points_uniformly(number_of_points=n_sample)

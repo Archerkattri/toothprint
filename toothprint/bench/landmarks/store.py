@@ -3,8 +3,10 @@
 The score path MUST consume predicted landmarks, never GT annotations.
 This module enforces that separation.
 """
+
 from __future__ import annotations
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 import numpy as np
 
@@ -12,8 +14,9 @@ import numpy as np
 @dataclass
 class LandmarkPrediction:
     """Predicted landmarks for one image with optional confidence scores."""
+
     image_id: str
-    annotation_dict: dict   # DenPAR-style: {"image": ..., "teeth": [...]}
+    annotation_dict: dict  # DenPAR-style: {"image": ..., "teeth": [...]}
     is_oracle: bool = False  # True only for GT (oracle) predictions
 
 
@@ -66,11 +69,13 @@ class PredictedLandmarkStore:
                 pred_tooth = predict_tooth(detector, img, tooth)
                 if pred_tooth is not None:
                     pred_teeth.append(pred_tooth)
-            store.add(LandmarkPrediction(
-                image_id=rec.image_id,
-                annotation_dict={"teeth": pred_teeth},
-                is_oracle=False,
-            ))
+            store.add(
+                LandmarkPrediction(
+                    image_id=rec.image_id,
+                    annotation_dict={"teeth": pred_teeth},
+                    is_oracle=False,
+                )
+            )
         return store
 
     @classmethod
@@ -82,13 +87,14 @@ class PredictedLandmarkStore:
         store = cls()
         for rec in gt_records:
             ann = rec.annotation_dict
-            store.add(LandmarkPrediction(
-                image_id=rec.image_id,
-                annotation_dict=ann,
-                is_oracle=True,
-            ))
+            store.add(
+                LandmarkPrediction(
+                    image_id=rec.image_id,
+                    annotation_dict=ann,
+                    is_oracle=True,
+                )
+            )
         return store
-
 
     def for_image(self, image_id: str) -> "LandmarkPrediction":
         """Alias for get() that raises KeyError on miss (legacy compat)."""
@@ -102,23 +108,27 @@ class PredictedLandmarkStore:
         """Load predictions from JSON file written by to_json()."""
         import json
         from pathlib import Path as _Path
+
         payload = json.loads(_Path(path).read_text(encoding="utf-8"))
         store = cls()
         for record in payload.get("records", []):
             image_id = record.get("image_id")
             if not image_id:
                 raise ValueError("Every landmark prediction record needs image_id")
-            store.add(LandmarkPrediction(
-                image_id=image_id,
-                annotation_dict={"teeth": record.get("teeth", [])},
-                is_oracle=False,
-            ))
+            store.add(
+                LandmarkPrediction(
+                    image_id=image_id,
+                    annotation_dict={"teeth": record.get("teeth", [])},
+                    is_oracle=False,
+                )
+            )
         return store
 
     def to_json(self, path: "Path | str") -> "Path":
         """Serialize store to JSON (paired with load())."""
         import json
         from pathlib import Path as _Path
+
         output = _Path(path)
         output.parent.mkdir(parents=True, exist_ok=True)
         payload = {
@@ -127,5 +137,7 @@ class PredictedLandmarkStore:
                 for image_id, pred in sorted(self._predictions.items())
             ]
         }
-        output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        output.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         return output

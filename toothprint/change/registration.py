@@ -7,6 +7,7 @@ precision, referenced to a stationary crown patch so global acquisition
 repositioning cancels, and project onto the apical bone vector. Stable pairs then
 measure ~0.1 px, so even a sub-millimetre change is detectable.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -27,20 +28,21 @@ def _subpixel_peak(res: np.ndarray, mx: int, my: int) -> tuple[float, float]:
     H, W = res.shape
     sx, sy = float(mx), float(my)
     if 1 <= mx < W - 1:
-        l, m, r = res[my, mx - 1], res[my, mx], res[my, mx + 1]
-        dd = l - 2 * m + r
+        left, mid, right = res[my, mx - 1], res[my, mx], res[my, mx + 1]
+        dd = left - 2 * mid + right
         if abs(dd) > 1e-9:
-            sx += 0.5 * (l - r) / dd
+            sx += 0.5 * (left - right) / dd
     if 1 <= my < H - 1:
-        l, m, r = res[my - 1, mx], res[my, mx], res[my + 1, mx]
-        dd = l - 2 * m + r
+        left, mid, right = res[my - 1, mx], res[my, mx], res[my + 1, mx]
+        dd = left - 2 * mid + right
         if abs(dd) > 1e-9:
-            sy += 0.5 * (l - r) / dd
+            sy += 0.5 * (left - right) / dd
     return sx, sy
 
 
-def measure_displacement(g0: np.ndarray, g1: np.ndarray, center, half: int = 20,
-                         search: int = 70):
+def measure_displacement(
+    g0: np.ndarray, g1: np.ndarray, center, half: int = 20, search: int = 70
+):
     """Sub-pixel (dx, dy) displacement of content at ``center`` from g0 to g1.
 
     Returns ``((dx, dy), response)`` or ``None`` if a window is out of bounds.
@@ -57,8 +59,15 @@ def measure_displacement(g0: np.ndarray, g1: np.ndarray, center, half: int = 20,
     return (sx - search, sy - search), float(maxv)
 
 
-def measure_change(g0: np.ndarray, g1: np.ndarray, reference_center, crest_center,
-                   bone_unit, half: int = 20, search: int = 70):
+def measure_change(
+    g0: np.ndarray,
+    g1: np.ndarray,
+    reference_center,
+    crest_center,
+    bone_unit,
+    half: int = 20,
+    search: int = 70,
+):
     """Reference-cancelled apical bone-level change (px) between two timepoints.
 
     The crest displacement is measured relative to a stationary reference (crown)
@@ -82,12 +91,17 @@ def _bilinear(gray: np.ndarray, x: float, y: float):
     if x0 < 0 or y0 < 0 or x0 + 1 >= w or y0 + 1 >= h:
         return None
     fx, fy = x - x0, y - y0
-    return float(gray[y0, x0] * (1 - fx) * (1 - fy) + gray[y0, x0 + 1] * fx * (1 - fy)
-                 + gray[y0 + 1, x0] * (1 - fx) * fy + gray[y0 + 1, x0 + 1] * fx * fy)
+    return float(
+        gray[y0, x0] * (1 - fx) * (1 - fy)
+        + gray[y0, x0 + 1] * fx * (1 - fy)
+        + gray[y0 + 1, x0] * (1 - fx) * fy
+        + gray[y0 + 1, x0 + 1] * fx * fy
+    )
 
 
-def snap_to_margin(gray: np.ndarray, center, bone_unit, span: float = 40.0,
-                   step: float = 2.0):
+def snap_to_margin(
+    gray: np.ndarray, center, bone_unit, span: float = 40.0, step: float = 2.0
+):
     """Refine ``center`` along ±``bone_unit`` onto the strongest apical intensity
     edge — the bone margin itself.
 
@@ -118,8 +132,14 @@ def snap_to_margin(gray: np.ndarray, center, bone_unit, span: float = 40.0,
     return best
 
 
-def fit_global_motion(g0: np.ndarray, g1: np.ndarray, anchors, half: int = 20,
-                      search: int = 70, min_response: float = 0.3):
+def fit_global_motion(
+    g0: np.ndarray,
+    g1: np.ndarray,
+    anchors,
+    half: int = 20,
+    search: int = 70,
+    min_response: float = 0.3,
+):
     """Affine global-motion model ``t0 → t1`` from stationary anchor patches.
 
     A single reference patch only cancels a global *translation*; real
@@ -151,8 +171,16 @@ def fit_global_motion(g0: np.ndarray, g1: np.ndarray, anchors, half: int = 20,
     return P
 
 
-def measure_change_anchored(g0, g1, anchors, crest_center, bone_unit,
-                            half: int = 20, search: int = 70, min_response: float = 0.3):
+def measure_change_anchored(
+    g0,
+    g1,
+    anchors,
+    crest_center,
+    bone_unit,
+    half: int = 20,
+    search: int = 70,
+    min_response: float = 0.3,
+):
     """Local apical bone change with a multi-anchor *affine* global-motion model.
 
     Cancels the global motion **evaluated at the crest location** — so arbitrary
@@ -165,14 +193,25 @@ def measure_change_anchored(g0, g1, anchors, crest_center, bone_unit,
     if P is None or crest is None:
         return None
     (cdx, cdy), cresp = crest
-    pred = np.asarray([crest_center[0], crest_center[1], 1.0]) @ P  # global t1 location at crest
+    pred = (
+        np.asarray([crest_center[0], crest_center[1], 1.0]) @ P
+    )  # global t1 location at crest
     gdx, gdy = pred[0] - crest_center[0], pred[1] - crest_center[1]
     rel = (cdx - gdx) * bone_unit[0] + (cdy - gdy) * bone_unit[1]
     return float(rel), float(cresp)
 
 
-def measure_change_search(g0, g1, reference_center, crest_center, bone_unit, offsets,
-                          half: int = 20, search: int = 70, min_response: float = 0.0):
+def measure_change_search(
+    g0,
+    g1,
+    reference_center,
+    crest_center,
+    bone_unit,
+    offsets,
+    half: int = 20,
+    search: int = 70,
+    min_response: float = 0.0,
+):
     """Largest apical change over *reliable* candidate crest positions.
 
     A coarse localisation rarely lands the patch exactly on the bone margin;
@@ -184,8 +223,8 @@ def measure_change_search(g0, g1, reference_center, crest_center, bone_unit, off
     no candidate clears the gate the most-reliable one is returned. Returns
     ``(change, response)`` of the best candidate, or ``None``.
     """
-    best = None        # max change among reliable candidates
-    fallback = None    # most-reliable candidate, if none clear the gate
+    best = None  # max change among reliable candidates
+    fallback = None  # most-reliable candidate, if none clear the gate
     for t in offsets:
         c = (crest_center[0] + t * bone_unit[0], crest_center[1] + t * bone_unit[1])
         out = measure_change(g0, g1, reference_center, c, bone_unit, half, search)

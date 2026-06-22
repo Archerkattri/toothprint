@@ -12,6 +12,7 @@ bombs, billion-element headers, external-reference smuggling) and raises a
 The heavy parsers (pydicom, nibabel, trimesh, tifffile) are optional extras imported
 lazily, so the certification core stays dependency-light.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -43,12 +44,25 @@ def load(path):
         return load_scan(p, fmt)
     if fmt == "nifti":
         return load_volume(p)
-    return load_radiograph(p, "dicom")        # single-file DICOM -> first frame
+    return load_radiograph(p, "dicom")  # single-file DICOM -> first frame
 
 
 __all__ = [
-    "load", "load_radiograph", "load_scan", "load_volume", "load_dicom_series",
-    "detect", "Radiograph", "Scan", "Volume", "SUPPORTED",
-    "IOError_", "UnsupportedFormat", "CorruptFile", "FileTooLarge",
-    "RADIOGRAPH", "SCAN", "VOLUME",
+    "load",
+    "load_radiograph",
+    "load_scan",
+    "load_volume",
+    "load_dicom_series",
+    "detect",
+    "Radiograph",
+    "Scan",
+    "Volume",
+    "SUPPORTED",
+    "IOError_",
+    "UnsupportedFormat",
+    "CorruptFile",
+    "FileTooLarge",
+    "RADIOGRAPH",
+    "SCAN",
+    "VOLUME",
 ]

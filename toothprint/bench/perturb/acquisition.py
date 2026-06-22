@@ -41,6 +41,7 @@ def apply_per_landmark_perturbation(
     error, film bend). Returns PerturbedPair with label="stable", true_change=0.
     """
     import numpy as np
+
     rng = np.random.default_rng(seed)
     followup = deepcopy(annotation)
     for tooth in followup.get("teeth", []):
@@ -55,11 +56,18 @@ def apply_per_landmark_perturbation(
                 [float(p[0]) + float(dx[i]), float(p[1]) + float(dy[i])]
                 for i, p in enumerate(pts)
             ]
-    return PerturbedPair(baseline=deepcopy(annotation), followup=followup,
-                         label="stable", params=None, true_change=0.0)
+    return PerturbedPair(
+        baseline=deepcopy(annotation),
+        followup=followup,
+        label="stable",
+        params=None,
+        true_change=0.0,
+    )
 
 
-def apply_exposure_perturbation(annotation: dict, exposure_delta: float = 0.2) -> "PerturbedPair":
+def apply_exposure_perturbation(
+    annotation: dict, exposure_delta: float = 0.2
+) -> "PerturbedPair":
     """Record an exposure-only perturbation (no landmark displacement).
 
     Exposure changes alone should not affect the landmark-based score.
@@ -67,18 +75,33 @@ def apply_exposure_perturbation(annotation: dict, exposure_delta: float = 0.2) -
     """
     followup = deepcopy(annotation)
     followup.setdefault("metadata", {})["acquisition_perturbation"] = {
-        "dx": 0.0, "dy": 0.0, "scale": 1.0, "exposure_delta": exposure_delta,
+        "dx": 0.0,
+        "dy": 0.0,
+        "scale": 1.0,
+        "exposure_delta": exposure_delta,
     }
-    return PerturbedPair(baseline=deepcopy(annotation), followup=followup,
-                         label="stable", params=None, true_change=0.0)
+    return PerturbedPair(
+        baseline=deepcopy(annotation),
+        followup=followup,
+        label="stable",
+        params=None,
+        true_change=0.0,
+    )
 
 
-def apply_acquisition_perturbation(annotation: dict, params: TransformParams) -> PerturbedPair:
+def apply_acquisition_perturbation(
+    annotation: dict, params: TransformParams
+) -> PerturbedPair:
     followup = deepcopy(annotation)
     for tooth in followup.get("teeth", []):
-        for field in LANDMARK_FIELDS:
-            if field in tooth:
-                tooth[field] = translate_points(tooth[field], dx=params.dx, dy=params.dy, scale=params.scale)
+        for landmark_field in LANDMARK_FIELDS:
+            if landmark_field in tooth:
+                tooth[landmark_field] = translate_points(
+                    tooth[landmark_field],
+                    dx=params.dx,
+                    dy=params.dy,
+                    scale=params.scale,
+                )
     followup.setdefault("metadata", {})["acquisition_perturbation"] = {
         "dx": params.dx,
         "dy": params.dy,

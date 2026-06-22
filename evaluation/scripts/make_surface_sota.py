@@ -14,7 +14,6 @@ mean, (B) M3C2 max, (C) ours. Writes docs/surface_sota.png.
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import matplotlib
