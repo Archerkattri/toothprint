@@ -21,7 +21,9 @@ def test_umeyama_recovers_similarity_3d():
     rng = np.random.default_rng(0)
     src = rng.normal(size=(30, 3))
     ang = 0.5
-    R = np.array([[np.cos(ang), -np.sin(ang), 0], [np.sin(ang), np.cos(ang), 0], [0, 0, 1]])
+    R = np.array(
+        [[np.cos(ang), -np.sin(ang), 0], [np.sin(ang), np.cos(ang), 0], [0, 0, 1]]
+    )
     dst = 2.3 * src @ R.T + np.array([1.0, -2.0, 3.0])
     A, t = umeyama(src, dst)
     assert np.allclose(src @ A.T + t, dst, atol=1e-6)

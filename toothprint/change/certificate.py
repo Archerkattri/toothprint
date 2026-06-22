@@ -4,6 +4,7 @@ Ties the differential registration measurement to the conformal certifier: given
 two timepoint images and the tooth's CEJ/crest, measure the apical bone-level
 change and return a certified label with its conformal interval.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -31,9 +32,16 @@ class ChangeCertificate:
     response: float
 
 
-def certify_change(g0: np.ndarray, g1: np.ndarray, reference_center, crest_center,
-                   bone_unit, certifier: ConformalCertifier, tau: float,
-                   offsets=None) -> ChangeCertificate:
+def certify_change(
+    g0: np.ndarray,
+    g1: np.ndarray,
+    reference_center,
+    crest_center,
+    bone_unit,
+    certifier: ConformalCertifier,
+    tau: float,
+    offsets=None,
+) -> ChangeCertificate:
     """Measure and certify the bone-level change between two timepoint images.
 
     ``offsets`` enables the candidate-patch search for coarse localisation; pass
@@ -43,7 +51,9 @@ def certify_change(g0: np.ndarray, g1: np.ndarray, reference_center, crest_cente
     if offsets is None:
         out = measure_change(g0, g1, reference_center, crest_center, bone_unit)
     else:
-        out = measure_change_search(g0, g1, reference_center, crest_center, bone_unit, offsets)
+        out = measure_change_search(
+            g0, g1, reference_center, crest_center, bone_unit, offsets
+        )
     if out is None:
         raise ValueError("could not measure the bone-margin patch (out of bounds)")
     measured, response = out

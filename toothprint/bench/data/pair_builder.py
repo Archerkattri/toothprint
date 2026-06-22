@@ -21,7 +21,7 @@ from typing import Iterable
 import numpy as np
 
 from toothprint.bench.geometry import mean_point, translate_point, translate_points
-from toothprint.bench.perturb.acquisition import PerturbedPair, TransformParams
+from toothprint.bench.perturb.acquisition import PerturbedPair
 
 
 @dataclass(frozen=True)
@@ -35,6 +35,7 @@ class PairBuilderConfig:
 # Legacy LCG kept for backward compatibility (imported by tests)
 # ------------------------------------------------------------------
 
+
 def _lcg(state: int) -> tuple[int, float]:
     """Tiny LCG returning (new_state, float in (-1, 1))."""
     state = (state * 1664525 + 1013904223) & 0xFFFFFFFF
@@ -44,6 +45,7 @@ def _lcg(state: int) -> tuple[int, float]:
 # ------------------------------------------------------------------
 # Numpy-backed Gaussian noise
 # ------------------------------------------------------------------
+
 
 def _noise_batch(rng: np.random.Generator, n: int, std: float) -> np.ndarray:
     """Draw *n* independent Gaussian samples with mean=0, std=*std*."""
@@ -103,7 +105,9 @@ def _inject_crestal_shift(annotation: dict, tooth_id: str, delta_bone: float) ->
             if length < 1e-9:
                 break
             ux, uy = dx / length, dy / length
-            tooth["crest_line"] = translate_points(crest, dx=ux * delta_bone, dy=uy * delta_bone)
+            tooth["crest_line"] = translate_points(
+                crest, dx=ux * delta_bone, dy=uy * delta_bone
+            )
             break
     if not found:
         raise KeyError(f"Unknown tooth_id={tooth_id!r}")
@@ -144,13 +148,15 @@ def build_pairs(
         state += 1
         follow_noisy, state = _add_noise(ann, state, config.acq_noise_std)
         state += 1
-        pairs.append(PerturbedPair(
-            baseline=base_noisy,
-            followup=follow_noisy,
-            label="stable",
-            params=None,
-            true_change=0.0,
-        ))
+        pairs.append(
+            PerturbedPair(
+                baseline=base_noisy,
+                followup=follow_noisy,
+                label="stable",
+                params=None,
+                true_change=0.0,
+            )
+        )
 
         # progressed: followup = GT + crestal_shift + noise
         shifted = _inject_crestal_shift(ann, first_tooth_id, config.crestal_shift_px)
@@ -158,12 +164,14 @@ def build_pairs(
         state += 1
         follow_shifted_noisy, state = _add_noise(shifted, state, config.acq_noise_std)
         state += 1
-        pairs.append(PerturbedPair(
-            baseline=base_noisy2,
-            followup=follow_shifted_noisy,
-            label="progressed",
-            params=None,
-            true_change=config.crestal_shift_px,
-        ))
+        pairs.append(
+            PerturbedPair(
+                baseline=base_noisy2,
+                followup=follow_shifted_noisy,
+                label="progressed",
+                params=None,
+                true_change=config.crestal_shift_px,
+            )
+        )
 
     return pairs

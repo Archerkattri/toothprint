@@ -127,7 +127,7 @@ class PeriapicalLesionsAdapter:
                 if not stem.startswith(prefix):
                     continue
                 try:
-                    rx_num = int(stem[len(prefix):])
+                    rx_num = int(stem[len(prefix) :])
                 except ValueError:
                     continue
                 tooth_name, lesion = labels.get(rx_num, ("", False))

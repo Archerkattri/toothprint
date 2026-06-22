@@ -124,7 +124,9 @@ def decide_surface_change(
     )
 
 
-def recapture_actions(item: CertificateInput, *, coverage_threshold: float) -> list[RecaptureAction]:
+def recapture_actions(
+    item: CertificateInput, *, coverage_threshold: float
+) -> list[RecaptureAction]:
     tags = set(item.quality_tags_t0) | set(item.quality_tags_t1)
     actions: list[RecaptureAction] = []
     if min(item.coverage_score_t0, item.coverage_score_t1) < coverage_threshold:

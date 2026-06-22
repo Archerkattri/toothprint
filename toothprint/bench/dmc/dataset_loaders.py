@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import logging
-import os
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator, Literal, Optional
+from typing import TYPE_CHECKING, Iterator, Literal, Optional
+
+if TYPE_CHECKING:
+    import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +50,9 @@ class DatasetLoader(ABC):
         """
 
 
-def _hash_split(key: str, train_frac: float = 0.8, val_frac: float = 0.1) -> DatasetSplit:
+def _hash_split(
+    key: str, train_frac: float = 0.8, val_frac: float = 0.1
+) -> DatasetSplit:
     """Deterministic 80/10/10 split based on MD5 hash of a key."""
     digest = int(hashlib.md5(key.encode()).hexdigest(), 16)
     bucket = (digest % 100) / 100.0
@@ -131,7 +135,8 @@ class Teeth3DSLoader(DatasetLoader):
 
             # Parse FDI tooth IDs from filename: matches "tooth-NN", "toothNN", "tooth_NN"
             tooth_ids: list[int] = [
-                int(m) for m in re.findall(r"tooth[-_]?(\d{2})", stem, flags=re.IGNORECASE)
+                int(m)
+                for m in re.findall(r"tooth[-_]?(\d{2})", stem, flags=re.IGNORECASE)
             ]
 
             yield DatasetRecord(
@@ -287,7 +292,9 @@ class Poseidon3DLoader(DatasetLoader):
                 # Look for MARKERS pkl alongside the STL
                 markers_name = f"{case_id}_MARKERS_{arch}.pkl"
                 markers_path = self._root / case_id / markers_name
-                label_path: str | None = str(markers_path) if markers_path.exists() else None
+                label_path: str | None = (
+                    str(markers_path) if markers_path.exists() else None
+                )
 
                 record_id = f"poseidon3d_{case_id}_{arch}"
 
@@ -320,7 +327,6 @@ class Poseidon3DLoader(DatasetLoader):
 
         base = self._root.parent
         for case in self._load_metadata():
-            case_id = case.get("id", "")
             for arch in ("mandible", "maxilla"):
                 arch_paths = case.get(f"{arch}_paths") or []
                 if not arch_paths:
@@ -452,7 +458,9 @@ def load_teethland_points(record: DatasetRecord) -> "np.ndarray":
             return np.empty((0, 3), dtype=np.float64)
         return np.array(coords, dtype=np.float64)
     except Exception as exc:
-        logger.warning("Failed to parse 3DTeethLand JSON %s: %s", record.label_path, exc)
+        logger.warning(
+            "Failed to parse 3DTeethLand JSON %s: %s", record.label_path, exc
+        )
         return np.empty((0, 3), dtype=np.float64)
 
 

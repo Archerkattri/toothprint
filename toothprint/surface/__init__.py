@@ -1,4 +1,5 @@
 """Certified 3D surface-change mapping."""
+
 from toothprint.surface.certificate import SurfaceCertificate, certify_surface_change
 from toothprint.surface.error import (
     SurfaceError,

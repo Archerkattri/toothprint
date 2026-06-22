@@ -35,7 +35,7 @@ def _subject_id_from_record(record: Any) -> str | None:
     notes: str = getattr(record, "notes", "") or ""
     for part in notes.split():
         if part.startswith("subject="):
-            return part[len("subject="):]
+            return part[len("subject=") :]
 
     record_id: str = getattr(record, "record_id", "") or ""
     tokens = record_id.split("_")
@@ -68,7 +68,7 @@ def _timepoint_from_record(record: Any) -> str:
     notes: str = getattr(record, "notes", "") or ""
     for part in notes.split():
         if part.startswith("timepoint="):
-            return part[len("timepoint="):]
+            return part[len("timepoint=") :]
 
     record_id: str = getattr(record, "record_id", "") or ""
     tokens = record_id.split("_")
@@ -123,6 +123,10 @@ def pair_by_subject(records: list[Any]) -> list[LongitudinalPair]:
         # Use the first record at each timepoint as the representative.
         t0_record = grouped[subject_id][t0_tp][0]
         t1_record = grouped[subject_id][t1_tp][0]
-        pairs.append(LongitudinalPair(subject_id=subject_id, t0_record=t0_record, t1_record=t1_record))
+        pairs.append(
+            LongitudinalPair(
+                subject_id=subject_id, t0_record=t0_record, t1_record=t1_record
+            )
+        )
 
     return pairs

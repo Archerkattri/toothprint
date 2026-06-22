@@ -43,8 +43,12 @@ def summarize_decisions(rows: list[dict[str, str]]) -> DecisionSummary:
     false_progression_rate = _safe_div(table["stable"]["progressed"], stable_total)
     true_change_recall = _safe_div(table["progressed"]["progressed"], progressed_total)
     stable_certification_rate = _safe_div(table["stable"]["stable"], stable_total)
-    progression_certification_rate = _safe_div(table["progressed"]["progressed"], progressed_total)
-    uncertain_rate = _safe_div(table["stable"]["uncertain"] + table["progressed"]["uncertain"], n)
+    progression_certification_rate = _safe_div(
+        table["progressed"]["progressed"], progressed_total
+    )
+    uncertain_rate = _safe_div(
+        table["stable"]["uncertain"] + table["progressed"]["uncertain"], n
+    )
 
     widths = [row["hi"] - row["lo"] for row in rows if "hi" in row and "lo" in row]
     # Abstaining (unbounded) intervals have inf width; degenerate inputs can
@@ -107,7 +111,13 @@ def coverage_vs_false_progression_curve(
                     cert += 1
         fpr = fp / n_stable if n_stable > 0 else 0.0
         csr = cert / n_stable if n_stable > 0 else 0.0
-        curve.append({"width_factor": float(w), "false_prog_rate": float(fpr), "stable_cert_rate": float(csr)})
+        curve.append(
+            {
+                "width_factor": float(w),
+                "false_prog_rate": float(fpr),
+                "stable_cert_rate": float(csr),
+            }
+        )
     return curve
 
 
@@ -221,5 +231,7 @@ def slice_by_difficulty(
     for name, slice_rows in strata.items():
         if not slice_rows:
             continue
-        slices.append(DifficultySlice(name=name, summary=summarize_decisions(slice_rows)))
+        slices.append(
+            DifficultySlice(name=name, summary=summarize_decisions(slice_rows))
+        )
     return slices

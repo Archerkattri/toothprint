@@ -18,7 +18,9 @@ class FusionTimepoint:
 
     def to_dict(self) -> dict:
         payload = asdict(self)
-        payload["visible_surface_certificates"] = [cert.to_dict() for cert in self.visible_surface_certificates]
+        payload["visible_surface_certificates"] = [
+            cert.to_dict() for cert in self.visible_surface_certificates
+        ]
         return payload
 
     @property
@@ -67,13 +69,16 @@ def to_fusion_timepoint(
             error_interval_mm_t0=err_interval,
             error_interval_mm_t1=err_interval,
             delta_interval_mm=(0.0, calibrator.radius_mm),
-            region_type=region if region in (
+            region_type=region
+            if region
+            in (
                 "anterior_crown",
                 "buccal_crown",
                 "lingual_or_palatal_crown",
                 "occlusal_or_incisal",
                 "visible_gingival_margin",
-            ) else "unknown_visible_dental_surface",
+            )
+            else "unknown_visible_dental_surface",
         )
         certs.append(decide_surface_change(inp))
 
@@ -84,4 +89,3 @@ def to_fusion_timepoint(
         dental_change_radiograph_id=radiograph_id,
         visible_surface_certificates=certs,
     )
-

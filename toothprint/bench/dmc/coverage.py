@@ -148,7 +148,9 @@ def coverage_from_point_cloud(
         across clouds evaluated at the *same* ``grid`` and similar point counts.
     """
     if len(region_bbox) != 6:
-        raise ValueError("region_bbox must have exactly 6 elements: (x_min, y_min, z_min, x_max, y_max, z_max)")
+        raise ValueError(
+            "region_bbox must have exactly 6 elements: (x_min, y_min, z_min, x_max, y_max, z_max)"
+        )
 
     x_min, y_min, z_min, x_max, y_max, z_max = (float(v) for v in region_bbox)
 
@@ -177,7 +179,9 @@ def coverage_from_point_cloud(
     z_range = z_max - z_min
 
     # Convert to numpy for fast filtering.
-    pts_arr = np.array([(float(x), float(y), float(z)) for x, y, z in points], dtype=np.float64)
+    pts_arr = np.array(
+        [(float(x), float(y), float(z)) for x, y, z in points], dtype=np.float64
+    )
 
     if pts_arr.shape[0] == 0:
         return CoverageScore(
@@ -190,9 +194,12 @@ def coverage_from_point_cloud(
 
     # Filter to bbox.
     mask = (
-        (pts_arr[:, 0] >= x_min) & (pts_arr[:, 0] <= x_max) &
-        (pts_arr[:, 1] >= y_min) & (pts_arr[:, 1] <= y_max) &
-        (pts_arr[:, 2] >= z_min) & (pts_arr[:, 2] <= z_max)
+        (pts_arr[:, 0] >= x_min)
+        & (pts_arr[:, 0] <= x_max)
+        & (pts_arr[:, 1] >= y_min)
+        & (pts_arr[:, 1] <= y_max)
+        & (pts_arr[:, 2] >= z_min)
+        & (pts_arr[:, 2] <= z_max)
     )
     pts_in = pts_arr[mask]
 

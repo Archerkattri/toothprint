@@ -14,20 +14,20 @@ Usage:
     from toothprint.bench.dmc.render import render_5_views
     views = render_5_views("path/to/arch.stl", resolution=256)
 """
+
 from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    try:
-        from PIL import Image as PILImage
-    except ImportError:
-        pass
-
-PROTOCOL_VIEWS = ("left_buccal", "right_buccal", "anterior", "upper_occlusal", "lower_occlusal")
+PROTOCOL_VIEWS = (
+    "left_buccal",
+    "right_buccal",
+    "anterior",
+    "upper_occlusal",
+    "lower_occlusal",
+)
 
 
 @dataclass(frozen=True)
@@ -35,23 +35,24 @@ class RenderedView:
     view_name: str
     width: int
     height: int
-    pixels_rgb: bytes    # raw RGB bytes, len = width * height * 3
+    pixels_rgb: bytes  # raw RGB bytes, len = width * height * 3
 
 
 def _require_open3d():
     try:
         import open3d as o3d
+
         return o3d
     except ImportError:
         raise ImportError(
-            "open3d is required for mesh rendering. "
-            "Install with: pip install open3d"
+            "open3d is required for mesh rendering. Install with: pip install open3d"
         )
 
 
 def _require_pil():
     try:
         from PIL import Image
+
         return Image
     except ImportError:
         raise ImportError("Pillow is required. Install with: pip install Pillow")
@@ -82,23 +83,25 @@ def _compute_camera_params(mesh, view_name: str, resolution: int) -> dict:
 
     bbox = mesh.get_axis_aligned_bounding_box()
     center = np.asarray(bbox.get_center())
-    diag = np.linalg.norm(np.asarray(bbox.get_max_bound()) - np.asarray(bbox.get_min_bound()))
+    diag = np.linalg.norm(
+        np.asarray(bbox.get_max_bound()) - np.asarray(bbox.get_min_bound())
+    )
     d = diag * 1.5
 
     # View directions (camera position relative to centroid)
     offsets = {
-        "left_buccal":    np.array([-d,   0.0,  0.0]),   # patient's left
-        "right_buccal":   np.array([ d,   0.0,  0.0]),   # patient's right
-        "anterior":       np.array([ 0.0,  0.0,  d  ]),  # front
-        "upper_occlusal": np.array([ 0.0,  d,   0.0]),   # top-down
-        "lower_occlusal": np.array([ 0.0, -d,   0.0]),   # bottom-up
+        "left_buccal": np.array([-d, 0.0, 0.0]),  # patient's left
+        "right_buccal": np.array([d, 0.0, 0.0]),  # patient's right
+        "anterior": np.array([0.0, 0.0, d]),  # front
+        "upper_occlusal": np.array([0.0, d, 0.0]),  # top-down
+        "lower_occlusal": np.array([0.0, -d, 0.0]),  # bottom-up
     }
     up_vectors = {
-        "left_buccal":    [0.0, 1.0, 0.0],
-        "right_buccal":   [0.0, 1.0, 0.0],
-        "anterior":       [0.0, 1.0, 0.0],
+        "left_buccal": [0.0, 1.0, 0.0],
+        "right_buccal": [0.0, 1.0, 0.0],
+        "anterior": [0.0, 1.0, 0.0],
         "upper_occlusal": [0.0, 0.0, -1.0],
-        "lower_occlusal": [0.0, 0.0,  1.0],
+        "lower_occlusal": [0.0, 0.0, 1.0],
     }
 
     eye = center + offsets[view_name]
@@ -123,7 +126,9 @@ def _black_fallback(view_name: str, resolution: int) -> RenderedView:
     )
 
 
-def render_view(mesh_path: str | Path, view_name: str, resolution: int = 256) -> RenderedView:
+def render_view(
+    mesh_path: str | Path, view_name: str, resolution: int = 256
+) -> RenderedView:
     """Render a single named protocol view of a dental mesh.
 
     Parameters
@@ -219,6 +224,7 @@ def rendered_view_to_pil(view: RenderedView):
 # 2D image-space perturbations (operate on PIL Images)
 # ---------------------------------------------------------------------------
 
+
 def apply_glare(image, *, center_frac: float = 0.3, intensity: float = 0.7):
     """Add a circular glare highlight to an image (simulates specular reflection).
 
@@ -233,6 +239,7 @@ def apply_glare(image, *, center_frac: float = 0.3, intensity: float = 0.7):
     PIL Image with glare applied
     """
     import math
+
     Image = _require_pil()
     img = image.convert("RGB")
     w, h = img.size
@@ -243,7 +250,7 @@ def apply_glare(image, *, center_frac: float = 0.3, intensity: float = 0.7):
     new_pixels = []
     for y in range(h):
         for x in range(w):
-            dist = math.sqrt((x - cx)**2 + (y - cy)**2)
+            dist = math.sqrt((x - cx) ** 2 + (y - cy) ** 2)
             if dist < radius:
                 t = intensity * (1.0 - dist / radius) ** 2
                 r, g, b = pixels[y * w + x]
@@ -274,6 +281,7 @@ def apply_blur(image, *, sigma: float = 2.0):
     _require_pil()
     try:
         from PIL import ImageFilter
+
         return image.filter(ImageFilter.GaussianBlur(radius=sigma))
     except Exception:
         return image

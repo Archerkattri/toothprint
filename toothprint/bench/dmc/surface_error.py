@@ -5,6 +5,7 @@ using ICP alignment followed by Chamfer and point-to-surface distances.
 
 All distances in millimetres.
 """
+
 from __future__ import annotations
 import numpy as np
 from dataclasses import dataclass
@@ -13,12 +14,13 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class SurfaceError:
     """Surface reconstruction error between a reconstructed cloud and a reference."""
-    chamfer_mm: float             # mean bidirectional Chamfer distance
-    point_to_surface_mm: float    # mean point-to-surface distance (one-way: rec → ref)
-    hausdorff_mm: float           # symmetric Hausdorff: max(directed rec->ref, ref->rec)
+
+    chamfer_mm: float  # mean bidirectional Chamfer distance
+    point_to_surface_mm: float  # mean point-to-surface distance (one-way: rec → ref)
+    hausdorff_mm: float  # symmetric Hausdorff: max(directed rec->ref, ref->rec)
     n_reconstructed: int
     n_reference: int
-    icp_iterations: int           # how many ICP iterations until convergence
+    icp_iterations: int  # how many ICP iterations until convergence
     icp_converged: bool
 
 
@@ -84,8 +86,12 @@ def icp_align(
         R = Vt.T @ D @ U.T
         if estimate_scale:
             # Umeyama uniform scale: s = trace(D @ S) / variance(src).
-            var_src = float((src_c ** 2).sum() / src_c.shape[0])
-            s = float(np.trace(D @ np.diag(S)) / src_c.shape[0] / var_src) if var_src > 0 else 1.0
+            var_src = float((src_c**2).sum() / src_c.shape[0])
+            s = (
+                float(np.trace(D @ np.diag(S)) / src_c.shape[0] / var_src)
+                if var_src > 0
+                else 1.0
+            )
             R = s * R
         t = tgt_centroid - R @ src_centroid
 
@@ -140,7 +146,7 @@ def chamfer_distance(source: np.ndarray, target: np.ndarray) -> float:
     else:
         # source → target
         diffs_st = source[:, np.newaxis, :] - target[np.newaxis, :, :]
-        dists_st = np.sqrt(np.sum(diffs_st ** 2, axis=2))
+        dists_st = np.sqrt(np.sum(diffs_st**2, axis=2))
         d_s_to_t = float(np.mean(np.min(dists_st, axis=1)))
         # target → source
         d_t_to_s = float(np.mean(np.min(dists_st, axis=0)))
@@ -148,7 +154,9 @@ def chamfer_distance(source: np.ndarray, target: np.ndarray) -> float:
     return (d_s_to_t + d_t_to_s) / 2.0
 
 
-def _closest_point_on_segment(p: np.ndarray, q0: np.ndarray, q1: np.ndarray) -> np.ndarray:
+def _closest_point_on_segment(
+    p: np.ndarray, q0: np.ndarray, q1: np.ndarray
+) -> np.ndarray:
     """Closest point to *p* on the line SEGMENT q0->q1 (clamped to the endpoints)."""
     seg = q1 - q0
     ll = float(np.dot(seg, seg))
@@ -165,11 +173,13 @@ def _directed_hausdorff(src: np.ndarray, dst: np.ndarray) -> float:
         min_dists = []
         for start in range(0, src.shape[0], chunk):
             block = src[start : start + chunk]
-            d = np.sqrt(np.sum((block[:, np.newaxis, :] - dst[np.newaxis, :, :]) ** 2, axis=2))
+            d = np.sqrt(
+                np.sum((block[:, np.newaxis, :] - dst[np.newaxis, :, :]) ** 2, axis=2)
+            )
             min_dists.append(np.min(d, axis=1))
         return float(np.max(np.concatenate(min_dists)))
     diffs = src[:, np.newaxis, :] - dst[np.newaxis, :, :]
-    dists = np.sqrt(np.sum(diffs ** 2, axis=2))
+    dists = np.sqrt(np.sum(diffs**2, axis=2))
     return float(np.max(np.min(dists, axis=1)))
 
 
@@ -194,7 +204,9 @@ def _point_to_triangle_distance(
     # The mean over an empty set is undefined, so fast-fail rather than
     # masking it with NaN or indexing into an empty faces array.
     if points.shape[0] == 0 or faces.shape[0] == 0:
-        raise ValueError("_point_to_triangle_distance requires non-empty points and faces")
+        raise ValueError(
+            "_point_to_triangle_distance requires non-empty points and faces"
+        )
 
     # Triangle vertices
     v0 = vertices[faces[:, 0]]  # (F, 3)
@@ -244,11 +256,13 @@ def _point_to_triangle_distance(
 
         if abs(denom) < 1e-12:
             # Degenerate triangle — fall back to nearest vertex
-            dv = np.array([
-                np.linalg.norm(p - v0[tri_idx]),
-                np.linalg.norm(p - v1[tri_idx]),
-                np.linalg.norm(p - v2[tri_idx]),
-            ])
+            dv = np.array(
+                [
+                    np.linalg.norm(p - v0[tri_idx]),
+                    np.linalg.norm(p - v1[tri_idx]),
+                    np.linalg.norm(p - v2[tri_idx]),
+                ]
+            )
             distances[i] = float(np.min(dv))
             continue
 
@@ -291,7 +305,9 @@ def point_to_surface_distance(
     geometry: fast-fail rather than masking the undefined mean with NaN.
     """
     if points.shape[0] == 0 or reference_points.shape[0] == 0:
-        raise ValueError("point_to_surface_distance requires non-empty points and reference")
+        raise ValueError(
+            "point_to_surface_distance requires non-empty points and reference"
+        )
     if reference_faces is None:
         # Nearest-neighbor proxy
         if points.shape[0] * reference_points.shape[0] > 10_000_000:
@@ -301,14 +317,15 @@ def point_to_surface_distance(
                 block = points[start : start + chunk]
                 d = np.sqrt(
                     np.sum(
-                        (block[:, np.newaxis, :] - reference_points[np.newaxis, :, :]) ** 2,
+                        (block[:, np.newaxis, :] - reference_points[np.newaxis, :, :])
+                        ** 2,
                         axis=2,
                     )
                 )
                 min_dists.append(np.min(d, axis=1))
             return float(np.mean(np.concatenate(min_dists)))
         diffs = points[:, np.newaxis, :] - reference_points[np.newaxis, :, :]
-        dists = np.sqrt(np.sum(diffs ** 2, axis=2))
+        dists = np.sqrt(np.sum(diffs**2, axis=2))
         return float(np.mean(np.min(dists, axis=1)))
 
     # Triangle projection (if faces provided)
@@ -344,7 +361,9 @@ def surface_error_mm(
     # Fast-fail on empty input clouds: the metrics below are undefined for an
     # empty cloud, so raise rather than masking with a NaN sentinel.
     if rec.shape[0] == 0 or ref.shape[0] == 0:
-        raise ValueError("surface_error_mm requires non-empty reconstructed and reference clouds")
+        raise ValueError(
+            "surface_error_mm requires non-empty reconstructed and reference clouds"
+        )
 
     # Fast-fail on non-finite coordinates: NaN/inf rows would make ICP's
     # covariance SVD raise LinAlgError and poison every distance with NaN.
@@ -356,7 +375,8 @@ def surface_error_mm(
     converged = False
     if run_icp and len(rec) >= 3 and len(ref) >= 3:
         rec, _, _, n_iters, converged = icp_align(
-            rec, ref, max_iterations=icp_max_iterations, estimate_scale=estimate_scale)
+            rec, ref, max_iterations=icp_max_iterations, estimate_scale=estimate_scale
+        )
 
     cd = chamfer_distance(rec, ref)
     p2s = point_to_surface_distance(rec, ref, reference_faces)
@@ -397,8 +417,9 @@ def noise_floor_sq(stable_pairs) -> float:
     return float(np.mean(vals))
 
 
-def surface_displacement(cloud_t0: np.ndarray, cloud_t1: np.ndarray, *,
-                         noise_floor_sq: float = 0.0) -> float:
+def surface_displacement(
+    cloud_t0: np.ndarray, cloud_t1: np.ndarray, *, noise_floor_sq: float = 0.0
+) -> float:
     """De-biased mean surface displacement (mm) between two corresponded timepoints.
 
     Aggregating per-point displacement as ``mean ||v||`` *rectifies* zero-mean
@@ -419,7 +440,9 @@ def surface_displacement(cloud_t0: np.ndarray, cloud_t1: np.ndarray, *,
     a = np.asarray(cloud_t0, float)
     b = np.asarray(cloud_t1, float)
     if a.shape != b.shape:
-        raise ValueError("surface_displacement requires corresponded clouds of equal shape")
+        raise ValueError(
+            "surface_displacement requires corresponded clouds of equal shape"
+        )
     if a.shape[0] == 0:
         raise ValueError("surface_displacement requires non-empty clouds")
     if not (np.isfinite(a).all() and np.isfinite(b).all()):
@@ -428,7 +451,9 @@ def surface_displacement(cloud_t0: np.ndarray, cloud_t1: np.ndarray, *,
     return float(np.sqrt(max(0.0, s2 - float(noise_floor_sq))))
 
 
-def assign_regions(points: np.ndarray, n_regions: int = 12, seed: int = 0) -> np.ndarray:
+def assign_regions(
+    points: np.ndarray, n_regions: int = 12, seed: int = 0
+) -> np.ndarray:
     """Partition ``points`` into ``n_regions`` spatial clusters (farthest-point
     seeding + nearest-centre assignment). Deterministic for a fixed ``seed``.
 
@@ -450,11 +475,14 @@ def assign_regions(points: np.ndarray, n_regions: int = 12, seed: int = 0) -> np
         centres.append(int(d2.argmax()))
         d2 = np.minimum(d2, ((pts - pts[centres[-1]]) ** 2).sum(axis=1))
     C = pts[centres]
-    return ((pts[:, None, :] - C[None, :, :]) ** 2).sum(axis=2).argmin(axis=1).astype(int)
+    return (
+        ((pts[:, None, :] - C[None, :, :]) ** 2).sum(axis=2).argmin(axis=1).astype(int)
+    )
 
 
-def regional_displacements(cloud_t0: np.ndarray, cloud_t1: np.ndarray,
-                           labels: np.ndarray, floors_sq) -> np.ndarray:
+def regional_displacements(
+    cloud_t0: np.ndarray, cloud_t1: np.ndarray, labels: np.ndarray, floors_sq
+) -> np.ndarray:
     """Per-region de-biased surface displacement (mm).
 
     ``labels`` assigns each corresponded point to a region (see
@@ -466,7 +494,9 @@ def regional_displacements(cloud_t0: np.ndarray, cloud_t1: np.ndarray,
     a = np.asarray(cloud_t0, float)
     b = np.asarray(cloud_t1, float)
     if a.shape != b.shape:
-        raise ValueError("regional_displacements requires corresponded clouds of equal shape")
+        raise ValueError(
+            "regional_displacements requires corresponded clouds of equal shape"
+        )
     lab = np.asarray(labels)
     if lab.shape[0] != a.shape[0]:
         raise ValueError("labels must have one entry per point")
@@ -475,5 +505,7 @@ def regional_displacements(cloud_t0: np.ndarray, cloud_t1: np.ndarray,
     for r in range(k):
         m = lab == r
         if m.any():
-            out[r] = surface_displacement(a[m], b[m], noise_floor_sq=float(floors_sq[r]))
+            out[r] = surface_displacement(
+                a[m], b[m], noise_floor_sq=float(floors_sq[r])
+            )
     return out

@@ -5,6 +5,7 @@ interval lies entirely above the clinically-meaningful threshold, ``stable`` onl
 if it lies entirely below the stable threshold, and ``uncertain`` otherwise — so
 reconstruction noise is never mistaken for a real surface change.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -19,9 +20,13 @@ class SurfaceCertificate:
     label: str
 
 
-def certify_surface_change(measured_mm: float, certifier: ConformalCertifier, *,
-                           stable_threshold_mm: float = 0.35,
-                           change_threshold_mm: float = 0.75) -> SurfaceCertificate:
+def certify_surface_change(
+    measured_mm: float,
+    certifier: ConformalCertifier,
+    *,
+    stable_threshold_mm: float = 0.35,
+    change_threshold_mm: float = 0.75,
+) -> SurfaceCertificate:
     """Certify a measured surface displacement against the change/stable thresholds."""
     if stable_threshold_mm >= change_threshold_mm:
         raise ValueError("stable_threshold_mm must be < change_threshold_mm")
@@ -33,4 +38,6 @@ def certify_surface_change(measured_mm: float, certifier: ConformalCertifier, *,
         label = STABLE
     else:
         label = UNCERTAIN
-    return SurfaceCertificate(measured_mm=float(measured_mm), interval_mm=(lo, hi), label=label)
+    return SurfaceCertificate(
+        measured_mm=float(measured_mm), interval_mm=(lo, hi), label=label
+    )

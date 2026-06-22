@@ -91,7 +91,9 @@ def validate_record(record: dict) -> list[str]:
         else:
             for i, tooth in enumerate(teeth):
                 if not isinstance(tooth, dict):
-                    errors.append(f"teeth[{i}] must be a dict, got {type(tooth).__name__!r}")
+                    errors.append(
+                        f"teeth[{i}] must be a dict, got {type(tooth).__name__!r}"
+                    )
                     continue
                 for key in _REQUIRED_TOOTH_KEYS:
                     if key not in tooth:
@@ -125,7 +127,9 @@ class DenparAdapter:
 
             image_path = self.images_dir / image_name
             if not image_path.exists():
-                raise FileNotFoundError(f"Image referenced by annotation does not exist: {image_path}")
+                raise FileNotFoundError(
+                    f"Image referenced by annotation does not exist: {image_path}"
+                )
 
             yield DenparRecord(
                 image_id=image_path.stem,
@@ -158,12 +162,15 @@ class DenparAdapter:
     @staticmethod
     def _require_dir(path: Path, label: str) -> None:
         if not path.is_dir():
-            raise FileNotFoundError(f"Missing required DenPAR {label} directory: {path}")
+            raise FileNotFoundError(
+                f"Missing required DenPAR {label} directory: {path}"
+            )
 
 
 # ---------------------------------------------------------------------------
 # Real DenPAR dataset adapter
 # ---------------------------------------------------------------------------
+
 
 def _dist2(ax: float, ay: float, bx: float, by: float) -> float:
     """Squared Euclidean distance between two 2-D points."""
@@ -255,10 +262,10 @@ class RealDenparRecord:
 
     image_id: str
     image_path: Path
-    kp_path: Path      # Key Points Annotations JSON
-    bl_path: Path      # Bone Level Annotations JSON
+    kp_path: Path  # Key Points Annotations JSON
+    bl_path: Path  # Bone Level Annotations JSON
     annotation_dict: dict
-    split: str         # "train" | "val" | "test"
+    split: str  # "train" | "val" | "test"
 
 
 class RealDenparAdapter:
@@ -294,7 +301,9 @@ class RealDenparAdapter:
                 continue
             yield from self._iter_split(dir_name, split_label)
 
-    def _iter_split(self, split_name: str, split_label: str) -> Iterator[RealDenparRecord]:
+    def _iter_split(
+        self, split_name: str, split_label: str
+    ) -> Iterator[RealDenparRecord]:
         """Yield records for one split directory.
 
         Parameters

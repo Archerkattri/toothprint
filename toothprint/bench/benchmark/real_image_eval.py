@@ -16,6 +16,7 @@ detector's common-mode bias cancels in the difference — the noise floor is the
 detector's *repeatability*, not its ~38 px absolute error — which is what makes
 recall measurable at clinically meaningful change magnitudes.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -29,12 +30,15 @@ from toothprint.bench.score.periodontal import scalar_change_score
 def scorable_teeth(record) -> list:
     """Teeth that carry both cej and crest_line (needed for a bone-level score)."""
     return [
-        t for t in record.annotation_dict.get("teeth", [])
+        t
+        for t in record.annotation_dict.get("teeth", [])
         if t.get("cej") and t.get("crest_line")
     ]
 
 
-def acquire(image: np.ndarray, rng: np.random.Generator, noise_std: float) -> np.ndarray:
+def acquire(
+    image: np.ndarray, rng: np.random.Generator, noise_std: float
+) -> np.ndarray:
     """Simulate a follow-up acquisition: additive sensor noise, no geometry change."""
     if noise_std <= 0.0:
         return image.copy()
@@ -91,15 +95,33 @@ def evaluate_real_image_pairs(
             base_ann = {"teeth": [base_pred]}
             tid = base_pred["tooth_id"]
             try:
-                stable_score = scalar_change_score(base_ann, {"teeth": [stable_pred]}, tooth_id=tid)
-                prog_score = scalar_change_score(base_ann, {"teeth": [prog_pred]}, tooth_id=tid)
+                stable_score = scalar_change_score(
+                    base_ann, {"teeth": [stable_pred]}, tooth_id=tid
+                )
+                prog_score = scalar_change_score(
+                    base_ann, {"teeth": [prog_pred]}, tooth_id=tid
+                )
             except (KeyError, ValueError):
                 continue
 
-            rows.append({"label": "stable", "score": stable_score, "true_change": 0.0,
-                         "image_id": rec.image_id, "tooth_id": tid})
-            rows.append({"label": "progressed", "score": prog_score, "true_change": float(delta_px),
-                         "image_id": rec.image_id, "tooth_id": tid})
+            rows.append(
+                {
+                    "label": "stable",
+                    "score": stable_score,
+                    "true_change": 0.0,
+                    "image_id": rec.image_id,
+                    "tooth_id": tid,
+                }
+            )
+            rows.append(
+                {
+                    "label": "progressed",
+                    "score": prog_score,
+                    "true_change": float(delta_px),
+                    "image_id": rec.image_id,
+                    "tooth_id": tid,
+                }
+            )
     return rows
 
 

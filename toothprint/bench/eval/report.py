@@ -5,7 +5,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from toothprint.bench.eval.metrics import DECISIONS, LABELS, DecisionSummary, coverage_vs_false_progression_curve
+from toothprint.bench.eval.metrics import (
+    DECISIONS,
+    LABELS,
+    DecisionSummary,
+    coverage_vs_false_progression_curve,
+)
 
 
 def render_markdown_report(summary: DecisionSummary) -> str:
@@ -53,10 +58,14 @@ def write_report(
         serializable_rows = []
         for row in rows:
             if hasattr(row, "__dataclass_fields__"):
-                serializable_rows.append({k: v for k, v in row.__dict__.items() if v is not None})
+                serializable_rows.append(
+                    {k: v for k, v in row.__dict__.items() if v is not None}
+                )
             else:
                 serializable_rows.append(dict(row))
         metrics_dict["rows"] = serializable_rows
 
-    metrics_path.write_text(json.dumps(metrics_dict, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    metrics_path.write_text(
+        json.dumps(metrics_dict, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return report_path, metrics_path

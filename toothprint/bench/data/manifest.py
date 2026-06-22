@@ -127,7 +127,9 @@ def source_ids(sources: Iterable[DatasetSource]) -> set[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Write the DentalChangeCert dataset manifest.")
+    parser = argparse.ArgumentParser(
+        description="Write the DentalChangeCert dataset manifest."
+    )
     parser.add_argument(
         "--output",
         type=Path,

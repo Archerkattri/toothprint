@@ -17,6 +17,7 @@ Two robustness properties:
 Validated on real DenPAR radiographs: stable pairs measure 0.0 +/- ~0.1 px;
 a rendered crestal change is recovered with the same low spread.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -37,20 +38,21 @@ def _subpixel_peak(res: np.ndarray, mx: int, my: int) -> tuple[float, float]:
     H, W = res.shape
     sx, sy = float(mx), float(my)
     if 1 <= mx < W - 1:
-        l, m, r = res[my, mx - 1], res[my, mx], res[my, mx + 1]
-        d = l - 2 * m + r
+        left, mid, right = res[my, mx - 1], res[my, mx], res[my, mx + 1]
+        d = left - 2 * mid + right
         if abs(d) > 1e-9:
-            sx += 0.5 * (l - r) / d
+            sx += 0.5 * (left - right) / d
     if 1 <= my < H - 1:
-        l, m, r = res[my - 1, mx], res[my, mx], res[my + 1, mx]
-        d = l - 2 * m + r
+        left, mid, right = res[my - 1, mx], res[my, mx], res[my + 1, mx]
+        d = left - 2 * mid + right
         if abs(d) > 1e-9:
-            sy += 0.5 * (l - r) / d
+            sy += 0.5 * (left - right) / d
     return sx, sy
 
 
-def measure_displacement(g0: np.ndarray, g1: np.ndarray, center, half: int = 20,
-                         search: int = 70):
+def measure_displacement(
+    g0: np.ndarray, g1: np.ndarray, center, half: int = 20, search: int = 70
+):
     """Sub-pixel (dx, dy) displacement of content at ``center`` from g0 to g1.
 
     Template-matches the t0 patch within a +/-search window of t1 (normalised
@@ -69,8 +71,15 @@ def measure_displacement(g0: np.ndarray, g1: np.ndarray, center, half: int = 20,
     return (sx - search, sy - search), float(maxv)
 
 
-def measure_bonelevel_change(g0: np.ndarray, g1: np.ndarray, cej_center, crest_center,
-                             bone_unit, half: int = 20, search: int = 70):
+def measure_bonelevel_change(
+    g0: np.ndarray,
+    g1: np.ndarray,
+    cej_center,
+    crest_center,
+    bone_unit,
+    half: int = 20,
+    search: int = 70,
+):
     """CEJ-referenced apical bone-level change (px) between two timepoints.
 
     ``bone_unit`` is the unit CEJ->crest vector (apical direction). Returns
@@ -94,8 +103,12 @@ def _bilinear(gray, x: float, y: float):
     if x0 < 0 or y0 < 0 or x0 + 1 >= w or y0 + 1 >= h:
         return None
     fx, fy = x - x0, y - y0
-    return float(gray[y0, x0] * (1 - fx) * (1 - fy) + gray[y0, x0 + 1] * fx * (1 - fy)
-                 + gray[y0 + 1, x0] * (1 - fx) * fy + gray[y0 + 1, x0 + 1] * fx * fy)
+    return float(
+        gray[y0, x0] * (1 - fx) * (1 - fy)
+        + gray[y0, x0 + 1] * fx * (1 - fy)
+        + gray[y0 + 1, x0] * (1 - fx) * fy
+        + gray[y0 + 1, x0 + 1] * fx * fy
+    )
 
 
 def snap_to_margin(gray, center, bone_unit, span: float = 40.0, step: float = 2.0):
@@ -124,8 +137,9 @@ def snap_to_margin(gray, center, bone_unit, span: float = 40.0, step: float = 2.
     return best
 
 
-def fit_global_motion(g0, g1, anchors, half: int = 20, search: int = 70,
-                      min_response: float = 0.3):
+def fit_global_motion(
+    g0, g1, anchors, half: int = 20, search: int = 70, min_response: float = 0.3
+):
     """Affine global-motion model ``t0 -> t1`` from stationary anchor patches.
 
     A single reference patch cancels only a global *translation*; real
@@ -152,9 +166,16 @@ def fit_global_motion(g0, g1, anchors, half: int = 20, search: int = 70,
     return P
 
 
-def measure_bonelevel_change_anchored(g0, g1, anchors, crest_center, bone_unit,
-                                      half: int = 20, search: int = 70,
-                                      min_response: float = 0.3):
+def measure_bonelevel_change_anchored(
+    g0,
+    g1,
+    anchors,
+    crest_center,
+    bone_unit,
+    half: int = 20,
+    search: int = 70,
+    min_response: float = 0.3,
+):
     """Apical bone-level change with a multi-anchor affine global-motion model,
     evaluated *at the crest* — cancels arbitrary repositioning (large translation,
     rotation, magnification, modest projection-angle change), not just translation.
@@ -170,9 +191,17 @@ def measure_bonelevel_change_anchored(g0, g1, anchors, crest_center, bone_unit,
     return float(rel), float(cresp)
 
 
-def measure_bonelevel_change_search(g0, g1, ref_center, crest_center, bone_unit,
-                                    offsets, half: int = 20, search: int = 70,
-                                    min_response: float = 0.0):
+def measure_bonelevel_change_search(
+    g0,
+    g1,
+    ref_center,
+    crest_center,
+    bone_unit,
+    offsets,
+    half: int = 20,
+    search: int = 70,
+    min_response: float = 0.0,
+):
     """Largest apical bone-level change over *reliable* candidate crest positions.
 
     A coarse crest estimate (e.g. from a detector with ~35px localization error)
@@ -188,8 +217,8 @@ def measure_bonelevel_change_search(g0, g1, ref_center, crest_center, bone_unit,
     changes. If no candidate clears the gate the most-reliable one is returned.
     Returns ``(change, response)`` of the best candidate, or ``None``.
     """
-    best = None        # best (max change) among reliable candidates
-    fallback = None    # most-reliable candidate, if none clear the gate
+    best = None  # best (max change) among reliable candidates
+    fallback = None  # most-reliable candidate, if none clear the gate
     for t in offsets:
         c = (crest_center[0] + t * bone_unit[0], crest_center[1] + t * bone_unit[1])
         out = measure_bonelevel_change(g0, g1, ref_center, c, bone_unit, half, search)

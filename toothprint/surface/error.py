@@ -4,6 +4,7 @@ Multiview neural reconstructions recover geometry up to an unknown global scale,
 so alignment optionally fits a similarity transform (Umeyama, with scale) before
 measuring error. All metrics are pure numpy.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -13,9 +14,9 @@ import numpy as np
 
 @dataclass(frozen=True)
 class SurfaceError:
-    chamfer_mm: float       # mean bidirectional nearest-point distance
-    hausdorff_mm: float     # symmetric worst-case distance
-    rms_mm: float           # RMS of source->target nearest-point distances
+    chamfer_mm: float  # mean bidirectional nearest-point distance
+    hausdorff_mm: float  # symmetric worst-case distance
+    rms_mm: float  # RMS of source->target nearest-point distances
     n_source: int
     n_target: int
     icp_iterations: int
@@ -36,8 +37,14 @@ def chamfer_distance(a: np.ndarray, b: np.ndarray) -> float:
     return float((_nearest(a, b).mean() + _nearest(b, a).mean()) / 2.0)
 
 
-def icp_align(source: np.ndarray, target: np.ndarray, *, max_iterations: int = 50,
-              tolerance: float = 1e-5, estimate_scale: bool = False):
+def icp_align(
+    source: np.ndarray,
+    target: np.ndarray,
+    *,
+    max_iterations: int = 50,
+    tolerance: float = 1e-5,
+    estimate_scale: bool = False,
+):
     """Align source onto target with ICP; returns ``(aligned, n_iters)``.
 
     ``estimate_scale=True`` fits a full similarity transform (Umeyama) each
@@ -60,7 +67,7 @@ def icp_align(source: np.ndarray, target: np.ndarray, *, max_iterations: int = 5
         D = np.diag([1.0, 1.0, np.sign(np.linalg.det(Vt.T @ U.T))])
         R = Vt.T @ D @ U.T
         if estimate_scale:
-            var = float((s ** 2).sum() / len(src))
+            var = float((s**2).sum() / len(src))
             scale = float(np.trace(D @ np.diag(S)) / len(src) / var) if var > 0 else 1.0
             R = scale * R
         t = dc - R @ sc
@@ -91,8 +98,9 @@ def noise_floor_sq(stable_pairs) -> float:
     return float(np.mean(vals))
 
 
-def surface_displacement(cloud_t0: np.ndarray, cloud_t1: np.ndarray, *,
-                         noise_floor_sq: float = 0.0) -> float:
+def surface_displacement(
+    cloud_t0: np.ndarray, cloud_t1: np.ndarray, *, noise_floor_sq: float = 0.0
+) -> float:
     """De-biased mean surface displacement (mm) between two corresponded timepoints.
 
     The per-point displacement is ``v_i = t1_i - t0_i`` (clouds in correspondence,
@@ -119,7 +127,9 @@ def surface_displacement(cloud_t0: np.ndarray, cloud_t1: np.ndarray, *,
     a = np.asarray(cloud_t0, float)
     b = np.asarray(cloud_t1, float)
     if a.shape != b.shape:
-        raise ValueError("surface_displacement requires corresponded clouds of equal shape")
+        raise ValueError(
+            "surface_displacement requires corresponded clouds of equal shape"
+        )
     if a.shape[0] == 0:
         raise ValueError("surface_displacement requires non-empty clouds")
     if not (np.isfinite(a).all() and np.isfinite(b).all()):
@@ -128,7 +138,9 @@ def surface_displacement(cloud_t0: np.ndarray, cloud_t1: np.ndarray, *,
     return float(np.sqrt(max(0.0, s2 - float(noise_floor_sq))))
 
 
-def assign_regions(points: np.ndarray, n_regions: int = 12, seed: int = 0) -> np.ndarray:
+def assign_regions(
+    points: np.ndarray, n_regions: int = 12, seed: int = 0
+) -> np.ndarray:
     """Partition ``points`` into ``n_regions`` spatial clusters (farthest-point
     seeding + nearest-centre assignment). Deterministic for a fixed ``seed``.
 
@@ -151,11 +163,14 @@ def assign_regions(points: np.ndarray, n_regions: int = 12, seed: int = 0) -> np
         centres.append(int(d2.argmax()))
         d2 = np.minimum(d2, ((pts - pts[centres[-1]]) ** 2).sum(axis=1))
     C = pts[centres]
-    return ((pts[:, None, :] - C[None, :, :]) ** 2).sum(axis=2).argmin(axis=1).astype(int)
+    return (
+        ((pts[:, None, :] - C[None, :, :]) ** 2).sum(axis=2).argmin(axis=1).astype(int)
+    )
 
 
-def regional_displacements(cloud_t0: np.ndarray, cloud_t1: np.ndarray,
-                           labels: np.ndarray, floors_sq) -> np.ndarray:
+def regional_displacements(
+    cloud_t0: np.ndarray, cloud_t1: np.ndarray, labels: np.ndarray, floors_sq
+) -> np.ndarray:
     """Per-region de-biased surface displacement (mm).
 
     ``labels`` assigns each corresponded point to a region (see
@@ -167,7 +182,9 @@ def regional_displacements(cloud_t0: np.ndarray, cloud_t1: np.ndarray,
     a = np.asarray(cloud_t0, float)
     b = np.asarray(cloud_t1, float)
     if a.shape != b.shape:
-        raise ValueError("regional_displacements requires corresponded clouds of equal shape")
+        raise ValueError(
+            "regional_displacements requires corresponded clouds of equal shape"
+        )
     lab = np.asarray(labels)
     if lab.shape[0] != a.shape[0]:
         raise ValueError("labels must have one entry per point")
@@ -176,12 +193,19 @@ def regional_displacements(cloud_t0: np.ndarray, cloud_t1: np.ndarray,
     for r in range(k):
         m = lab == r
         if m.any():
-            out[r] = surface_displacement(a[m], b[m], noise_floor_sq=float(floors_sq[r]))
+            out[r] = surface_displacement(
+                a[m], b[m], noise_floor_sq=float(floors_sq[r])
+            )
     return out
 
 
-def surface_error(reconstructed: np.ndarray, reference: np.ndarray, *,
-                  run_icp: bool = True, estimate_scale: bool = False) -> SurfaceError:
+def surface_error(
+    reconstructed: np.ndarray,
+    reference: np.ndarray,
+    *,
+    run_icp: bool = True,
+    estimate_scale: bool = False,
+) -> SurfaceError:
     """Full surface error between a reconstructed and a reference point cloud."""
     rec = np.asarray(reconstructed, float)
     ref = np.asarray(reference, float)
@@ -197,7 +221,7 @@ def surface_error(reconstructed: np.ndarray, reference: np.ndarray, *,
     return SurfaceError(
         chamfer_mm=round(float((fwd.mean() + bwd.mean()) / 2.0), 6),
         hausdorff_mm=round(float(max(fwd.max(), bwd.max())), 6),
-        rms_mm=round(float(np.sqrt((fwd ** 2).mean())), 6),
+        rms_mm=round(float(np.sqrt((fwd**2).mean())), 6),
         n_source=len(reconstructed),
         n_target=len(reference),
         icp_iterations=n_iters,

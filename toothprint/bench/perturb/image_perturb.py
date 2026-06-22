@@ -23,9 +23,9 @@ ImageArray = np.ndarray
 
 @dataclass(frozen=True)
 class ImagePerturbConfig:
-    brightness_delta: float = 0.0   # additive; range [-0.3, 0.3]
-    contrast_scale: float = 1.0     # multiplicative around mean; range [0.8, 1.2]
-    noise_std: float = 0.0          # Gaussian noise std; range [0, 0.05]
+    brightness_delta: float = 0.0  # additive; range [-0.3, 0.3]
+    contrast_scale: float = 1.0  # multiplicative around mean; range [0.8, 1.2]
+    noise_std: float = 0.0  # Gaussian noise std; range [0, 0.05]
     flip_horizontal: bool = False
 
 
@@ -64,6 +64,7 @@ def apply_image_perturbation(
 # numpy implementation
 # ------------------------------------------------------------------
 
+
 def _apply_numpy(arr: "np.ndarray", config: ImagePerturbConfig) -> "np.ndarray":
     arr = arr.astype(float)
 
@@ -88,6 +89,7 @@ def _apply_numpy(arr: "np.ndarray", config: ImagePerturbConfig) -> "np.ndarray":
 # ------------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------------
+
 
 def _derive_noise_seed(config: ImagePerturbConfig) -> int:
     """Return a reproducible integer seed from the config parameters."""

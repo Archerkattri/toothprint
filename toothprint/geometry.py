@@ -1,4 +1,5 @@
 """Shared 2D/3D geometry primitives."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -39,7 +40,7 @@ def umeyama(src: np.ndarray, dst: np.ndarray, *, with_scale: bool = True):
     R = Vt.T @ D @ U.T
     scale = 1.0
     if with_scale:
-        var = (s ** 2).sum() / len(src)
+        var = (s**2).sum() / len(src)
         scale = float(np.trace(D @ np.diag(S)) / var) if var > 0 else 1.0
     t = dc - scale * R @ sc
     return scale * R, t
