@@ -20,7 +20,7 @@ Every verdict is **conformal**: it fires only when the interval around the measu
 
 ## Contents
 
-[Results](#results) · [The data](#the-data) · [Identity](#identity--recognise-a-person-by-their-teeth) · [Change](#change--certify-a-bone-level-shift) · [Surface](#surface--certify-3d-change) · [Reconstruction](#reconstruction--photos-to-a-dentist-usable-mesh) · [Desktop app](#the-desktop-app) · [Formats](#reads-every-format-a-dentist-has) · [How it works](#how-it-works) · [Use it](#use-it) · [vs SOTA](#vs-the-state-of-the-art) · [Clinical readiness](#clinical-readiness) · [Model card](#model-card) · [Risk](#risk-analysis) · [Security](#security) · [Evaluation report](#full-evaluation-report) · [Tests](#tests)
+[Results](#results) · [The data](#the-data) · [Identity](#identity--recognise-a-person-by-their-teeth) · [Change](#change--certify-a-bone-level-shift) · [Surface](#surface--certify-3d-change) · [Reconstruction](#reconstruction--photos-to-a-dentist-usable-mesh) · [Desktop app](#the-desktop-app) · [Formats](#reads-every-format-a-dentist-has) · [How it works](#how-it-works) · [Use it](#use-it) · [vs SOTA](#vs-the-state-of-the-art) · [Clinical readiness](#clinical-readiness) · [Model card](#model-card) · [Risk](#risk-analysis) · [Security](#security) · [Evaluation report](#full-evaluation-report) · [Tests](#tests) · [**Methods paper**](PAPER.md) · [Reproduce](REPRODUCE.md)
 
 ## Results
 
