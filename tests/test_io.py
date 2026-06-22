@@ -1,5 +1,7 @@
 """Medical-format I/O: round-trip every format a dentist uses + the security guards."""
 
+import warnings
+
 import numpy as np
 import pytest
 
@@ -267,8 +269,12 @@ def test_corrupt_mesh_rejected(tmp_path):
 def test_corrupt_dicom_rejected(tmp_path):
     p = tmp_path / "bad.dcm"
     p.write_bytes(b"\x00" * 128 + b"DICM" + b"\xff" * 64)
-    with pytest.raises(io.IOError_):
-        io.load(str(p))
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore", message="End of file reached before delimiter.*"
+        )
+        with pytest.raises(io.IOError_):
+            io.load(str(p))
 
 
 def test_wrong_category_raises(tmp_path):

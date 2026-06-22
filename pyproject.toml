@@ -41,6 +41,9 @@ include = ["toothprint*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = [
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
 
 [tool.coverage.run]
 # toothprint/bench is vendored research/benchmark code (data adapters, perturbations,

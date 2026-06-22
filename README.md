@@ -14,19 +14,100 @@
 
 ---
 
-> **A face can be lost; the teeth remain.** ToothPrint reads the dentition three ways and attaches a *finite-sample statistical guarantee* to every verdict.
+> **A face can be lost; the teeth remain.** ToothPrint turns dental scans, radiographs, and visit-to-visit records into evidence that can be checked: a match, a change finding, or a surface map, each with an explicit uncertainty certificate.
 
-| | Question | Answer |
-|:--:|---|---|
-| 🪪 | **Who** is this? | dental biometric identification from a 3D scan or a 2D radiograph |
-| 📐 | **Whether** it changed | certified longitudinal bone-level change detection |
-| 🗺️ | **What** its surface is | certified 3D surface-change mapping |
+📄 **[Methods paper (PDF)](paper/paper.pdf)** · 🔁 **[Reproduce](REPRODUCE.md)** · 🔬 **[Full write-up](PAPER.md)** · ▶ **[30-second reel](docs/toothprint_showcase.mp4)** · 🖥️ **[Desktop app](#toothprint-studio)**
 
-Every verdict is **conformal**: it fires only when the interval around the measurement lies entirely past the threshold, so the false-alarm rate is bounded by **α** in finite samples — distribution-free, no model assumptions. The certification core depends only on `numpy`, `scipy`, `opencv`, `open3d`; learned front-ends (tooth detection, point-correspondence, Gaussian-splatting reconstruction) are pluggable and optional, so the guarantees run without a GPU.
+## Start here
 
-📄 **[Read the methods paper (PDF)](paper/paper.pdf)** · 🔁 **[Reproduce in one command](REPRODUCE.md)** · 🔬 **[Full methods write-up](PAPER.md)** · ▶ **[30-second showcase reel](docs/toothprint_showcase.mp4)**
+| Need | ToothPrint returns | Primary viewer |
+|---|---|---|
+| **Is this the same person?** | a ranked dental match plus accept / abstain certificate | forensic examiner, dentist, researcher |
+| **Did bone level change between visits?** | changed / stable / uncertain with a false-progression bound | dentist, periodontist, patient-facing report |
+| **Where did the 3D surface change?** | regional surface-change map with a false-change bound | clinician, lab, reconstruction researcher |
+| **Can I inspect files locally?** | safe ingest, local preview, API response, and PDF case report | hospital IT, engineer, reviewer |
 
-> **Contents** — [Results](#results) · [Identity](#-identity--recognise-a-person-by-their-teeth) · [Change](#-change--certify-a-bone-level-shift) · [Surface](#-surface--certify-3d-change) · [Reconstruction](#-reconstruction--photos-to-a-dentist-usable-mesh) · [App](#the-desktop-app) · [Formats](#reads-every-format-a-dentist-has) · [How it works](#how-it-works) · [vs SOTA](#vs-the-state-of-the-art) · [Clinical readiness](#clinical-readiness) · [Risk](#risk-analysis) · [Security](#security) · [Help wanted](#help-wanted--real-longitudinal-data)
+Every verdict is **conformal**: it fires only when the interval around the measurement lies entirely past the threshold, so the false-alarm rate is bounded by **α** in finite samples. The certification core depends only on `numpy`, `scipy`, `opencv`, and `open3d`; learned front-ends (tooth detection, point-correspondence, Gaussian-splatting reconstruction) are pluggable and optional, so the guarantees run without a GPU.
+
+## Current status
+
+| What is ready | What is not claimed |
+|---|---|
+| Research code, API, Studio app, safe file ingest, report export, tests, smoke reproduction, and committed visual evidence. | Not an autonomous clinical or forensic decision system. Not cleared by any regulator. Not validated on real multi-visit deployment data yet. |
+| Validated on public dental data, synthetic re-scans/crops, fixture-sized reproducibility tests, and selected cross-dataset probes. | Headline numbers are best read as in-simulation ceilings until a clinical/forensic partner supplies real cross-session longitudinal data. |
+| Designed for expert-in-the-loop review: show the evidence, report uncertainty, abstain when outside the validated regime. | No patient-affecting use without site recalibration, prospective validation, governance, and regulatory clearance. |
+
+## For different readers
+
+| Reader | Start with | What matters |
+|---|---|---|
+| **Patient** | [What a result looks like](#what-a-result-looks-like), [Model card](#model-card) | local analysis, explicit uncertainty, no autonomous decisions |
+| **Dentist / clinician** | [Change](#-change--certify-a-bone-level-shift), [ToothPrint Studio](#toothprint-studio) | visit-to-visit bone-level tracking, PDF report, limitations |
+| **Hospital / lab** | [Current status](#current-status), [Security](#security), [Clinical readiness](#clinical-readiness) | local files, audit trail, parser hardening, validation gap |
+| **Researcher** | [Results](#results), [vs SOTA](#vs-the-state-of-the-art), [Reproduce](#reproduce) | conformal certificates, benchmarks, ablations, datasets |
+| **Engineer** | [Quick start](#quick-start), [Formats](#reads-every-format-a-dentist-has), [How it works](#how-it-works) | install, API endpoints, file loaders, tests |
+
+### For patients
+
+ToothPrint is designed to make dental evidence easier to review, not to make unattended decisions. A result should show what was compared, what changed or matched, how uncertain the finding is, and when the system abstained. Files can be processed locally; ToothPrint itself does not store a patient database.
+
+### For dentists and clinical reviewers
+
+The practical workflow is longitudinal: compare a current radiograph, scan, or reconstructed surface against a prior visit, then export a report that separates **changed**, **stable**, and **uncertain** findings. The important promise is not "AI says so" — it is a measurement with an uncertainty interval and a stated false-alarm bound.
+
+### For hospitals, labs, and IT
+
+The relevant surface is governance: local deployment, hardened parsers for untrusted medical files, explicit no-fallback behavior, provenance hashes, audit metadata, and a clear line between research validation and lawful clinical use. The code is ready to inspect; real deployment still requires site calibration, prospective validation, access control, and regulatory work.
+
+### For researchers
+
+The contribution is a dental-imaging benchmark scaffold around **conformal certificates**: 3D identity, partial-overlap correspondence, radiograph identity, dental-work identification, change certification, surface-change certification, and photo-to-mesh reconstruction. The README keeps the strong numbers and the negative results together so the limits are visible.
+
+### For engineers
+
+Use the package as a library, FastAPI service, or desktop Studio shell. The ingest layer detects files by content, streams uploads under caps, rejects hostile files cleanly, and exposes the same identity/change/surface primitives used by the tests and evaluation scripts.
+
+## What a result looks like
+
+1. Upload an intraoral scan, radiograph, CBCT-derived mesh, or patient video.
+2. ToothPrint extracts the relevant dental geometry: landmarks, arch surface, restorations, or reconstructed mesh.
+3. It compares against a reference, a gallery, or a prior visit.
+4. It returns one of three clinical-style outcomes: **match / no confident match / abstain**, **changed / stable / uncertain**, or a **regional surface-change map**.
+5. ToothPrint Studio exports a PDF case report with inputs, findings, method, provenance, and limitations.
+
+## Visual tour
+
+The top-level story is dental first, chart second:
+
+<p align="center">
+  <img src="docs/input_arch_spin.gif" width="31%" alt="Rotating intraoral scan input">
+  <img src="docs/identity_match.gif" width="31%" alt="Same-person versus stranger registration evidence">
+  <img src="docs/change_measurement.gif" width="31%" alt="Bone-level change certificate on a radiograph">
+</p>
+
+<p align="center">
+  <img src="docs/recon_turntable.gif" width="46%" alt="Photos to mesh reconstruction turntable">
+  <img src="docs/studio.png" width="46%" alt="ToothPrint Studio live examination">
+</p>
+
+<p align="center">
+  <img src="docs/studio_certificate.png" width="72%" alt="Exported ToothPrint PDF report with inputs, findings, method, provenance, and limitations">
+</p>
+
+## Quick start
+
+```bash
+pip install -e ".[dev,io,api,desktop]"
+python -m pytest -q
+TOOTHPRINT_FIXTURES=1 PYTHONPATH=. python evaluation/scripts/smoke_test.py
+uvicorn api.main:app
+```
+
+```bash
+python -m desktop.app           # native Studio window; falls back to browser if headless
+```
+
+> **Contents** — [Start here](#start-here) · [Status](#current-status) · [Readers](#for-different-readers) · [Visual tour](#visual-tour) · [Results](#results) · [Identity](#-identity--recognise-a-person-by-their-teeth) · [Change](#-change--certify-a-bone-level-shift) · [Surface](#-surface--certify-3d-change) · [Reconstruction](#-reconstruction--photos-to-a-dentist-usable-mesh) · [Studio](#toothprint-studio) · [Formats](#reads-every-format-a-dentist-has) · [How it works](#how-it-works) · [Clinical readiness](#clinical-readiness) · [Security](#security) · [Reproduce](#reproduce) · [Help wanted](#help-wanted--real-longitudinal-data)
 
 ## Results
 
@@ -39,14 +120,14 @@ Every verdict is **conformal**: it fires only when the interval around the measu
 | **Identity — 2D radiographs** | pick the right person out of hundreds | **Rank-1 1.000** (N=400, EER 0), robust to jitter & magnification | ✅ |
 | **Identity — certified decision** | one accept/abstain verdict, bounded FMR | unified **FNIR@FMR=1% 0.00** full-coverage; abstains under heavy tooth loss | ✅ |
 | **Identity — dental work** | identify by the restoration pattern | **0.93 CBCT · 0.91–0.99 radiograph** (forensic chart; n=55 / 165) | ✅ |
-| **Multimodal fusion** | combine independent biometrics | quality-weighted fusion **beats best single** (oracle bound 1.0, complementary) | ✅ |
-| **Change — measurement** | flag a real shift, never cry wolf | recall **0.98 @ 0% false-progression** | ✅ |
+| **Multimodal fusion** | combine independent biometrics | quality-weighted fusion improves Rank-1 in the hard regime (oracle bound 1.0, complementary) | ✅ |
+| **Change — measurement** | flag a real shift while avoiding false progression | recall **0.98 @ 0% false-progression** | ✅ |
 | **Change — fully automatic** | detector finds the teeth | **0.91 end-to-end** (YOLO26-pose; 0.98 ceiling) | 🔄 |
 | **Surface certificate** | catch a lesion a global average misses | **0.99** localized vs **0.00** naive (n=8), to **0.4 mm** noise, **0% false-change** | ✅ |
-| **Reconstruction** | sharp enough for clinical use (≈0.5 mm) | **~0.3 mm** median 2DGS mesh, 38% better than 3DGS (n=5) | ✅ |
+| **Reconstruction** | sharp enough for certificate experiments (≈0.5 mm target) | **~0.3 mm** median 2DGS mesh, 38% better than 3DGS (n=5) | ✅ |
 | **Cross-dataset generalization** | works on a second real dataset | Teeth3DS Rank-1 1.0 (registration); learned descriptors carry an honest domain gap (0.87→0.42) | 🔄 |
 
-Specificity (never crying wolf) is **oracle-level by design** — the conformal false-positive rate is provably ≤ α in finite samples, and held a true **0** in most tests. *All identity numbers are measured on public single-timepoint scans with synthetic re-scans/crops, so read them as in-simulation ceilings — the one binding gate is [real cross-session data](#help-wanted--real-longitudinal-data).*
+Specificity is the design target: the conformal false-positive rate is bounded by α in finite samples, and held a true **0** in most tests. *All identity numbers are measured on public single-timepoint scans with synthetic re-scans/crops, so read them as in-simulation ceilings — the one binding gate is [real cross-session data](#help-wanted--real-longitudinal-data).*
 
 ---
 
@@ -108,7 +189,7 @@ Under **realistic discrete whole-tooth dropout** (random, non-contiguous teeth r
 
 **Multimodal fusion on real paired data.** On the Figshare CBCT+IOS set, every patient has three real biometrics — IOS **crowns**, CBCT **bone/root** geometry, CBCT **dental-work** pattern. Scored separately and fused: IOS 1.000, bone 0.945, dental-work 0.927. Does fusion *beat* the best single? Degraded into a hard regime to find out: the **oracle bound is 1.000** (modalities genuinely complementary), naive equal-weight fusion *hurts* (dilution — a real negative), and **quality-weighted fusion** edges past the best single (0.867 vs 0.833). A real but Rank-1-only gain (its AUC regresses) — honest about the size.
 
-**Dental work as a forensic identifier — on CBCT *and* radiographs.** The restoration pattern (fillings, crowns, implants) is a classic identifier. On CBCT it's directly observable (metal/ceramic HU > 2500): the restoration cloud alone identifies people at **Rank-1 0.927**. And it **extends to 2D radiographs** — global thresholding fails (over-saturated JPEGs grab anatomy), but a **per-tooth local-contrast** extractor (a restoration is the patch far brighter than its own tooth's median) recovers a constellation that identifies **165 restoration-bearing DenPAR subjects at Rank-1 0.91–0.99** (robust to jitter + a dropped restoration; chance 0.006). The strongest forensic cue now works on the modality everyone has.
+**Dental work as a forensic identifier — on CBCT *and* radiographs.** The restoration pattern (fillings, crowns, implants) is a classic identifier. On CBCT it's directly observable (metal/ceramic HU > 2500): the restoration cloud alone identifies people at **Rank-1 0.927**. And it **extends to 2D radiographs** — global thresholding fails (over-saturated JPEGs grab anatomy), but a **per-tooth local-contrast** extractor (a restoration is the patch far brighter than its own tooth's median) recovers a constellation that identifies **165 restoration-bearing DenPAR subjects at Rank-1 0.91–0.99** (robust to jitter + a dropped restoration; chance 0.006). A classic forensic cue now works on the modality most clinics already have.
 
 ### The unified certified decision — one verdict from the parts
 
@@ -168,7 +249,7 @@ No scanner? **2D Gaussian Splatting (oriented surfels) + multi-view TSDF fusion*
 
 ---
 
-## The desktop app
+## ToothPrint Studio
 
 **ToothPrint Studio** (Linux · Windows · macOS) presents the three certificates as a forensic *Certificate of Dental Analysis*: drop in any scan, radiograph, or **patient video** — videos play in-place with full play / pause / seek — run an examination, and every finding is logged with its conformal interval. Export the whole case as a self-contained **PDF report** (inputs, findings, method, provenance, and an explicit limitations statement). Files never leave the machine.
 
@@ -243,7 +324,7 @@ ToothPrint is in the *registration / conformal* family; its defensible edge is *
 
 <details><summary>What stands between this and lawful hospital use</summary>
 
-**Status: NOT clinically deployable.** The engineering is hardened to deployment grade; the gate is real-world validation and regulatory clearance, neither producible from code or synthetic data. ✅ done · ⬜ requires real data / an institution / a regulator.
+**Status: NOT clinically deployable.** The engineering is built with deployment concerns in mind; the gate is real-world validation and regulatory clearance, neither producible from code or synthetic data. ✅ done · ⬜ requires real data / an institution / a regulator.
 
 | Item | Status |
 |---|:--:|

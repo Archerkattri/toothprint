@@ -23,7 +23,11 @@ from .types import Radiograph
 
 def _load_dicom(path: Path) -> Radiograph:
     import pydicom
-    from pydicom.pixel_data_handlers.util import apply_modality_lut
+
+    try:
+        from pydicom.pixels import apply_modality_lut
+    except ImportError:  # pragma: no cover - compatibility with older pydicom
+        from pydicom.pixel_data_handlers.util import apply_modality_lut
 
     try:
         ds = pydicom.dcmread(str(path), force=False)
