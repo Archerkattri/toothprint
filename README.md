@@ -174,9 +174,9 @@ No scanner? **2D Gaussian Splatting (oriented surfels) + multi-view TSDF fusion*
 
 **ToothPrint Studio** (Linux · Windows · macOS) presents the three certificates as a forensic *Certificate of Dental Analysis*: drop in any scan, radiograph, or **patient video** — videos play in-place with full play / pause / seek — run an examination, and every finding is logged with its conformal interval. Export the whole case as a self-contained **PDF report** (inputs, findings, method, provenance, and an explicit limitations statement). Files never leave the machine.
 
-<div align="center">
-<img src="docs/studio.png" width="49%"> <img src="docs/studio_certificate.png" width="49%">
-</div>
+![ToothPrint Studio — a live examination: the patient's intraoral video plays in-place (play / pause / seek), the specimen is recorded, and each finding is logged with its conformal interval](docs/studio.png)
+
+![ToothPrint Studio — the exported PDF report: inputs, every finding, method, provenance, and limitations on one self-contained sheet](docs/studio_certificate.png)
 
 ```bash
 pip install -e ".[api,io,desktop]"
