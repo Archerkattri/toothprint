@@ -5,6 +5,7 @@ Three baselines:
 - coverage_only: certify stable iff both coverage scores >= threshold, ignore delta
 - uncertainty_only: certify stable iff delta_interval_mm is narrow, ignore coverage
 """
+
 from __future__ import annotations
 from toothprint.bench.dmc.certificate import CertificateOutput, CertificateInput, Label
 

@@ -3,6 +3,7 @@
 An attacker controls the file extension, so we sniff the bytes. Returns a canonical
 format id and a category so the dispatcher routes to the right loader.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -10,14 +11,29 @@ from pathlib import Path
 from ._limits import UnsupportedFormat, check_file_size, read_magic
 
 # category -> what the bytes become
-RADIOGRAPH = "radiograph"   # 2D grayscale image (+ pixel spacing)
-SCAN = "scan"               # 3D surface mesh / point cloud (mm)
-VOLUME = "volume"           # 3D voxel volume (+ spacing)
+RADIOGRAPH = "radiograph"  # 2D grayscale image (+ pixel spacing)
+SCAN = "scan"  # 3D surface mesh / point cloud (mm)
+VOLUME = "volume"  # 3D voxel volume (+ spacing)
 
-_RASTER_EXT = {".png": "png", ".jpg": "jpeg", ".jpeg": "jpeg", ".tif": "tiff",
-               ".tiff": "tiff", ".bmp": "bmp", ".gif": "gif", ".webp": "webp"}
-_MESH_EXT = {".stl": "stl", ".ply": "ply", ".obj": "obj", ".off": "off",
-             ".glb": "glb", ".gltf": "gltf", ".3mf": "3mf"}
+_RASTER_EXT = {
+    ".png": "png",
+    ".jpg": "jpeg",
+    ".jpeg": "jpeg",
+    ".tif": "tiff",
+    ".tiff": "tiff",
+    ".bmp": "bmp",
+    ".gif": "gif",
+    ".webp": "webp",
+}
+_MESH_EXT = {
+    ".stl": "stl",
+    ".ply": "ply",
+    ".obj": "obj",
+    ".off": "off",
+    ".glb": "glb",
+    ".gltf": "gltf",
+    ".3mf": "3mf",
+}
 
 
 def detect(path) -> tuple[str, str]:
@@ -40,7 +56,10 @@ def detect(path) -> tuple[str, str]:
 
     # --- DICOM: 'DICM' marker at byte 128 (preamble), or a .dcm with no preamble ---
     if len(m) >= 132 and m[128:132] == b"DICM":
-        return "dicom", VOLUME if ext == "" else RADIOGRAPH  # series-vs-single decided at load
+        return (
+            "dicom",
+            VOLUME if ext == "" else RADIOGRAPH,
+        )  # series-vs-single decided at load
     if ext in (".dcm", ".dicom"):
         return "dicom", RADIOGRAPH
 
@@ -68,11 +87,12 @@ def detect(path) -> tuple[str, str]:
     if m[:4] == b"PK\x03\x04" and ext == ".3mf":
         return "3mf", SCAN
     if m[:5].lower() == b"solid" and ext != ".obj":
-        return "stl", SCAN            # ASCII STL
+        return "stl", SCAN  # ASCII STL
     if ext in _MESH_EXT:
-        return _MESH_EXT[ext], SCAN   # binary STL / OBJ / etc. by extension
+        return _MESH_EXT[ext], SCAN  # binary STL / OBJ / etc. by extension
     if ext in _RASTER_EXT:
         return _RASTER_EXT[ext], RADIOGRAPH
 
-    raise UnsupportedFormat(f"cannot identify medical format of {p.name} "
-                            f"(magic={m[:8]!r}, ext={ext!r})")
+    raise UnsupportedFormat(
+        f"cannot identify medical format of {p.name} (magic={m[:8]!r}, ext={ext!r})"
+    )

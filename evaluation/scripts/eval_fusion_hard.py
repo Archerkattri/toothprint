@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from eval_multimodal import DATA, N, ios_cloud, matrix, metrics, norm, zscore
+from eval_multimodal import DATA, ios_cloud, matrix, metrics, norm, zscore
 from eval_multimodal_full import cbct_clouds
 
 OUT = Path(__file__).resolve().parents[1] / "results" / "fusion_hard.json"

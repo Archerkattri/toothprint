@@ -1,4 +1,5 @@
 """Certified radiograph bone-level change detection."""
+
 from toothprint.change.certificate import (
     ChangeCertificate,
     bone_vector,

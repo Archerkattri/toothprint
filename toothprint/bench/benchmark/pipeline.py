@@ -26,9 +26,10 @@ class EvalRow:
     gt_score: score computed from ground-truth oracle landmarks (None when
         no oracle store is provided, i.e., in backward-compatible mode).
     """
+
     true: str
     decision: str
-    score: float      # alias for predicted_score; kept for backward compat
+    score: float  # alias for predicted_score; kept for backward compat
     lo: float
     hi: float
     predicted_score: float
@@ -132,8 +133,12 @@ def _evaluate_with_store(
         # GT (oracle) score — from the pair's own baseline/followup annotations
         gt_score = scalar_change_score(pair.baseline, pair.followup, tooth_id=tooth_id)
 
-        baseline_id = pair.baseline.get("image") if isinstance(pair.baseline, dict) else None
-        followup_id = pair.followup.get("image") if isinstance(pair.followup, dict) else None
+        baseline_id = (
+            pair.baseline.get("image") if isinstance(pair.baseline, dict) else None
+        )
+        followup_id = (
+            pair.followup.get("image") if isinstance(pair.followup, dict) else None
+        )
 
         # The store keys predictions by ``image_id`` (the filename stem, e.g.
         # "Image28"), while pair annotations carry the full filename (e.g.
@@ -174,13 +179,15 @@ def _evaluate_with_store(
             lo, hi = predicted_score, predicted_score
             decision = "stable" if predicted_score < tau else "progressed"
 
-        rows.append(EvalRow(
-            true=pair.label,
-            decision=decision,
-            score=predicted_score,
-            lo=lo,
-            hi=hi,
-            predicted_score=predicted_score,
-            gt_score=gt_score,
-        ))
+        rows.append(
+            EvalRow(
+                true=pair.label,
+                decision=decision,
+                score=predicted_score,
+                lo=lo,
+                hi=hi,
+                predicted_score=predicted_score,
+                gt_score=gt_score,
+            )
+        )
     return rows

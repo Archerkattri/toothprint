@@ -30,21 +30,23 @@ from toothprint.bench.perturb.image_perturb import (
 # Public data class
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ImageAnnotationPair:
     """A single baseline/followup pair with both images and annotations."""
 
-    baseline_image: Any   # numpy uint8 HxWx3
-    followup_image: Any   # numpy uint8 HxWx3
+    baseline_image: Any  # numpy uint8 HxWx3
+    followup_image: Any  # numpy uint8 HxWx3
     baseline_annotation: dict
     followup_annotation: dict
-    label: str            # "stable" | "progressed"
+    label: str  # "stable" | "progressed"
     image_id: str
 
 
 # ---------------------------------------------------------------------------
 # Public builder
 # ---------------------------------------------------------------------------
+
 
 def build_image_pairs(
     records: Iterable,
@@ -97,14 +99,16 @@ def build_image_pairs(
         stable_pair = ann_pairs[pair_index]
         base_cfg = random_image_perturb_config(image_perturb_seed + rec_index * 4)
         follow_cfg = random_image_perturb_config(image_perturb_seed + rec_index * 4 + 1)
-        result.append(ImageAnnotationPair(
-            baseline_image=_perturb_to_uint8(raw_image, base_cfg),
-            followup_image=_perturb_to_uint8(raw_image, follow_cfg),
-            baseline_annotation=stable_pair.baseline,
-            followup_annotation=stable_pair.followup,
-            label=stable_pair.label,
-            image_id=rec.image_id,
-        ))
+        result.append(
+            ImageAnnotationPair(
+                baseline_image=_perturb_to_uint8(raw_image, base_cfg),
+                followup_image=_perturb_to_uint8(raw_image, follow_cfg),
+                baseline_annotation=stable_pair.baseline,
+                followup_annotation=stable_pair.followup,
+                label=stable_pair.label,
+                image_id=rec.image_id,
+            )
+        )
         pair_index += 1
 
         if pair_index >= len(ann_pairs):
@@ -113,15 +117,19 @@ def build_image_pairs(
         # progressed pair
         progressed_pair = ann_pairs[pair_index]
         base_cfg2 = random_image_perturb_config(image_perturb_seed + rec_index * 4 + 2)
-        follow_cfg2 = random_image_perturb_config(image_perturb_seed + rec_index * 4 + 3)
-        result.append(ImageAnnotationPair(
-            baseline_image=_perturb_to_uint8(raw_image, base_cfg2),
-            followup_image=_perturb_to_uint8(raw_image, follow_cfg2),
-            baseline_annotation=progressed_pair.baseline,
-            followup_annotation=progressed_pair.followup,
-            label=progressed_pair.label,
-            image_id=rec.image_id,
-        ))
+        follow_cfg2 = random_image_perturb_config(
+            image_perturb_seed + rec_index * 4 + 3
+        )
+        result.append(
+            ImageAnnotationPair(
+                baseline_image=_perturb_to_uint8(raw_image, base_cfg2),
+                followup_image=_perturb_to_uint8(raw_image, follow_cfg2),
+                baseline_annotation=progressed_pair.baseline,
+                followup_annotation=progressed_pair.followup,
+                label=progressed_pair.label,
+                image_id=rec.image_id,
+            )
+        )
         pair_index += 1
         rec_index += 1
 
@@ -131,6 +139,7 @@ def build_image_pairs(
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _load_image(image_path: Path) -> Any:
     """Load an image as a float32 HxWx3 numpy array in [0, 1] using PIL."""

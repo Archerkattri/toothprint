@@ -62,8 +62,13 @@ class SurfaceRegion:
                 "tooth_id_fdi must be a valid FDI tooth id: permanent [11, 48] "
                 "or deciduous [51, 85]"
             )
-        if "subgingival" in self.claim_scope.lower() or "root" in self.claim_scope.lower():
-            raise ValueError("DentalMapCert regions cannot claim hidden/root/subgingival anatomy")
+        if (
+            "subgingival" in self.claim_scope.lower()
+            or "root" in self.claim_scope.lower()
+        ):
+            raise ValueError(
+                "DentalMapCert regions cannot claim hidden/root/subgingival anatomy"
+            )
 
 
 @dataclass(frozen=True)
@@ -124,4 +129,3 @@ def validate_fdi_id(tooth_id: int) -> bool:
 def _require(value: str, field_name: str) -> None:
     if not value:
         raise ValueError(f"{field_name} is required")
-

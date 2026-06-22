@@ -6,6 +6,7 @@ from held-out (measured, true) pairs, so the miscoverage — here the
 false-progression rate — is bounded by ``alpha`` in finite samples, with no
 distributional assumptions.
 """
+
 from __future__ import annotations
 
 import math
@@ -36,8 +37,8 @@ class ConformalCertifier:
             raise ValueError("at least one calibration pair is required")
         if not 0.0 < alpha < 1.0:
             raise ValueError("alpha must be in (0, 1)")
-        upper = np.sort(obs - pred)   # how much we under-predicted
-        lower = np.sort(pred - obs)   # how much we over-predicted
+        upper = np.sort(obs - pred)  # how much we under-predicted
+        lower = np.sort(pred - obs)  # how much we over-predicted
         n = pred.size
         # Finite-sample order statistic for two-sided 1-alpha coverage. If it
         # exceeds n-1 the (n+1)-th statistic does not exist -> +inf (abstain),
@@ -49,8 +50,10 @@ class ConformalCertifier:
 
     def interval(self, measured: float) -> tuple[float, float]:
         """Conformal interval covering the true change for a measured value."""
-        return (round(float(measured) - self.q_lo, 10),
-                round(float(measured) + self.q_hi, 10))
+        return (
+            round(float(measured) - self.q_lo, 10),
+            round(float(measured) + self.q_hi, 10),
+        )
 
     def classify(self, measured: float, tau: float) -> str:
         """Certify ``changed`` / ``stable`` / ``uncertain`` against threshold ``tau``."""

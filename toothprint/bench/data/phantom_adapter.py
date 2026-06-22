@@ -20,6 +20,7 @@ Expected directory layout:
 Each .json file should contain a DenPAR-style annotation dict with "teeth" list.
 If the directory is absent or empty, the adapter yields no records.
 """
+
 from __future__ import annotations
 import json
 from dataclasses import dataclass
@@ -32,7 +33,7 @@ class PhantomRecord:
     phantom_id: str
     acquisition_idx: int
     annotation_dict: dict
-    material: str = "unknown"   # "plastic", "resin", "wax", etc.
+    material: str = "unknown"  # "plastic", "resin", "wax", etc.
 
 
 class PhantomAdapter:
@@ -65,13 +66,15 @@ class PhantomAdapter:
                 except Exception:
                     continue
                 image_id = f"{phantom_id}_acq_{idx:03d}"
-                records.append(PhantomRecord(
-                    image_id=image_id,
-                    phantom_id=phantom_id,
-                    acquisition_idx=idx,
-                    annotation_dict=ann,
-                    material=material,
-                ))
+                records.append(
+                    PhantomRecord(
+                        image_id=image_id,
+                        phantom_id=phantom_id,
+                        acquisition_idx=idx,
+                        annotation_dict=ann,
+                        material=material,
+                    )
+                )
         return records
 
     def stable_pairs(self) -> list:
@@ -82,6 +85,7 @@ class PhantomAdapter:
                                "label": "stable", "phantom_id": str, "true_change": 0.0}
         """
         from itertools import combinations
+
         by_phantom: dict[str, list[PhantomRecord]] = {}
         for rec in self.records():
             by_phantom.setdefault(rec.phantom_id, []).append(rec)
@@ -89,13 +93,15 @@ class PhantomAdapter:
         pairs = []
         for phantom_id, recs in by_phantom.items():
             for r1, r2 in combinations(recs, 2):
-                pairs.append({
-                    "baseline": r1.annotation_dict,
-                    "followup": r2.annotation_dict,
-                    "label": "stable",
-                    "phantom_id": phantom_id,
-                    "true_change": 0.0,
-                })
+                pairs.append(
+                    {
+                        "baseline": r1.annotation_dict,
+                        "followup": r2.annotation_dict,
+                        "label": "stable",
+                        "phantom_id": phantom_id,
+                        "true_change": 0.0,
+                    }
+                )
         return pairs
 
 

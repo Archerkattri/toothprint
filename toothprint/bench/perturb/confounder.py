@@ -5,7 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable
 
-from toothprint.bench.perturb.acquisition import TransformParams, apply_acquisition_perturbation
+from toothprint.bench.perturb.acquisition import (
+    TransformParams,
+    apply_acquisition_perturbation,
+)
 from toothprint.bench.score.periodontal import scalar_change_score
 
 
@@ -51,7 +54,10 @@ def maximize_artifact_score_full(
 
     Returns the candidate with the highest change score across all families.
     """
-    from toothprint.bench.perturb.acquisition import apply_per_landmark_perturbation, apply_exposure_perturbation
+    from toothprint.bench.perturb.acquisition import (
+        apply_per_landmark_perturbation,
+        apply_exposure_perturbation,
+    )
 
     if per_landmark_deltas is None:
         per_landmark_deltas = [3.0, 5.0, 8.0, 12.0]
@@ -74,13 +80,20 @@ def maximize_artifact_score_full(
 
     # Per-landmark independent perturbation
     for delta in per_landmark_deltas:
-        pair = apply_per_landmark_perturbation(annotation, dx_per_point=delta, dy_per_point=delta, seed=seed)
-        _check(pair, TransformParams(metadata={"family": "per_landmark", "delta_px": delta}))
+        pair = apply_per_landmark_perturbation(
+            annotation, dx_per_point=delta, dy_per_point=delta, seed=seed
+        )
+        _check(
+            pair,
+            TransformParams(metadata={"family": "per_landmark", "delta_px": delta}),
+        )
 
     # Exposure-only perturbation (should always produce score≈0)
     for exp in exposure_deltas:
         pair = apply_exposure_perturbation(annotation, exposure_delta=exp)
-        _check(pair, TransformParams(exposure_delta=exp, metadata={"family": "exposure"}))
+        _check(
+            pair, TransformParams(exposure_delta=exp, metadata={"family": "exposure"})
+        )
 
     if best is None:
         raise ValueError("At least one candidate is required")

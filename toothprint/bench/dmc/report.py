@@ -72,10 +72,12 @@ def write_outputs(
     out.mkdir(parents=True, exist_ok=True)
     report_path = out / "report.md"
     jsonl_path = out / "certificate_output.jsonl"
-    report_path.write_text(render_report(certificates, synthetic=synthetic), encoding="utf-8")
+    report_path.write_text(
+        render_report(certificates, synthetic=synthetic), encoding="utf-8"
+    )
     jsonl_path.write_text(
-        "\n".join(json.dumps(cert.to_dict(), sort_keys=True) for cert in certificates) + "\n",
+        "\n".join(json.dumps(cert.to_dict(), sort_keys=True) for cert in certificates)
+        + "\n",
         encoding="utf-8",
     )
     return report_path, jsonl_path
-

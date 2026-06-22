@@ -2,6 +2,7 @@
 
 All metrics operate on lists of CertificateOutput from decide_surface_change().
 """
+
 from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
@@ -12,16 +13,18 @@ from toothprint.bench.dmc.certificate import CertificateOutput
 class BenchmarkMetrics:
     n: int
     # Capture-quality metrics (Gate 0)
-    capture_only_false_change_rate: float   # fraction of "stable" pairs certified as changed
-    useful_certified_coverage: float        # fraction of regions reaching "stable certified"
-    uncertain_rate: float                   # fraction landing on "uncertain / recapture"
+    capture_only_false_change_rate: (
+        float  # fraction of "stable" pairs certified as changed
+    )
+    useful_certified_coverage: float  # fraction of regions reaching "stable certified"
+    uncertain_rate: float  # fraction landing on "uncertain / recapture"
     # Conformal-quality metrics (Gate 2+)
-    mean_delta_width_mm: float              # mean width of delta_interval_mm
+    mean_delta_width_mm: float  # mean width of delta_interval_mm
     delta_width_std_mm: float
     # Uncertainty discrimination
-    uncertainty_auc: float                  # ROC-AUC of confidence (1/delta_width) vs true_labels
+    uncertainty_auc: float  # ROC-AUC of confidence (1/delta_width) vs true_labels
     # Recapture utility
-    recapture_trigger_rate: float           # fraction that triggered a recapture action
+    recapture_trigger_rate: float  # fraction that triggered a recapture action
 
 
 def _roc_auc(scores: "np.ndarray", labels: "np.ndarray") -> float:
@@ -29,12 +32,13 @@ def _roc_auc(scores: "np.ndarray", labels: "np.ndarray") -> float:
 
     AUC = P(score of positive > score of negative).
     """
-    import numpy as np
     pos = scores[labels == 1]
     neg = scores[labels == 0]
     if len(pos) == 0 or len(neg) == 0:
         return 0.0
-    count = sum(1 for p in pos for n in neg if p > n) + 0.5 * sum(1 for p in pos for n in neg if p == n)
+    count = sum(1 for p in pos for n in neg if p > n) + 0.5 * sum(
+        1 for p in pos for n in neg if p == n
+    )
     return float(count) / (len(pos) * len(neg))
 
 
@@ -70,33 +74,31 @@ def compute_metrics(
     n_stable = len(stable_indices)
     if n_stable > 0:
         false_change_count = sum(
-            1 for i in stable_indices
-            if outputs[i].label == "surface change certified"
+            1 for i in stable_indices if outputs[i].label == "surface change certified"
         )
         false_change_rate = false_change_count / n_stable
     else:
         false_change_rate = 0.0
 
-    useful_certified_coverage = sum(
-        1 for o in outputs if o.label == "surface stable certified"
-    ) / n
+    useful_certified_coverage = (
+        sum(1 for o in outputs if o.label == "surface stable certified") / n
+    )
 
-    uncertain_rate = sum(
-        1 for o in outputs if o.label == "uncertain / recapture"
-    ) / n
+    uncertain_rate = sum(1 for o in outputs if o.label == "uncertain / recapture") / n
 
     # Delta-width metrics
-    widths = np.array([o.delta_interval_mm[1] - o.delta_interval_mm[0] for o in outputs])
+    widths = np.array(
+        [o.delta_interval_mm[1] - o.delta_interval_mm[0] for o in outputs]
+    )
     mean_delta_width_mm = float(widths.mean())
     delta_width_std_mm = float(widths.std())
 
     # Uncertainty AUC: ROC-AUC of confidence (1/delta_width) vs true_labels
     if _labels_provided and len(true_labels) == len(outputs):
         eps = 1e-6
-        widths_arr = np.array([
-            float(o.delta_interval_mm[1] - o.delta_interval_mm[0])
-            for o in outputs
-        ])
+        widths_arr = np.array(
+            [float(o.delta_interval_mm[1] - o.delta_interval_mm[0]) for o in outputs]
+        )
         confidence = 1.0 / (widths_arr + eps)
         binary_labels = np.array([1 if t == "stable" else 0 for t in true_labels])
         uncertainty_auc = _roc_auc(confidence, binary_labels)
@@ -104,9 +106,7 @@ def compute_metrics(
         uncertainty_auc = 0.0
 
     # Recapture trigger rate
-    recapture_trigger_rate = sum(
-        1 for o in outputs if len(o.recapture_actions) > 0
-    ) / n
+    recapture_trigger_rate = sum(1 for o in outputs if len(o.recapture_actions) > 0) / n
 
     return BenchmarkMetrics(
         n=n,
@@ -147,7 +147,8 @@ def coverage_vs_false_change_curve(
     for threshold in coverage_thresholds:
         # Filter to outputs with sufficient coverage at both timepoints
         certified_indices = [
-            i for i, o in enumerate(outputs)
+            i
+            for i, o in enumerate(outputs)
             if min(o.coverage_score_t0, o.coverage_score_t1) >= threshold
         ]
 
@@ -160,7 +161,8 @@ def coverage_vs_false_change_curve(
         # False-change-rate: among certified stable, fraction labeled "surface change certified"
         if n_certified_stable > 0:
             false_change_count = sum(
-                1 for i in certified_stable_indices
+                1
+                for i in certified_stable_indices
                 if outputs[i].label == "surface change certified"
             )
             false_change_rate = false_change_count / n_certified_stable
@@ -169,15 +171,18 @@ def coverage_vs_false_change_curve(
 
         # Useful coverage: fraction of all outputs that are certified AND labeled stable
         n_certified_and_stable_label = sum(
-            1 for i in certified_indices
+            1
+            for i in certified_indices
             if outputs[i].label == "surface stable certified"
         )
         useful_coverage = n_certified_and_stable_label / n_total if n_total > 0 else 0.0
 
-        results.append({
-            "coverage_threshold": float(threshold),
-            "useful_coverage": useful_coverage,
-            "false_change_rate": false_change_rate,
-        })
+        results.append(
+            {
+                "coverage_threshold": float(threshold),
+                "useful_coverage": useful_coverage,
+                "false_change_rate": false_change_rate,
+            }
+        )
 
     return results

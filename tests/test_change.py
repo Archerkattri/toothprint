@@ -2,13 +2,18 @@ import numpy as np
 import pytest
 
 cv2 = pytest.importorskip("cv2")
-from scipy.ndimage import gaussian_filter, shift as ndshift
+from scipy.ndimage import gaussian_filter, shift as ndshift  # noqa: E402
 
-from toothprint.change.certificate import ChangeCertificate, bone_vector, certify_change
-from toothprint.change.conformal import CHANGED, STABLE, UNCERTAIN, ConformalCertifier
-from toothprint.change.registration import (
-    _patch, _subpixel_peak, fit_global_motion, measure_change, measure_change_anchored,
-    measure_change_search, measure_displacement,
+from toothprint.change.certificate import ChangeCertificate, bone_vector, certify_change  # noqa: E402
+from toothprint.change.conformal import CHANGED, STABLE, UNCERTAIN, ConformalCertifier  # noqa: E402
+from toothprint.change.registration import (  # noqa: E402
+    _patch,
+    _subpixel_peak,
+    fit_global_motion,
+    measure_change,
+    measure_change_anchored,
+    measure_change_search,
+    measure_displacement,
 )
 
 
@@ -18,7 +23,9 @@ def _affine_warp(g, angle, tx, ty, scale=1.0):
     M = cv2.getRotationMatrix2D((w / 2, h / 2), angle, scale)
     M[0, 2] += tx
     M[1, 2] += ty
-    return cv2.warpAffine(g, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    return cv2.warpAffine(
+        g, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT
+    )
 
 
 def _crown_anchors(cej_c, L, u):
@@ -26,8 +33,12 @@ def _crown_anchors(cej_c, L, u):
     out = []
     for row in (0.5, 0.8):
         for s in (-1, 0, 1):
-            out.append((cej_c[0] - row * L * u[0] + s * 0.4 * L * p[0],
-                        cej_c[1] - row * L * u[1] + s * 0.4 * L * p[1]))
+            out.append(
+                (
+                    cej_c[0] - row * L * u[0] + s * 0.4 * L * p[0],
+                    cej_c[1] - row * L * u[1] + s * 0.4 * L * p[1],
+                )
+            )
     return out
 
 
@@ -39,6 +50,7 @@ def _textured(n=160, seed=0):
 
 
 # --- registration ----------------------------------------------------------
+
 
 def test_patch_bounds():
     g = _textured(80)
@@ -78,7 +90,7 @@ def test_measure_change_reference_cancels_global_motion():
     g1 = ndshift(g0, (4.0, 3.0), order=1, mode="reflect")
     band = ndshift(g0, (16.0, 3.0), order=1, mode="reflect")
     yy = np.arange(g0.shape[0])[:, None]
-    w = np.exp(-((yy - crest_c[1]) ** 2) / (2 * 18.0 ** 2))
+    w = np.exp(-((yy - crest_c[1]) ** 2) / (2 * 18.0**2))
     g1 = (g1 * (1 - w) + band * w).astype(np.float32)
     change, resp = measure_change(g0, g1, ref_c, crest_c, u, half=20, search=40)
     assert change > 6.0
@@ -95,16 +107,23 @@ def test_measure_change_search_finds_margin():
     g1 = ndshift(g0, (3.0, 2.0), order=1, mode="reflect")
     band = ndshift(g0, (17.0, 2.0), order=1, mode="reflect")
     yy = np.arange(g0.shape[0])[:, None]
-    w = np.exp(-((yy - true_crest[1]) ** 2) / (2 * 16.0 ** 2))
+    w = np.exp(-((yy - true_crest[1]) ** 2) / (2 * 16.0**2))
     g1 = (g1 * (1 - w) + band * w).astype(np.float32)
     single = measure_change(g0, g1, ref_c, coarse_crest, u, half=18, search=40)
-    best = measure_change_search(g0, g1, ref_c, coarse_crest, u, range(-40, 41, 8), half=18, search=40)
+    best = measure_change_search(
+        g0, g1, ref_c, coarse_crest, u, range(-40, 41, 8), half=18, search=40
+    )
     assert best is not None and best[0] > 6.0 and best[0] >= single[0]
 
 
 def test_measure_change_search_all_oob_none():
     g = _textured(60)
-    assert measure_change_search(g, g, (5, 5), (5, 50), (0, 1), range(-40, 41, 8), half=20, search=30) is None
+    assert (
+        measure_change_search(
+            g, g, (5, 5), (5, 50), (0, 1), range(-40, 41, 8), half=20, search=30
+        )
+        is None
+    )
 
 
 def _band_scene(seed=4):
@@ -113,15 +132,16 @@ def _band_scene(seed=4):
     g1 = ndshift(g0, (3.0, 2.0), order=1, mode="reflect")
     band = ndshift(g0, (17.0, 2.0), order=1, mode="reflect")
     yy = np.arange(g0.shape[0])[:, None]
-    w = np.exp(-((yy - true_crest[1]) ** 2) / (2 * 16.0 ** 2))
+    w = np.exp(-((yy - true_crest[1]) ** 2) / (2 * 16.0**2))
     g1 = (g1 * (1 - w) + band * w).astype(np.float32)
     return g0, g1, ref_c, coarse_crest, u
 
 
 def test_measure_change_search_response_gate_finds_margin():
     g0, g1, ref_c, crest, u = _band_scene()
-    out = measure_change_search(g0, g1, ref_c, crest, u, range(-40, 41, 8),
-                                half=18, search=40, min_response=0.3)
+    out = measure_change_search(
+        g0, g1, ref_c, crest, u, range(-40, 41, 8), half=18, search=40, min_response=0.3
+    )
     assert out is not None and out[0] > 6.0 and out[1] >= 0.3
 
 
@@ -129,15 +149,18 @@ def test_measure_change_search_all_gated_returns_fallback():
     # An impossibly high gate rejects every candidate; the most-reliable one is
     # still returned (fallback), never None.
     g0, g1, ref_c, crest, u = _band_scene()
-    out = measure_change_search(g0, g1, ref_c, crest, u, range(-40, 41, 8),
-                                half=18, search=40, min_response=2.0)
+    out = measure_change_search(
+        g0, g1, ref_c, crest, u, range(-40, 41, 8), half=18, search=40, min_response=2.0
+    )
     assert out is not None
 
 
 # --- margin snapping (detector localization refinement) --------------------
 
+
 def test_snap_to_margin_locks_onto_edge():
     from toothprint.change.registration import snap_to_margin
+
     # horizontal bone margin at y=150: bright (bone) above, dark below
     g = np.zeros((300, 120), np.float32)
     g[:150] = 200.0
@@ -150,28 +173,44 @@ def test_snap_to_margin_locks_onto_edge():
 
 def test_snap_to_margin_no_edge_keeps_center():
     from toothprint.change.registration import snap_to_margin
-    flat = np.full((80, 80), 100.0, np.float32)   # no edge -> centre is best
+
+    flat = np.full((80, 80), 100.0, np.float32)  # no edge -> centre is best
     assert snap_to_margin(flat, (40, 40), (0.0, 1.0), span=20) == (40.0, 40.0)
 
 
 def test_snap_to_margin_center_out_of_bounds_finds_edge():
     from toothprint.change.registration import snap_to_margin
+
     # centre near the border (its own gradient sample is out of bounds) but the
     # span reaches the margin at y=20 and snaps to it
-    g = np.zeros((40, 40), np.float32); g[:20] = 150.0
+    g = np.zeros((40, 40), np.float32)
+    g[:20] = 150.0
     out = snap_to_margin(g, (20, 39), (0.0, 1.0), span=40, step=2.0)
     assert 16.0 < out[1] < 24.0
 
 
 # --- global-motion model (repositioning robustness) ------------------------
 
+
 def test_fit_global_motion_needs_three_reliable_anchors():
     g = _textured(120, seed=3)
     # impossibly high gate drops every anchor -> None
-    assert fit_global_motion(g, g, [(40, 40), (60, 60), (80, 80), (50, 70)],
-                             half=15, search=20, min_response=1.5) is None
+    assert (
+        fit_global_motion(
+            g,
+            g,
+            [(40, 40), (60, 60), (80, 80), (50, 70)],
+            half=15,
+            search=20,
+            min_response=1.5,
+        )
+        is None
+    )
     # an out-of-bounds anchor is skipped; the remaining 2 < 3 -> None
-    assert fit_global_motion(g, g, [(5, 5), (60, 60), (80, 80)], half=15, search=20) is None
+    assert (
+        fit_global_motion(g, g, [(5, 5), (60, 60), (80, 80)], half=15, search=20)
+        is None
+    )
 
 
 def test_anchored_cancels_magnification_where_single_ref_fails():
@@ -179,39 +218,53 @@ def test_anchored_cancels_magnification_where_single_ref_fails():
     # and the crown reference by *different* amounts along the bone axis — exactly
     # what a single reference patch cannot cancel but a multi-anchor affine can.
     g0 = _textured(300, seed=11)
-    g1 = _affine_warp(g0, angle=1.5, tx=8.0, ty=-5.0, scale=1.06)   # no local change
+    g1 = _affine_warp(g0, angle=1.5, tx=8.0, ty=-5.0, scale=1.06)  # no local change
     cej_c, crest_c, u, L = (150, 150), (150, 195), (0.0, 1.0), 45.0
     anchors = _crown_anchors(cej_c, L, u)
     out = measure_change_anchored(g0, g1, anchors, crest_c, u, half=18, search=45)
-    assert out is not None and abs(out[0]) < 2.0        # affine model cancels the motion
+    assert out is not None and abs(out[0]) < 2.0  # affine model cancels the motion
     single = measure_change(g0, g1, anchors[1], crest_c, u, half=18, search=45)
-    assert single is not None and abs(single[0]) > abs(out[0]) + 2.0  # single-ref is fooled
+    assert (
+        single is not None and abs(single[0]) > abs(out[0]) + 2.0
+    )  # single-ref is fooled
 
 
 def test_anchored_recovers_local_change_under_repositioning():
     g0 = _textured(300, seed=12)
     cej_c, crest_c, u, L = (150, 150), (150, 195), (0.0, 1.0), 45.0
-    band = ndshift(g0, (13.0, 0.0), order=1, mode="reflect")   # apical crest move
+    band = ndshift(g0, (13.0, 0.0), order=1, mode="reflect")  # apical crest move
     yy = np.arange(g0.shape[0])[:, None]
-    wmask = np.exp(-((yy - crest_c[1]) ** 2) / (2 * 15.0 ** 2))
+    wmask = np.exp(-((yy - crest_c[1]) ** 2) / (2 * 15.0**2))
     changed = (g0 * (1 - wmask) + band * wmask).astype(np.float32)
-    g1 = _affine_warp(changed, angle=2.0, tx=7.0, ty=-4.0, scale=1.05)  # change THEN reposition
-    out = measure_change_anchored(g0, g1, _crown_anchors(cej_c, L, u), crest_c, u,
-                                  half=18, search=45)
-    assert out is not None and out[0] > 6.0                    # recovers it despite motion
+    g1 = _affine_warp(
+        changed, angle=2.0, tx=7.0, ty=-4.0, scale=1.05
+    )  # change THEN reposition
+    out = measure_change_anchored(
+        g0, g1, _crown_anchors(cej_c, L, u), crest_c, u, half=18, search=45
+    )
+    assert out is not None and out[0] > 6.0  # recovers it despite motion
 
 
 def test_anchored_none_paths():
     g = _textured(120, seed=4)
     # < 3 anchors -> global fit None -> None
-    assert measure_change_anchored(g, g, [(40, 40), (60, 60)], (60, 80), (0, 1),
-                                   half=15, search=20) is None
+    assert (
+        measure_change_anchored(
+            g, g, [(40, 40), (60, 60)], (60, 80), (0, 1), half=15, search=20
+        )
+        is None
+    )
     # crest patch out of bounds -> None
-    assert measure_change_anchored(g, g, [(40, 40), (60, 60), (80, 80)], (5, 5), (0, 1),
-                                   half=15, search=20) is None
+    assert (
+        measure_change_anchored(
+            g, g, [(40, 40), (60, 60), (80, 80)], (5, 5), (0, 1), half=15, search=20
+        )
+        is None
+    )
 
 
 # --- conformal -------------------------------------------------------------
+
 
 def test_conformal_fit_interval_classify():
     rng = np.random.default_rng(0)
@@ -245,6 +298,7 @@ def test_conformal_fit_errors():
 
 # --- certificate -----------------------------------------------------------
 
+
 def test_bone_vector():
     assert np.allclose(bone_vector([0, 0], [0, 10]), [0, 1])
 
@@ -261,14 +315,16 @@ def test_certify_change_end_to_end():
     g1 = ndshift(g0, (3.0, 2.0), order=1, mode="reflect")
     band = ndshift(g0, (15.0, 2.0), order=1, mode="reflect")
     yy = np.arange(g0.shape[0])[:, None]
-    w = np.exp(-((yy - crest_c[1]) ** 2) / (2 * 16.0 ** 2))
+    w = np.exp(-((yy - crest_c[1]) ** 2) / (2 * 16.0**2))
     g1 = (g1 * (1 - w) + band * w).astype(np.float32)
     cert = ConformalCertifier(q_lo=0.5, q_hi=0.5, alpha=0.1)
     out = certify_change(g0, g1, ref_c, crest_c, u, cert, tau=3.0)
     assert isinstance(out, ChangeCertificate)
     assert out.label == CHANGED and out.measured_px > 3.0
     # search variant exercises the candidate-offset branch
-    out2 = certify_change(g0, g1, ref_c, crest_c, u, cert, tau=3.0, offsets=range(-16, 17, 8))
+    out2 = certify_change(
+        g0, g1, ref_c, crest_c, u, cert, tau=3.0, offsets=range(-16, 17, 8)
+    )
     assert out2.label == CHANGED
 
 

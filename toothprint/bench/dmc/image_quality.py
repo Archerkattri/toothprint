@@ -80,7 +80,9 @@ def detect_glare(image: np.ndarray) -> float:
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     v_channel = hsv[:, :, 2]
     n_pixels = v_channel.size
-    highlight_frac = float(np.count_nonzero(v_channel >= _GLARE_VALUE_THRESHOLD)) / n_pixels
+    highlight_frac = (
+        float(np.count_nonzero(v_channel >= _GLARE_VALUE_THRESHOLD)) / n_pixels
+    )
     glare_score = 1.0 - float(np.clip(highlight_frac / _GLARE_PIXEL_FRACTION, 0.0, 1.0))
     return glare_score
 
@@ -106,9 +108,9 @@ def _detect_occlusion(image: np.ndarray) -> float:
 
     # Extract border pixels
     top = gray[:bh, :]
-    bottom = gray[h - bh:, :]
-    left = gray[bh: h - bh, :bw]
-    right = gray[bh: h - bh, w - bw:]
+    bottom = gray[h - bh :, :]
+    left = gray[bh : h - bh, :bw]
+    right = gray[bh : h - bh, w - bw :]
     border = np.concatenate([top.ravel(), bottom.ravel(), left.ravel(), right.ravel()])
 
     # Very dark AND very uniform border → likely fine (dark background)

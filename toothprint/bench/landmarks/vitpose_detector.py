@@ -12,6 +12,7 @@ K heatmaps, and the sub-pixel argmax is mapped back to image pixels.
 
 Landmarks (K=5): cej_left, cej_right, crest_mesial, crest_distal, apex.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -20,7 +21,7 @@ import numpy as np
 
 LANDMARK_NAMES = ("cej_left", "cej_right", "crest_mesial", "crest_distal", "apex")
 NUM_LANDMARKS = len(LANDMARK_NAMES)
-INPUT_H, INPUT_W = 256, 192        # ViTPose canonical input (H, W)
+INPUT_H, INPUT_W = 256, 192  # ViTPose canonical input (H, W)
 PRETRAINED_ID = "usyd-community/vitpose-base-simple"
 _IMAGENET_MEAN = (0.485, 0.456, 0.406)
 _IMAGENET_STD = (0.229, 0.224, 0.225)
@@ -66,7 +67,9 @@ def landmark_box(pts: np.ndarray, vis: np.ndarray, w: int, h: int):
     return float(x1), float(y1), float(x2), float(y2)
 
 
-def predict_tooth(detector, image_rgb, tooth, *, n_tta: int = 1, jitter_px: int = 4, rng=None):
+def predict_tooth(
+    detector, image_rgb, tooth, *, n_tta: int = 1, jitter_px: int = 4, rng=None
+):
     """Run ``detector`` on one tooth crop of ``image_rgb`` (HxWx3 uint8).
 
     Crops to the GT landmark box, runs top-down inference, and maps the crop-space
@@ -95,8 +98,12 @@ def predict_tooth(detector, image_rgb, tooth, *, n_tta: int = 1, jitter_px: int 
         rng = np.random.default_rng(0)
     offsets = [(0, 0)]
     for _ in range(max(0, n_tta - 1)):
-        offsets.append((int(rng.integers(-jitter_px, jitter_px + 1)),
-                        int(rng.integers(-jitter_px, jitter_px + 1))))
+        offsets.append(
+            (
+                int(rng.integers(-jitter_px, jitter_px + 1)),
+                int(rng.integers(-jitter_px, jitter_px + 1)),
+            )
+        )
 
     samples = []  # (n_aug, K, 2) in image coords
     for ox, oy in offsets:
@@ -133,7 +140,9 @@ def build_vitpose_model(pretrained: bool = True):
     else:  # pragma: no cover
         model = VitPoseForPoseEstimation(VitPoseConfig())
     in_ch = model.head.conv.in_channels  # pragma: no cover
-    model.head.conv = nn.Conv2d(in_ch, NUM_LANDMARKS, kernel_size=3, stride=1, padding=1)  # pragma: no cover
+    model.head.conv = nn.Conv2d(
+        in_ch, NUM_LANDMARKS, kernel_size=3, stride=1, padding=1
+    )  # pragma: no cover
     model.config.num_labels = NUM_LANDMARKS  # pragma: no cover
     return model  # pragma: no cover
 
@@ -145,7 +154,9 @@ def normalize_crop(crop_rgb):
 
     img = crop_rgb.astype(np.float32) / 255.0
     t = torch.from_numpy(img.transpose(2, 0, 1)).unsqueeze(0)
-    t = torch.nn.functional.interpolate(t, size=(INPUT_H, INPUT_W), mode="bilinear", align_corners=False)
+    t = torch.nn.functional.interpolate(
+        t, size=(INPUT_H, INPUT_W), mode="bilinear", align_corners=False
+    )
     mean = torch.tensor(_IMAGENET_MEAN).view(1, 3, 1, 1)
     std = torch.tensor(_IMAGENET_STD).view(1, 3, 1, 1)
     return (t - mean) / std
@@ -163,9 +174,13 @@ def heatmaps_to_coords(heatmaps):
         for k in range(K):
             x, y = int(xs[b, k]), int(ys[b, k])
             if 1 <= x < W - 1:
-                xs[b, k] += 0.25 * torch.sign(heatmaps[b, k, y, x + 1] - heatmaps[b, k, y, x - 1])
+                xs[b, k] += 0.25 * torch.sign(
+                    heatmaps[b, k, y, x + 1] - heatmaps[b, k, y, x - 1]
+                )
             if 1 <= y < H - 1:
-                ys[b, k] += 0.25 * torch.sign(heatmaps[b, k, y + 1, x] - heatmaps[b, k, y - 1, x])
+                ys[b, k] += 0.25 * torch.sign(
+                    heatmaps[b, k, y + 1, x] - heatmaps[b, k, y - 1, x]
+                )
     return torch.stack([xs, ys], dim=2)
 
 
@@ -178,7 +193,9 @@ class ViTPoseLandmarkDetector:
         self.weights_path = Path(weights_path)
         if not self.weights_path.exists():
             raise FileNotFoundError(f"ViTPose weights not found: {self.weights_path}")
-        ckpt = torch.load(str(self.weights_path), map_location="cpu", weights_only=False)  # pragma: no cover
+        ckpt = torch.load(
+            str(self.weights_path), map_location="cpu", weights_only=False
+        )  # pragma: no cover
         self._model = build_vitpose_model(pretrained=False)  # pragma: no cover
         self._model.load_state_dict(ckpt["model_state_dict"])  # pragma: no cover
         if device == "auto":  # pragma: no cover
@@ -187,7 +204,9 @@ class ViTPoseLandmarkDetector:
         self._model.to(self._device).eval()  # pragma: no cover
         self._torch = torch  # pragma: no cover
 
-    def predict_crop(self, crop_rgb) -> list[list[float]]:  # pragma: no cover  (needs the loaded HF model)
+    def predict_crop(
+        self, crop_rgb
+    ) -> list[list[float]]:  # pragma: no cover  (needs the loaded HF model)
         """Predict K landmarks for one HxWx3 uint8 tooth crop.
 
         Returns K ``[x, y]`` coordinates in the crop's pixel space.
@@ -202,7 +221,9 @@ class ViTPoseLandmarkDetector:
         sx, sy = w / out_w, h / out_h
         return [[float(x * sx), float(y * sy)] for x, y in coords]
 
-    def predict_crop_conf(self, crop_rgb):  # pragma: no cover  (needs the loaded HF model)
+    def predict_crop_conf(
+        self, crop_rgb
+    ):  # pragma: no cover  (needs the loaded HF model)
         """Like ``predict_crop`` but also returns a per-landmark confidence.
 
         Confidence is the spatial-softmax peak of each heatmap: a sharp unimodal

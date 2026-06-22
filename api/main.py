@@ -7,6 +7,7 @@ garbage certificate), request bodies are size-capped, uploads stream to disk und
 hard cap and are parsed by the guarded :mod:`toothprint.io` loaders, and basic
 security headers are set. Run: ``uvicorn api.main:app --reload`` -> http://localhost:8000
 """
+
 from __future__ import annotations
 
 import os
@@ -28,27 +29,39 @@ from toothprint.surface.certificate import certify_surface_change
 
 WEB = Path(__file__).resolve().parents[1] / "web"
 
-MAX_POINTS = 5_000            # a landmark constellation is tens of points; this is generous
-MAX_GALLERY = 5_000           # gallery entries per request
-MAX_REQUEST_BYTES = 16 * 1024 * 1024     # 16 MiB JSON body cap (constellations are tiny)
-MAX_UPLOAD_BYTES = 1024 ** 3             # 1 GiB upload cap (io layer re-checks)
+MAX_POINTS = 5_000  # a landmark constellation is tens of points; this is generous
+MAX_GALLERY = 5_000  # gallery entries per request
+MAX_REQUEST_BYTES = 16 * 1024 * 1024  # 16 MiB JSON body cap (constellations are tiny)
+MAX_UPLOAD_BYTES = 1024**3  # 1 GiB upload cap (io layer re-checks)
 
-app = FastAPI(title="ToothPrint API", version=__version__,
-              description="Certified dental identity, change, and surface — with safe medical-file ingest.")
+app = FastAPI(
+    title="ToothPrint API",
+    version=__version__,
+    description="Certified dental identity, change, and surface — with safe medical-file ingest.",
+)
 
 
 @app.exception_handler(RequestValidationError)
 async def _validation_error(request: Request, exc: RequestValidationError):
     # Clean 422 that never echoes the (possibly non-finite / huge) input back.
-    return JSONResponse(status_code=422, content={"detail": "invalid or out-of-range request"})
+    return JSONResponse(
+        status_code=422, content={"detail": "invalid or out-of-range request"}
+    )
 
 
 @app.middleware("http")
 async def _guard(request, call_next):
     cl = request.headers.get("content-length")
     upload_paths = ("/api/inspect", "/api/identify/scan")
-    if cl and cl.isdigit() and int(cl) > MAX_REQUEST_BYTES and not request.url.path.startswith(upload_paths):
-        return JSONResponse(status_code=413, content={"detail": "request body too large"})
+    if (
+        cl
+        and cl.isdigit()
+        and int(cl) > MAX_REQUEST_BYTES
+        and not request.url.path.startswith(upload_paths)
+    ):
+        return JSONResponse(
+            status_code=413, content={"detail": "request body too large"}
+        )
     resp = await call_next(request)
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["X-Frame-Options"] = "DENY"
@@ -57,6 +70,7 @@ async def _guard(request, call_next):
 
 
 # --- schemas (bounded + finite) --------------------------------------------
+
 
 def _finite_points(v, dim=2):
     a = np.asarray(v, dtype=float)
@@ -93,7 +107,9 @@ class ChangeRequest(BaseModel):
     measured_px: float = Field(..., ge=-1e4, le=1e4)
     q_lo: float = Field(..., ge=0, le=1e4)
     q_hi: float = Field(..., ge=0, le=1e4)
-    tau: float = Field(6.0, ge=0, le=1e4, description="Clinically meaningful change threshold (px)")
+    tau: float = Field(
+        6.0, ge=0, le=1e4, description="Clinically meaningful change threshold (px)"
+    )
     alpha: float = Field(0.1, gt=0, lt=1)
 
     @model_validator(mode="after")
@@ -120,6 +136,7 @@ class SurfaceRequest(BaseModel):
 
 # --- endpoints -------------------------------------------------------------
 
+
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok", "version": __version__}
@@ -128,6 +145,7 @@ def health() -> dict:
 @app.get("/api/formats")
 def formats() -> dict:
     from toothprint.io import SUPPORTED
+
     return {"supported": SUPPORTED}
 
 
@@ -135,15 +153,22 @@ def formats() -> dict:
 def identify_radiograph(req: RadiographQuery) -> dict:
     """Match a query landmark constellation against the gallery (smallest residual)."""
     q = np.asarray(req.query, dtype=float)
-    residuals = [icp_residual(q, np.asarray(e.points, dtype=float)) for e in req.gallery]
+    residuals = [
+        icp_residual(q, np.asarray(e.points, dtype=float)) for e in req.gallery
+    ]
     best = rank1_match(residuals)
     ranking = sorted(
-        ({"label": e.label, "residual_px": round(float(r), 4)}
-         for e, r in zip(req.gallery, residuals)),
-        key=lambda d: d["residual_px"])
-    return {"match": req.gallery[best].label,
-            "match_residual_px": round(float(residuals[best]), 4),
-            "ranking": ranking}
+        (
+            {"label": e.label, "residual_px": round(float(r), 4)}
+            for e, r in zip(req.gallery, residuals)
+        ),
+        key=lambda d: d["residual_px"],
+    )
+    return {
+        "match": req.gallery[best].label,
+        "match_residual_px": round(float(residuals[best]), 4),
+        "ranking": ranking,
+    }
 
 
 @app.post("/api/certify/change")
@@ -151,8 +176,12 @@ def certify_change_endpoint(req: ChangeRequest) -> dict:
     """Certify a measured radiograph change: changed / stable / uncertain."""
     cert = ConformalCertifier(q_lo=req.q_lo, q_hi=req.q_hi, alpha=req.alpha)
     lo, hi = cert.interval(req.measured_px)
-    return {"label": cert.classify(req.measured_px, req.tau),
-            "measured_px": req.measured_px, "interval_px": [lo, hi], "tau_px": req.tau}
+    return {
+        "label": cert.classify(req.measured_px, req.tau),
+        "measured_px": req.measured_px,
+        "interval_px": [lo, hi],
+        "tau_px": req.tau,
+    }
 
 
 @app.post("/api/certify/surface")
@@ -160,27 +189,44 @@ def certify_surface_endpoint(req: SurfaceRequest) -> dict:
     """Certify a measured 3D surface change: changed / stable / uncertain."""
     cert = ConformalCertifier(q_lo=req.q_lo, q_hi=req.q_hi, alpha=req.alpha)
     out = certify_surface_change(
-        req.measured_mm, cert,
+        req.measured_mm,
+        cert,
         stable_threshold_mm=req.stable_threshold_mm,
-        change_threshold_mm=req.change_threshold_mm)
-    return {"label": out.label, "measured_mm": out.measured_mm,
-            "interval_mm": list(out.interval_mm)}
+        change_threshold_mm=req.change_threshold_mm,
+    )
+    return {
+        "label": out.label,
+        "measured_mm": out.measured_mm,
+        "interval_mm": list(out.interval_mm),
+    }
 
 
 def _summary(obj, filename: str) -> dict:
     from toothprint.io import Radiograph, Scan
+
     base = {"filename": filename, "source_format": obj.source_format}
     if isinstance(obj, Radiograph):
-        base.update(kind="radiograph", shape=list(obj.shape),
-                    pixel_spacing_mm=obj.pixel_spacing_mm, modality=obj.modality,
-                    photometric=obj.photometric, bit_depth=obj.bit_depth)
+        base.update(
+            kind="radiograph",
+            shape=list(obj.shape),
+            pixel_spacing_mm=obj.pixel_spacing_mm,
+            modality=obj.modality,
+            photometric=obj.photometric,
+            bit_depth=obj.bit_depth,
+        )
     elif isinstance(obj, Scan):
         v = obj.vertices
-        base.update(kind="scan", n_vertices=obj.n_vertices, n_faces=obj.n_faces,
-                    bbox_mm=[float(v.min(0).min()), float(v.max(0).max())],
-                    extent_mm=[round(float(x), 2) for x in (v.max(0) - v.min(0))])
+        base.update(
+            kind="scan",
+            n_vertices=obj.n_vertices,
+            n_faces=obj.n_faces,
+            bbox_mm=[float(v.min(0).min()), float(v.max(0).max())],
+            extent_mm=[round(float(x), 2) for x in (v.max(0) - v.min(0))],
+        )
     else:  # Volume
-        base.update(kind="volume", shape=list(obj.shape), spacing_mm=list(obj.spacing_mm))
+        base.update(
+            kind="volume", shape=list(obj.shape), spacing_mm=list(obj.spacing_mm)
+        )
     return base
 
 
@@ -204,13 +250,17 @@ async def identify_scan(files: list[UploadFile] = File(...)) -> dict:
     the gallery. Each is parsed safely, the query is given its best rigid fit to every
     gallery arch, and the smallest mean surface distance wins."""
     if not (2 <= len(files) <= 12):
-        raise HTTPException(status_code=422, detail="upload a query + 1..11 gallery scans")
+        raise HTTPException(
+            status_code=422, detail="upload a query + 1..11 gallery scans"
+        )
     from toothprint import io as tio
     from toothprint.identity import identify_surface
+
     clouds, labels, tmps = [], [], []
     try:
         for f in files:
-            tmp = await _stream_to_tmp(f); tmps.append(tmp)
+            tmp = await _stream_to_tmp(f)
+            tmps.append(tmp)
             try:
                 scan = tio.load_scan(tmp)
             except tio.IOError_ as e:
@@ -218,14 +268,23 @@ async def identify_scan(files: list[UploadFile] = File(...)) -> dict:
             v = scan.vertices
             if len(v) > 4000:
                 v = v[np.linspace(0, len(v) - 1, 4000).astype(int)]
-            clouds.append(np.asarray(v, float)); labels.append(f.filename or f"scan{len(labels)}")
+            clouds.append(np.asarray(v, float))
+            labels.append(f.filename or f"scan{len(labels)}")
         row = identify_surface(clouds[0], clouds[1:], voxel_size=0.6)
         order = np.argsort(row)
-        ranking = [{"label": labels[1 + j], "distance_mm": round(float(row[j]), 3)} for j in order]
+        ranking = [
+            {"label": labels[1 + j], "distance_mm": round(float(row[j]), 3)}
+            for j in order
+        ]
         best = ranking[0]
-        return {"match": best["label"], "distance_mm": best["distance_mm"],
-                "verdict": "same person" if best["distance_mm"] < 1.0 else "no confident match",
-                "ranking": ranking}
+        return {
+            "match": best["label"],
+            "distance_mm": best["distance_mm"],
+            "verdict": "same person"
+            if best["distance_mm"] < 1.0
+            else "no confident match",
+            "ranking": ranking,
+        }
     finally:
         for t in tmps:
             try:
@@ -239,7 +298,9 @@ async def inspect(file: UploadFile = File(...)) -> dict:
     """Safely parse any uploaded medical file (DICOM/STL/PLY/OBJ/3MF/NIfTI/PNG/...)
     and return a normalized summary. Streams to disk under a hard cap; the guarded
     loaders reject anything oversize, corrupt, or hostile (422)."""
-    suffix = "".join(Path(file.filename or "upload").suffixes[-2:])   # keep .nii.gz, not just .gz
+    suffix = "".join(
+        Path(file.filename or "upload").suffixes[-2:]
+    )  # keep .nii.gz, not just .gz
     fd, tmp = tempfile.mkstemp(suffix=suffix)
     total = 0
     try:
@@ -250,6 +311,7 @@ async def inspect(file: UploadFile = File(...)) -> dict:
                     raise HTTPException(status_code=413, detail="upload too large")
                 out.write(chunk)
         from toothprint import io as tio
+
         try:
             obj = tio.load(tmp)
         except tio.IOError_ as e:
@@ -263,6 +325,7 @@ async def inspect(file: UploadFile = File(...)) -> dict:
 
 
 # --- web app ---------------------------------------------------------------
+
 
 @app.get("/")
 def index() -> FileResponse:

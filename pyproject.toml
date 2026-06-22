@@ -50,3 +50,6 @@ omit = ["toothprint/bench/*", "toothprint/identity/embedding.py"]
 
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
+
+[tool.ruff.lint]
+ignore = ["E701", "E702"]

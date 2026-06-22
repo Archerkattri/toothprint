@@ -13,7 +13,6 @@ Validated on a real Poseidon3D arch: ~0.84 mm point-to-surface vs the GT scan.
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 
 import numpy as np
 import open3d as o3d

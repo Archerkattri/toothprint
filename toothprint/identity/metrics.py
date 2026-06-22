@@ -1,4 +1,5 @@
 """Modality-agnostic identification scoring (closed-set Rank-1, separability)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -37,7 +38,9 @@ def identification_metrics(scores: np.ndarray, query_labels, gallery_labels) -> 
     dprime = 0.0
     if genuine.size and impostor.size:
         denom = np.sqrt((genuine.var() + impostor.var()) / 2.0)
-        dprime = float(abs(genuine.mean() - impostor.mean()) / denom) if denom > 0 else 0.0
+        dprime = (
+            float(abs(genuine.mean() - impostor.mean()) / denom) if denom > 0 else 0.0
+        )
     return {
         "rank1_accuracy": correct / len(q),
         "n_query": len(q),

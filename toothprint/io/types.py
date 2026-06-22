@@ -1,6 +1,7 @@
 """Normalized representations every loader returns, so the rest of ToothPrint never
 sees a file format — only a radiograph, a scan, or a volume in known units.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -13,8 +14,9 @@ class Radiograph:
     """A 2D radiograph as float intensity, with MONOCHROME1 already inverted so
     higher always means denser tissue (consistent across DICOM and exported images).
     """
-    pixels: np.ndarray                      # 2D float32, intensity (not yet [0,1])
-    pixel_spacing_mm: float | None          # in-plane spacing if known, else None
+
+    pixels: np.ndarray  # 2D float32, intensity (not yet [0,1])
+    pixel_spacing_mm: float | None  # in-plane spacing if known, else None
     source_format: str
     modality: str | None = None
     photometric: str | None = None
@@ -36,8 +38,9 @@ class Radiograph:
 @dataclass
 class Scan:
     """A 3D surface in millimetres — vertices (+ faces if it was a mesh)."""
-    vertices: np.ndarray                    # (N, 3) float64, mm
-    faces: np.ndarray | None                # (M, 3) int or None for a pure cloud
+
+    vertices: np.ndarray  # (N, 3) float64, mm
+    faces: np.ndarray | None  # (M, 3) int or None for a pure cloud
     source_format: str
     meta: dict = field(default_factory=dict)
 
@@ -51,10 +54,12 @@ class Scan:
 
     def to_open3d(self):
         import open3d as o3d
+
         if self.faces is not None:
             m = o3d.geometry.TriangleMesh(
                 o3d.utility.Vector3dVector(self.vertices),
-                o3d.utility.Vector3iVector(self.faces))
+                o3d.utility.Vector3iVector(self.faces),
+            )
             m.compute_vertex_normals()
             return m
         return o3d.geometry.PointCloud(o3d.utility.Vector3dVector(self.vertices))
@@ -63,7 +68,8 @@ class Scan:
 @dataclass
 class Volume:
     """A 3D voxel volume (CBCT / NIfTI) with physical spacing in mm."""
-    voxels: np.ndarray                      # 3D float32
+
+    voxels: np.ndarray  # 3D float32
     spacing_mm: tuple[float, float, float]  # (z, y, x)
     source_format: str
     meta: dict = field(default_factory=dict)

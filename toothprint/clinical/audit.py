@@ -4,6 +4,7 @@ Medical software must record what was decided, on which input, under which
 calibration, and when. Each certificate appends an immutable record; the log can
 be serialised to JSONL for the patient/forensic record.
 """
+
 from __future__ import annotations
 
 import hashlib

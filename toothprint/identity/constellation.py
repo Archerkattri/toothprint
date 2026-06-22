@@ -6,6 +6,7 @@ cancels) and aligned with a rigid ICP; the gallery subject with the smallest
 residual is the identity. Free-scale alignment is avoided on purpose — it lets a
 query collapse onto a gallery cluster and gives impostors a spurious zero residual.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -29,13 +30,14 @@ def _normalize(c: np.ndarray):
     """Zero-mean, unit-RMS-radius normalisation; returns (normed, rms_radius)."""
     c = np.asarray(c, dtype=np.float64)
     centered = c - c.mean(0)
-    rms = float(np.sqrt((centered ** 2).sum(axis=1).mean()))
+    rms = float(np.sqrt((centered**2).sum(axis=1).mean()))
     rms = rms if rms > 1e-9 else 1.0
     return centered / rms, rms
 
 
-def icp_residual(query: np.ndarray, gallery: np.ndarray, *, iters: int = 30,
-                 tol: float = 1e-6) -> float:
+def icp_residual(
+    query: np.ndarray, gallery: np.ndarray, *, iters: int = 30, tol: float = 1e-6
+) -> float:
     """Scale-normalised rigid-ICP residual RMS aligning ``query`` onto ``gallery`` (px)."""
     src, _ = _normalize(query)
     dst, dst_rms = _normalize(gallery)
@@ -55,4 +57,6 @@ def icp_residual(query: np.ndarray, gallery: np.ndarray, *, iters: int = 30,
 
 def identify(query_constellation: np.ndarray, gallery_constellations) -> np.ndarray:
     """Residual of one query constellation against every gallery constellation."""
-    return np.array([icp_residual(query_constellation, g) for g in gallery_constellations])
+    return np.array(
+        [icp_residual(query_constellation, g) for g in gallery_constellations]
+    )

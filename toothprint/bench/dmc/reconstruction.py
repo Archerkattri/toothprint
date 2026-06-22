@@ -24,11 +24,13 @@ logger = logging.getLogger(__name__)
 # Device resolution
 # ---------------------------------------------------------------------------
 
+
 def _resolve_device(device: str) -> str:
     if device != "auto":
         return device
     try:
         import torch
+
         if torch.cuda.is_available():
             return "cuda"
     except ImportError:
@@ -39,6 +41,7 @@ def _resolve_device(device: str) -> str:
 # ---------------------------------------------------------------------------
 # VGGT backend (Meta FAIR, CVPR 2025)
 # ---------------------------------------------------------------------------
+
 
 def _reconstruct_vggt(
     image_paths: list[Path],
@@ -67,8 +70,10 @@ def _reconstruct_vggt(
         target_size = 518
         frames: list[np.ndarray] = []
         for p in image_paths:
-            img = PILImage.open(p).convert("RGB").resize(
-                (target_size, target_size), PILImage.BILINEAR
+            img = (
+                PILImage.open(p)
+                .convert("RGB")
+                .resize((target_size, target_size), PILImage.BILINEAR)
             )
             frames.append(np.array(img, dtype=np.float32) / 255.0)
 
@@ -97,7 +102,9 @@ def _reconstruct_vggt(
         conf_raw = predictions.get("world_points_conf") or predictions.get("conf")
 
         if world_points_raw is None:
-            logger.warning("VGGT: no world_points/pts3d key in output; falling through.")
+            logger.warning(
+                "VGGT: no world_points/pts3d key in output; falling through."
+            )
             return None
 
         # Handle batch dim: if (B, S, H, W, 3) take [0]; if (S, H, W, 3) use as-is
@@ -129,7 +136,11 @@ def _reconstruct_vggt(
         c_max = float(conf_filtered.max()) if conf_filtered.size > 0 else 1.0
         conf_norm = np.clip(conf_filtered / max(c_max, 1e-8), 0.0, 1.0)
 
-        logger.info("VGGT: produced %d points from %d views.", len(pts_filtered), len(image_paths))
+        logger.info(
+            "VGGT: produced %d points from %d views.",
+            len(pts_filtered),
+            len(image_paths),
+        )
         return pts_filtered.astype(np.float64), conf_norm.astype(np.float64)
 
     except Exception as exc:
@@ -190,7 +201,7 @@ def _reconstruct_dust3r(
         pts = np.asarray(result.point_cloud.vertices, dtype=np.float64)
         # Use real per-point confidence if available from mini-dust3r output;
         # otherwise fall back to a uniform 0.8 placeholder.
-        if hasattr(result, 'conf') and result.conf is not None:
+        if hasattr(result, "conf") and result.conf is not None:
             conf = np.clip(np.asarray(result.conf, dtype=np.float64), 0.0, 1.0)
         else:
             conf = np.full(len(pts), 0.8, dtype=np.float64)
@@ -199,7 +210,6 @@ def _reconstruct_dust3r(
     except Exception as exc:
         logger.warning("DUSt3R inference failed (%s); falling through.", exc)
         return None
-
 
 
 # ---------------------------------------------------------------------------
@@ -246,7 +256,9 @@ def reconstruct_point_cloud(
     dev = _resolve_device(device)
     logger.info(
         "reconstruct_point_cloud: %d images on device=%s backend=%s",
-        len(image_paths), dev, backend,
+        len(image_paths),
+        dev,
+        backend,
     )
 
     # Run the requested backend or FAIL — no silent fall-through, no crude CPU

@@ -9,6 +9,7 @@ FDI notation:
   Upper left:   21-28  Lower right: 41-48
   (Deciduous: 51-55, 61-65, 71-75, 81-85)
 """
+
 from __future__ import annotations
 import numpy as np
 from pathlib import Path
@@ -75,7 +76,9 @@ def region_id(fdi_number: int, surface: str) -> str:
     """
     surface = surface.lower()
     if surface not in TOOTH_SURFACES:
-        raise ValueError(f"Unknown surface {surface!r}. Must be one of {TOOTH_SURFACES}")
+        raise ValueError(
+            f"Unknown surface {surface!r}. Must be one of {TOOTH_SURFACES}"
+        )
     return f"tooth_{fdi_number}_{surface}"
 
 
