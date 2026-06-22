@@ -2,21 +2,41 @@
  "n_heldout": 50,
  "reps": 3,
  "score": "all-query-points residual after mutual-match Procrustes",
- "keep_ablation": {
-  "0.5": {
-   "corrnet_rank1": 0.933,
-   "corrnet_rank1_std": 0.038,
-   "corrnet_auc": 0.991,
-   "crop_hardened_rank1": 0.635,
-   "rigid_gicp_rank1": 0.23
+ "crop_modes": {
+  "planar": "clean half-space cut (easy)",
+  "teeth": "discrete random whole-tooth dropout (realistic)"
+ },
+ "results": {
+  "planar_keep0.5": {
+   "corrnet_rank1": 0.913,
+   "std": 0.019,
+   "auc": 0.991
   },
-  "0.3": {
-   "corrnet_rank1": 0.78,
-   "corrnet_rank1_std": 0.033,
-   "corrnet_auc": 0.977,
-   "crop_hardened_rank1": 0.26,
-   "rigid_gicp_rank1": 0.1
+  "planar_keep0.3": {
+   "corrnet_rank1": 0.8,
+   "std": 0.028,
+   "auc": 0.976
+  },
+  "teeth_keep0.5": {
+   "corrnet_rank1": 0.867,
+   "std": 0.025,
+   "auc": 0.984
+  },
+  "teeth_keep0.3": {
+   "corrnet_rank1": 0.567,
+   "std": 0.05,
+   "auc": 0.938
   }
  },
- "untrained_control_keep0.5_rank1": 0.7
+ "baselines_planar_reference": {
+  "keep0.5": {
+   "crop_hardened": 0.635,
+   "rigid_gicp": 0.23
+  },
+  "keep0.3": {
+   "crop_hardened": 0.26,
+   "rigid_gicp": 0.1
+  }
+ },
+ "untrained_control_keep0.5_rank1": 0.72
 }

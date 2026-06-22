@@ -26,11 +26,22 @@ OUT = Path(__file__).resolve().parents[1] / "results" / "correspondence_identity
 KEEP, REPS = 0.5, 3
 
 
-def crop_query(cloud, rng, keep=KEEP):
+def crop_query(cloud, rng, keep=KEEP, mode="planar"):
+    """Partial query. mode='planar' = clean half-space cut (easy); mode='teeth' = REALISTIC
+    discrete whole-tooth dropout (random, often non-contiguous units — what actually happens)."""
     idx = rng.choice(len(cloud), M, replace=len(cloud) < M)
     p = cloud[idx] @ rot(rng).T
-    c = p.mean(0); n = rng.normal(size=3); n /= np.linalg.norm(n)
-    proj = (p - c) @ n; p = p[proj >= np.quantile(proj, 1 - keep)]
+    c = p.mean(0)
+    if mode == "planar":
+        n = rng.normal(size=3); n /= np.linalg.norm(n)
+        proj = (p - c) @ n; p = p[proj >= np.quantile(proj, 1 - keep)]
+    else:                                                                    # discrete whole-tooth dropout
+        u = np.linalg.svd(p - c, full_matrices=False)[2][0]                  # arch axis
+        proj = (p - c) @ u
+        band = np.clip(np.digitize(proj, np.linspace(proj.min(), proj.max(), 15)[1:-1]), 0, 13)
+        teeth = np.unique(band); nk = max(2, int(round(keep * len(teeth))))
+        kept = rng.choice(teeth, nk, replace=False)                          # random teeth, not a clean half
+        p = p[np.isin(band, kept)]
     return (p + rng.normal(0, 0.01, p.shape)).astype(np.float32)
 
 
@@ -75,24 +86,22 @@ def main():
     gpts = [h[np.random.default_rng(5 + i).choice(len(h), M, replace=len(h) < M)] for i, h in enumerate(held)]
     gdz = [descs(net, g, dev) for g in gpts]
 
-    base = {"1.0": {"crop_hardened": 0.925, "gicp": 0.995}, "0.5": {"crop_hardened": 0.635, "gicp": 0.23},
-            "0.3": {"crop_hardened": 0.26, "gicp": 0.10}}
     res = {"n_heldout": n, "reps": REPS, "score": "all-query-points residual after mutual-match Procrustes",
-           "keep_ablation": {}}
-    for keep in (0.5, 0.3):
-        r1s, aucs = [], []
-        for r in range(REPS):
-            qpts = [crop_query(held[i], np.random.default_rng(300 + 91 * r + i), keep) for i in range(n)]
-            qdz = [descs(net, q, dev) for q in qpts]
-            G = np.array([[residual(qpts[i], qdz[i], gpts[j], gdz[j]) for j in range(n)] for i in range(n)])
-            r1, auc = rank1_auc(G); r1s.append(r1); aucs.append(auc)
-        res["keep_ablation"][str(keep)] = {"corrnet_rank1": round(float(np.mean(r1s)), 3),
-                                           "corrnet_rank1_std": round(float(np.std(r1s)), 3),
-                                           "corrnet_auc": round(float(np.mean(aucs)), 3),
-                                           "crop_hardened_rank1": base[str(keep)]["crop_hardened"],
-                                           "rigid_gicp_rank1": base[str(keep)]["gicp"]}
-        print(f"  keep {keep}: CorrNet Rank-1 {np.mean(r1s):.3f}±{np.std(r1s):.3f} AUC {np.mean(aucs):.3f}"
-              f"  | crop-hardened {base[str(keep)]['crop_hardened']} | GICP {base[str(keep)]['gicp']}", flush=True)
+           "crop_modes": {"planar": "clean half-space cut (easy)", "teeth": "discrete random whole-tooth dropout (realistic)"},
+           "results": {}}
+    for mode in ("planar", "teeth"):
+        for keep in (0.5, 0.3):
+            r1s, aucs = [], []
+            for r in range(REPS):
+                qpts = [crop_query(held[i], np.random.default_rng(300 + 91 * r + i), keep, mode) for i in range(n)]
+                qdz = [descs(net, q, dev) for q in qpts]
+                G = np.array([[residual(qpts[i], qdz[i], gpts[j], gdz[j]) for j in range(n)] for i in range(n)])
+                r1, auc = rank1_auc(G); r1s.append(r1); aucs.append(auc)
+            res["results"][f"{mode}_keep{keep}"] = {"corrnet_rank1": round(float(np.mean(r1s)), 3),
+                                                    "std": round(float(np.std(r1s)), 3), "auc": round(float(np.mean(aucs)), 3)}
+            print(f"  {mode:6s} keep {keep}: CorrNet Rank-1 {np.mean(r1s):.3f}±{np.std(r1s):.3f}  AUC {np.mean(aucs):.3f}", flush=True)
+    res["baselines_planar_reference"] = {"keep0.5": {"crop_hardened": 0.635, "rigid_gicp": 0.23},
+                                         "keep0.3": {"crop_hardened": 0.26, "rigid_gicp": 0.10}}
 
     torch.manual_seed(0)                                                       # untrained control: isolates pipeline vs learning
     rnet = CorrNet(ck["desc"]).to(dev).eval()
