@@ -1,173 +1,180 @@
 <div align="center">
 
-# ToothPrint
+# 🦷 ToothPrint
 
-**Certified dental-imaging intelligence — recognise a person by their teeth, and certify what changed.**
+### Certified dental-imaging intelligence — recognise a person by their teeth, and certify what changed.
 
-`identity` · `change` · `surface` — three reads of one durable signal, each returning a *certificate* instead of a guess.
+**`identity`** · **`change`** · **`surface`** — three reads of one durable signal, each returning a *certificate* instead of a guess.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-0d9488.svg)](#license)
+[![Methods paper](https://img.shields.io/badge/paper-PDF-1f2a37.svg)](paper/paper.pdf)
+[![Reproduce](https://img.shields.io/badge/reproduce-smoke%20test-0d9488.svg)](REPRODUCE.md)
+[![Conformal](https://img.shields.io/badge/guarantee-FMR%20%E2%89%A4%20%CE%B1-d97706.svg)](#the-certificate)
+[![Tests](https://img.shields.io/badge/coverage-100%25-16a34a.svg)](#tests)
 
 </div>
 
 ---
 
-A face can be lost; the teeth remain. ToothPrint reads the dentition three ways and attaches a finite-sample statistical guarantee to every verdict:
+> **A face can be lost; the teeth remain.** ToothPrint reads the dentition three ways and attaches a *finite-sample statistical guarantee* to every verdict.
 
-- **Who** is this? — dental biometric identification from a 3D scan or a 2D radiograph.
-- **Whether** it changed — certified longitudinal bone-level change detection.
-- **What** its surface is — certified 3D surface-change mapping.
+| | Question | Answer |
+|:--:|---|---|
+| 🪪 | **Who** is this? | dental biometric identification from a 3D scan or a 2D radiograph |
+| 📐 | **Whether** it changed | certified longitudinal bone-level change detection |
+| 🗺️ | **What** its surface is | certified 3D surface-change mapping |
 
-Every verdict is **conformal**: it fires only when the interval around the measurement lies entirely past the threshold, so the false-alarm rate is bounded by α in finite samples — distribution-free, no model assumptions. The certification core depends only on `numpy`, `scipy`, `opencv`, and `open3d`; learned front-ends (tooth detection, Gaussian-splatting reconstruction) are pluggable and optional, so the guarantees run without a GPU.
+Every verdict is **conformal**: it fires only when the interval around the measurement lies entirely past the threshold, so the false-alarm rate is bounded by **α** in finite samples — distribution-free, no model assumptions. The certification core depends only on `numpy`, `scipy`, `opencv`, `open3d`; learned front-ends (tooth detection, point-correspondence, Gaussian-splatting reconstruction) are pluggable and optional, so the guarantees run without a GPU.
 
-## Contents
+📄 **[Read the methods paper (PDF)](paper/paper.pdf)** · 🔁 **[Reproduce in one command](REPRODUCE.md)** · 🔬 **[Full methods write-up](PAPER.md)**
 
-[Results](#results) · [The data](#the-data) · [Identity](#identity--recognise-a-person-by-their-teeth) · [Change](#change--certify-a-bone-level-shift) · [Surface](#surface--certify-3d-change) · [Reconstruction](#reconstruction--photos-to-a-dentist-usable-mesh) · [Desktop app](#the-desktop-app) · [Formats](#reads-every-format-a-dentist-has) · [How it works](#how-it-works) · [Use it](#use-it) · [vs SOTA](#vs-the-state-of-the-art) · [Clinical readiness](#clinical-readiness) · [Model card](#model-card) · [Risk](#risk-analysis) · [Security](#security) · [Evaluation report](#full-evaluation-report) · [Tests](#tests) · [**Methods paper**](PAPER.md) · [Reproduce](REPRODUCE.md)
+> **Contents** — [Results](#results) · [Identity](#-identity--recognise-a-person-by-their-teeth) · [Change](#-change--certify-a-bone-level-shift) · [Surface](#-surface--certify-3d-change) · [Reconstruction](#-reconstruction--photos-to-a-dentist-usable-mesh) · [App](#the-desktop-app) · [Formats](#reads-every-format-a-dentist-has) · [How it works](#how-it-works) · [vs SOTA](#vs-the-state-of-the-art) · [Clinical readiness](#clinical-readiness) · [Risk](#risk-analysis) · [Security](#security) · [Help wanted](#help-wanted--real-longitudinal-data)
 
 ## Results
 
-**The verdict first — not just the data.** Every mechanism is held to the bar that
-actually matters (recognise the right person, flag real change without crying wolf,
-rebuild a usable mesh), and here is whether we clear it:
+**The verdict first — not just the data.** Every mechanism is held to the bar that actually matters (recognise the right person, flag real change without crying wolf, rebuild a usable mesh), and here is whether we clear it:
 
 ![Is ToothPrint good? — every mechanism vs the bar that matters](docs/scorecard.png)
 
-The detail behind each verdict (measured on the public **Poseidon3D** scans and **DenPAR**
-radiographs with synthetic perturbations — single-timepoint data, so headline numbers are
-optimistic ceilings):
-
 | Capability | What "good" requires | Result | |
 |---|---|---|:--:|
-| **Identity — 3D scans** | a stranger never outranks you | **Rank-1 0.995** (N=200, EER 0.005, AUC 0.997 [0.989–0.998]), **conformal FMR ≤ α**, open-set FNIR@FPIR=1% **0.030**, fidelity **0.05 mm** | ✅ |
-| **Identity — 2D radiographs** | pick the right person out of hundreds | **Rank-1 1.000** (N=400, EER 0), robust to 20 px jitter & 50% magnification | ✅ |
+| **Identity — 3D scans** | a stranger never outranks you | **Rank-1 0.995** (N=200, EER 0.005, AUC 0.997), conformal **FMR ≤ α**, open-set FNIR **0.030**, fidelity **0.05 mm** | ✅ |
+| **Identity — partial overlap** | survive missing teeth | **Rank-1 0.87 at 50% tooth loss** (learned correspondence; ~3.8× rigid GICP's 0.23) | ✅ |
+| **Identity — 2D radiographs** | pick the right person out of hundreds | **Rank-1 1.000** (N=400, EER 0), robust to jitter & magnification | ✅ |
 | **Change — measurement** | flag a real shift, never cry wolf | recall **0.98 @ 0% false-progression** | ✅ |
-| **Change — fully automatic** | same, detector finds the teeth | **0.91 end-to-end** (YOLO26-pose, up from 0.81; 0.98 ceiling) | 🔄 |
+| **Change — fully automatic** | detector finds the teeth | **0.91 end-to-end** (YOLO26-pose; 0.98 ceiling) | 🔄 |
 | **Surface certificate** | catch a lesion a global average misses | **0.99** localized vs **0.00** naive (n=8), to **0.4 mm** noise, **0% false-change** | ✅ |
 | **Reconstruction** | sharp enough for clinical use (≈0.5 mm) | **~0.3 mm** median 2DGS mesh, 38% better than 3DGS (n=5) | ✅ |
 
-Specificity (never crying wolf) is **oracle-level by design** — the conformal false-positive
-rate is provably ≤ α in finite samples, and held a true **0** in most tests. The one place
-still climbing is change *sensitivity* under a real detector. Below, each mechanism shows
-**what good looks like and that we hit it**, starting with: a stranger's best impostor never
-beats your genuine match —
+Specificity (never crying wolf) is **oracle-level by design** — the conformal false-positive rate is provably ≤ α in finite samples, and held a true **0** in most tests. *All identity numbers are measured on public single-timepoint scans with synthetic re-scans/crops, so read them as in-simulation ceilings — the one binding gate is [real cross-session data](#help-wanted--real-longitudinal-data).*
 
-![Genuine vs impostor — a stranger never wins](docs/identification_separation_v2.png)
+---
 
-## The data
+## 🪪 Identity — recognise a person by their teeth
 
-Everything below starts from **real, public data**. The 3D input — 200 real intraoral-scan arches (maxilla + mandible), deliberately hard cases with crowding, missing teeth, and anomalies; identity and surface both start here:
+ToothPrint identifies a person from the shape of their dental arch — at full coverage, **and** when half the teeth are missing, the case where every prior rigid method collapses. The four results that matter:
 
-![Input: real Poseidon3D intraoral scans](docs/input_arches.png)
+![Identity headline results: partial-overlap breakthrough, fusion, dental-work, the certified decision](docs/results_panel.png)
 
-![Input: one raw intraoral scan on a turntable](docs/input_arch_spin.gif)
+### Full coverage: a stranger never wins
 
-The 2D input — 6,400 DenPAR periapical/panoramic radiographs; the change certificate reads the bone margin in the highlighted region between two timepoints:
-
-![Input: a real DenPAR radiograph](docs/input_radiograph.png)
-
-## Identity — recognise a person by their teeth
-
-A query re-scan is given its **best rigid alignment** to each gallery arch (PCA principal-axis init + **Generalized-ICP** — a global init the self-similar palate can't fool, rigid so no scale collapse), then overlaid as points coloured by distance to the arch **surface**. For the **same person** the points sit on the surface (blue, ~0.05 mm); for a **stranger** the best fit still leaves the cloud floating off it (red, ~4 mm):
+A query re-scan is given its **best rigid alignment** to each gallery arch (PCA principal-axis init + multi-scale **Generalized-ICP** — a global init the self-similar palate can't fool, rigid so no scale collapse), then scored by distance to the arch **surface**. For the **same person** the cloud sits on the surface (~0.05 mm, below sensor noise); for a **stranger** the best fit still floats ~4 mm off.
 
 ![Same-person vs stranger registration — animated](docs/identity_match.gif)
 
-**Five subjects, not one** — the discrimination holds across people (genuine ≤0.05 mm vs impostor ≥1.6 mm in every case):
+The discrimination holds across people (genuine ≤ 0.05 mm vs impostor ≥ 1.6 mm in every case), and the alignment is *truly* exact — a swept cross-section shows the genuine cloud on the surface at every depth:
 
 ![Five identifications: genuine vs impostor across five subjects](docs/identity_gallery.png)
 
-**Is the alignment actually true?** A genuine query's distance to the nearest gallery *sample point* is ~0.8 mm, but that is just point spacing. Measured against the gallery *surface* (point-to-mesh), a correctly aligned genuine re-scan collapses to **0.05 mm — below the 0.06 mm sensor noise**, while an impostor stays ~4 mm off. A cross-section slab swept through the arch makes it visible at every depth:
-
 ![Alignment fidelity: cross-section slab swept through the arch — animated](docs/alignment_proof.gif)
 
-**At scale — all 200 subjects.** Rank-1 0.995, EER 0.005, AUC 0.997 (95% CI 0.989–0.998). Two results go beyond the usual table: the decision is **conformal** (empirical false-match rate tracks the target α — no learned dental-ID method reports a finite-sample FMR bound), and it works **open-set** (a non-enrolled query is rejected — FNIR 0.030 at 1% false-positive identification):
-
-The FMR bound even **survives hard negatives** — re-calibrated against each subject's *nearest* impostor (the ~0.8 mm twin/ortho-like look-alike, not a random gallery arch), empirical FMR still tracks α (0.016 at α=0.01, 0.05 at α=0.05) at a 1–4 % genuine-accept cost (`conformal_fmr_hard_negatives` in `identity_analysis.json`). A literature FMR on random arches is easy; holding it against look-alikes is the honest test.
+**At scale — all 200 subjects:** Rank-1 0.995, EER 0.005, AUC 0.997 (95% CI 0.989–0.998). And a **first for dental identity** — full Detection-Error-Tradeoff curves (the literature reports only Rank-N): full-coverage 3D sits at **EER 0.5%**, learned correspondence holds a real curve even at 50% tooth loss (EER 10%), and the degraded multimodal regime is drawn honestly (EER 13%).
 
 ![Identity at N=200: separation, CMC, conformal bounded-FMR, open-set DIR](docs/identity_metrics.png)
 
-**Full DET curves — a first for dental identity.** The dedicated literature reports only Rank-N; these are the biometric-standard Detection-Error-Tradeoff curves (FNMR vs FMR) per pillar. Full-coverage 3D identity sits on the floor (EER **0.5 %** — the single hard arch), the learned correspondence holds a real operating curve even at **50 % tooth loss** (EER 10 %), and the degraded multimodal regime is drawn honestly (EER 13 %). `evaluation/scripts/make_det.py`, `docs/det_curves.png`.
-
 ![DET curves per identity pillar — first full DET for dental identity](docs/det_curves.png)
 
-**Robust — honestly.** Rank-1 holds at **1.0 through 0.4 mm sensor noise and 4× voxel coarsening**, with every query already repositioned (rotation + translation); the one degradation is **tooth-loss / partial overlap** (keep 0.5 → Rank-1 0.23, keep 0.3 → 0.10 — the rigid PCA-init limit), shown not hidden (`evaluation/results/id3d.json`):
+### <a name="the-certificate"></a>The certificate — bounded false-match rate, hardened against look-alikes
+
+Two results go beyond the usual table. The decision is **conformal** — empirical false-match rate tracks the target α; no learned dental-ID method reports a finite-sample FMR bound — and it works **open-set** (a non-enrolled query is rejected, FNIR 0.030 at 1% false-positive identification). The bound even **survives hard negatives**: re-calibrated against each subject's *nearest* impostor (the ~0.8 mm look-alike, not a random arch), empirical FMR still tracks α (0.016 at α=0.01) for a 1–4% genuine-accept cost. A literature FMR on random arches is easy; holding it against look-alikes is the honest test.
+
+### The partial-overlap breakthrough — learned point correspondence
+
+A query missing half its teeth is **the genuine open problem** in dental identity: rigid GICP collapses to Rank-1 0.23, because the PCA-init can't align a missing-teeth query. We solve it in two layers, ruling out the cheap fix first:
+
+1. **Not the scoring** — robust statistics (trimmed mean, median, fitness) of a *wrong* alignment don't help (they tie or trail the plain mean). The bottleneck is the *descriptor*, not the score.
+2. **Crop-hardening the embedding** — a DGCNN + sub-centre ArcFace encoder, re-trained on aggressive partial crops (keep ≥ 0.35), lifts keep-0.5 from 0.46 → **0.64** at *no* full-coverage cost. This raised the floor.
+3. **CorrNet breaks the ceiling** — instead of one pooled descriptor, CorrNet emits a **unit descriptor per point** (InfoNCE correspondence loss; crops give ground-truth matches for free). A partial query is matched point-to-point against each gallery arch (mutual NN → weighted Procrustes), scored by the residual over *all* query points.
+
+Under **realistic discrete whole-tooth dropout** (random, non-contiguous teeth removed — not a clean slice), on held-out **unseen** subjects:
+
+| method | keep-0.5 | keep-0.3 (70% gone) |
+|---|:--:|:--:|
+| rigid GICP | 0.23 | 0.10 |
+| crop-hardened embedding | 0.64 | 0.26 |
+| **CorrNet (learned correspondence)** | **0.87** (AUC 0.98) | **0.57** (AUC 0.94) |
+
+**The honesty checks that shaped these numbers** — both kept, both moved numbers down: a clean *planar* half-cut is easier (0.91 / 0.80), so the extreme figure was partly riding on crop geometry — the realistic dropout above is what we report. And an *untrained* CorrNet already scores **0.70** at keep-0.5, so the win is ~half the correspondence-plus-rigid-verification **architecture** (the right inductive bias) and ~half the **learned** descriptors.
+
+**Cross-dataset honesty.** The learned descriptors are partly dataset-specific: CorrNet trained only on Poseidon3D, run on **Teeth3DS+** (a different real dataset, all unseen), drops keep-0.5 **0.87 → 0.42** — still 34× chance and still above GICP, but a real domain gap that needs multi-dataset training to close. Recorded, not hidden.
+
+*Reproduce:* `train_correspondence.py` → `eval_correspondence.py` → `correspondence_identity.json`; cross-dataset in `eval_correspondence_teeth3ds.py`.
+
+### Two more modalities, and a forensic signal
+
+**2D radiographs — same rigor.** A per-tooth landmark constellation (scale-normalised so magnification cancels) recognises a person from a single radiograph: across **N=400** DenPAR images, **Rank-1 1.000, EER 0, d′ 4.01**, robust to 20 px jitter and 50% magnification.
+
+![2D radiograph identity at scale](docs/radiograph_identity.png)
+
+**Multimodal fusion on real paired data.** On the Figshare CBCT+IOS set, every patient has three real biometrics — IOS **crowns**, CBCT **bone/root** geometry, CBCT **dental-work** pattern. Scored separately and fused: IOS 1.000, bone 0.945, dental-work 0.927. Does fusion *beat* the best single? Degraded into a hard regime to find out: the **oracle bound is 1.000** (modalities genuinely complementary), naive equal-weight fusion *hurts* (dilution — a real negative), and **quality-weighted fusion** edges past the best single (0.867 vs 0.833). A real but Rank-1-only gain (its AUC regresses) — honest about the size.
+
+**Dental work as a forensic identifier — on CBCT *and* radiographs.** The restoration pattern (fillings, crowns, implants) is a classic identifier. On CBCT it's directly observable (metal/ceramic HU > 2500): the restoration cloud alone identifies people at **Rank-1 0.927**. And it **extends to 2D radiographs** — global thresholding fails (over-saturated JPEGs grab anatomy), but a **per-tooth local-contrast** extractor (a restoration is the patch far brighter than its own tooth's median) recovers a constellation that identifies **165 restoration-bearing DenPAR subjects at Rank-1 0.91–0.99** (robust to jitter + a dropped restoration; chance 0.006). The strongest forensic cue now works on the modality everyone has.
+
+### The unified certified decision — one verdict from the parts
+
+The full matcher assembles into a single accept/abstain certificate: **retrieve** by the embedding (recall, partial-robust) → **verify** the shortlist by CorrNet correspondence (precision) → **accept** only above a conformal threshold (FMR ≤ α), else **abstain**. At full coverage **FNIR@FMR=1% = 0.00** — every genuine accepted and correctly identified, impostors rejected at the bound. Under partial overlap it degrades to 0.74 — best of all methods, but open-set rejection is a near-full-coverage property, so the unified decision **abstains** under heavy tooth loss rather than risk a false accept. *One pipeline, one conformal verdict, honest about when to decline.* (`eval_unified.py`)
+
+<details><summary><b>Robustness ablations + the partial-overlap miss, shown not hidden</b></summary>
+
+Rank-1 holds at **1.0 through 0.4 mm sensor noise and 4× voxel coarsening**, every query already repositioned (rotation + translation). The one rigid-method degradation is tooth loss (keep 0.5 → 0.23 for plain GICP) — which the learned correspondence above recovers to 0.87.
 
 ![Identity robustness ablations](docs/identity_ablations.png)
 
-**Same rigor, second modality — 2D radiographs.** The per-tooth landmark constellation (scale-normalised so magnification cancels) recognises a person from a single radiograph just as cleanly: across **N=400** DenPAR images, **Rank-1 1.000, EER 0, d′ 4.01**, robust to 20 px jitter and 50% magnification (the committed `id2d.json`; the conformal bounded-FMR and open-set rejection are demonstrated on the 3D modality above, where the matrix backs them):
+</details>
 
-![2D radiograph identity at scale: separation, CMC, conformal FMR, open-set](docs/radiograph_identity.png)
+---
 
-**A learned 3D embedding — the literature's open gap, now built.** The classical GICP matcher is near-perfect at full coverage but, being a *rigid per-pair* fit, collapses under tooth loss. So alongside it a **DGCNN + sub-centre ArcFace** encoder (`toothprint/identity/embedding.py`) learns a metric on Poseidon3D. Evaluated on **50 subjects held entirely out of training** (unseen people — generalisation, not memorisation): **Rank-1 0.96, AUC 0.997**, and — the point — it is **2.2× more robust to partial overlap** than GICP at 50 % tooth loss (**0.52 vs 0.23**), exactly where the rigid method falls apart. GICP still wins at full coverage (1.0 vs 0.96), so the two are complementary. No prior dental-identity work reports a learned 3D embedding (reproduce: `evaluation/scripts/train_embedding.py` → `eval_embedding.py`; result in `embedding_identity.json`).
+## 📐 Change — certify a bone-level shift
 
-**The synthesis — retrieve-by-embedding → refine-by-GICP.** Shortlist the top-5 gallery arches by embedding distance (robust retrieval), then re-rank that shortlist by GICP surface distance (precise refinement). On the same held-out subjects this lifts full-coverage Rank-1 from the embedding's 0.90 to a perfect **1.000** — recovering GICP's precision *and* keeping the embedding's robust retrieval, the best of both. (Under severe tooth loss the rigid refine becomes unreliable and should fall back to the embedding on poor fit — a fitness gate is the honest next step.) `evaluation/scripts/eval_hybrid.py`, `hybrid_identity.json`. The division of labour is deliberate: the **embedding is for retrieval** (Rank-1, partial-overlap), but the **certified open-set decision rides on GICP + conformal** — the embedding alone rejects non-enrolled queries poorly (FNIR ≈ 0.69 vs GICP's 0.030), so the hybrid retrieves with the embedding and *decides* with the geometric, conformally-bounded score.
-
-**Pushing the partial-overlap frontier — the hardest case.** A query missing half its teeth is where every *rigid* method collapses (GICP keep-0.5 Rank-1 ~0.23), and it is the genuine open problem in dental identity. A scoring fix was ruled out first: robust statistics (trimmed mean, median, inlier-fitness) of a *wrong* alignment don't help — at keep-0.5 they tie or trail the plain mean (`eval_partial_probe.py`), so the bottleneck is the *descriptor*, not the score. The lever is the *training*: the baseline embedding saw only mild crops (keep≥0.6) yet is tested at 50–70 % tooth loss, so re-training it on **harder crops (keep≥0.35)** makes the descriptor coverage-robust. Head-to-head on the held-out unseen subjects (4 query realizations, effective N=200): keep-0.5 Rank-1 **0.46 → 0.64** and keep-0.3 **0.10 → 0.26**, at **no full-coverage cost** (0.93 → 0.92; an earlier "penalty" was N=50 noise). A two-encoder ensemble recovers the last sliver of full-coverage sharpness (0.94) but isn't required. This crop-hardening (≈1.4× more robust, for the cost of better augmentation) raised the *floor* to ~0.64; the next paragraph breaks the *ceiling*. `evaluation/scripts/train_embedding.py` (crop-hardened), `eval_embedding_partial.py`, `embedding_partial.json`.
-
-**…and then breaking it — learned point correspondence.** A pooled *global* descriptor (the embedding) plateaus because it discards the point structure a half-arch needs to register. **CorrNet** (DGCNN backbone) instead emits a unit descriptor *per point*, trained with an InfoNCE correspondence loss — crops give ground-truth point matches for free. A partial query is then matched point-to-point against each gallery arch (mutual nearest-neighbours → weighted Procrustes), and the residual over *all* query points scores the fit (a genuine half-arch yields dense, rigidly-consistent matches; an impostor cannot). Crucially this is measured under **realistic discrete whole-tooth dropout** (random, often non-contiguous teeth removed — not a clean half-arch slice): on the held-out **unseen** subjects, keep-0.5 Rank-1 **0.87** (AUC 0.98) and keep-0.3 — 70 % of teeth gone — **0.57** (AUC 0.94), versus the crop-hardened embedding's 0.64 / 0.26 and rigid **GICP's 0.23 / 0.10** (~3.8× at keep-0.5). The honesty checks that shaped these numbers: a clean *planar* half-cut is easier (0.91 / 0.80), so the extreme-loss figure was partly riding on crop geometry — the realistic dropout above is the one we report; and an *untrained* CorrNet already scores **0.70** at keep-0.5, so the win is ~half the correspondence-plus-rigid-verification *architecture* (the right inductive bias for partial overlap) and ~half the *learned* descriptors. So the partial-overlap frontier — the genuine open problem in dental identity, where every prior rigid method collapses — is **strongly advanced** at keep-0.5 (robust to realistic tooth loss), with extreme 70 %-loss still the honest hard tail; real cross-session data (#7) is the only remaining gate. `toothprint/identity/embedding.py` (CorrNet), `evaluation/scripts/train_correspondence.py`, `eval_correspondence.py`, `correspondence_identity.json`.
-
-**Cross-dataset honesty — the learned descriptors are partly dataset-specific.** The strong generalization test (the one the GICP-based Teeth3DS 1.0 couldn't be — GICP has no parameters to overfit): take the CorrNet trained *only* on Poseidon3D and run it on **Teeth3DS+**, a different real intraoral dataset (all subjects unseen). Keep-0.5 Rank-1 drops **0.87 → 0.42** (AUC 0.90) and keep-0.3 **0.57 → 0.24** (AUC 0.80) — a real domain gap. It still generalizes *above chance* (0.42 is 34× the 1/80 baseline, AUC 0.90 is genuine signal) and still beats rigid GICP's partial level (~0.23, which as a non-learned method has no domain gap), but the in-domain headline does **not** fully transfer. So the partial-overlap result is strong *in-domain*; true cross-dataset robustness needs multi-dataset training — an honest limit, recorded not hidden. `evaluation/scripts/eval_correspondence_teeth3ds.py`, `correspondence_teeth3ds.json`.
-
-**Open-set rejection under partial overlap — an honest bound.** Routing the accept/reject decision through GICP rather than the embedding is validated at full coverage: GICP rejects non-enrolled queries at FNIR@FPIR=1% **0.03** vs the embedding's **0.69**. Does it survive tooth loss? Tested head-to-head at keep-0.5 (`eval_openset_hybrid.py`): **no** — rejection collapses for *every* method (embedding 0.87, GICP 0.78, embed-retrieve→GICP-decide hybrid 0.79), because a half-arch patch fits many gallery arches as well as its own, so impostor and genuine distances overlap. The hybrid can't rescue it — this is geometric ambiguity, not a retrieval-vs-decision problem. So the certified open-set guarantee is a **full/near-full-coverage property**; under heavy partial overlap the honest operational answer is to **abstain** (a coverage gate), never to auto-decide. A bound worth stating, not hiding.
-
-**Multimodal fusion on real paired data.** The open Figshare CBCT+oral-scan set gives every patient three real biometrics — the intraoral **crown** surface (IOS, a separate scanner), the CBCT **bone/root** geometry, and the CBCT **dental-work** pattern. On **55 real paired patients**, each scored separately (PCA-init + GICP) and **fused at the score level**: IOS Rank-1 **1.000**, CBCT-bone **0.945**, dental-work **0.927**, fused **1.000**. At full quality the crown geometry already saturates, so fusion *matches* the best single rather than beating it — the honest read; the *modalities are real and paired*, which the disjoint Poseidon3D/DenPAR sets could never provide. `evaluation/scripts/eval_multimodal_full.py`, `multimodal_full.json`.
-
-**Does fusion *beat* the best modality? — the honest analysis.** Saturation hides the answer, so each modality was degraded independently into a hard regime (heavy noise + 20 % missing) to ask whether fusion wins (`eval_fusion_analysis.py`, `fusion_analysis.json`). Three findings: (1) the **oracle bound is 1.000** — every query's true match is rank-1 in *at least one* modality, so the modalities are genuinely **complementary** (independent failures), with **+0.167 headroom** over the best single (0.833); (2) **naive equal-weight fusion *hurts*** (0.73–0.80 < 0.833) — summing a dominant modality with weaker ones dilutes the strong signal, a real negative result; (3) **quality-weighted fusion** (down-weight the modality that is unsure for each query — the established biometric method) recovers it and **edges past the best single, 0.867 vs 0.833**. The gain is modest at N=30 (≈1 query) and trades a little AUC, but the direction is right and the oracle headroom shows the real prize is a *learned per-query selector* — fusion helps here **only with the correct estimator, not the naive sum.**
-
-**Dental work as an explicit forensic identifier.** In forensic odontology the *pattern of restorations* (fillings, crowns, implants) is one of the strongest identifiers — and CBCT makes it directly observable, since metal/ceramic restorations are far denser than enamel (HU > 2500). Extracting each person's high-density "dental-work cloud" and matching it as a biometric: on **55 real CBCT patients** the restoration pattern **alone** identifies people at **Rank-1 0.927 / AUC 0.999** — a strong, *independent* signal beyond tooth geometry, exactly the cue a forensic odontologist reads from a dental chart. **And it extends to 2D radiographs** — the modality everyone has: global thresholding fails there (over-saturated 8-bit JPEGs grab bright *anatomy*, ~30 blobs/image), but a **per-tooth local-contrast** extractor (a restoration is the patch far brighter than its *own* tooth's median) recovers a clean restoration constellation (1–4/image). On **165 restoration-bearing DenPAR subjects** that 2D pattern identifies people at **Rank-1 0.91–0.99** (robust to acquisition jitter *and* a dropped restoration; chance 0.006). The strongest forensic cue now works on both CBCT and plain radiographs. `evaluation/scripts/eval_dentalwork.py` (CBCT, n=20), n=55 in `multimodal_full.json`, `eval_dentalwork_2d.py` + `dentalwork_2d.json` (radiographs).
-
-**Cross-dataset check — a second real dataset.** The same PCA-init + GICP identity, run unmodified on a *different* real intraoral-scan dataset (Teeth3DS+ / MICCAI 3DTeethSeg, **120 unseen subjects**): **Rank-1 1.000, EER 0** (genuine 0.095 vs impostor 0.90 mm — cleanly separable). This confirms the *registration* method isn't tuned to Poseidon3D. Honest scope: it is the *mild* test — the classical matcher has no parameters to overfit, and the pairs are synthetic full-arch re-scans, so this is a generalisation **sanity check**, not proof of cross-session robustness; the strong test (the Poseidon3D-trained *embedding* applied to Teeth3DS under real cross-session conditions) is still open. `evaluation/scripts/eval_teeth3ds.py`, `teeth3ds_identity.json`.
-
-**Per-region (forensic-chart) identity.** Rather than one whole-arch mean distance, score each arch region (a tooth-band) separately and aggregate the **best-K** — so a partial arch is judged on the teeth it still has, and the output says *which* regions matched. Under 50 % tooth loss this beats the whole-arch mean (**Rank-1 0.20 vs 0.156**); modest but real, and it ties at full coverage (1.0) and at extreme loss. The interpretable view a clinician can read. `evaluation/scripts/eval_regional.py`, `regional_identity.json`.
-
-**The unified certified decision — one verdict from the parts.** The full matcher assembles the pieces into a single accept/abstain certificate: **retrieve** by the embedding (recall, partial-robust) → **verify** the shortlist by CorrNet correspondence (precision) → **accept** the top candidate only if its residual clears a conformal threshold (empirical FMR ≤ α on held-out impostors), else **abstain**. Measured open-set on held-out unseen subjects (`eval_unified.py`): at full coverage **FNIR@FMR=1% = 0.00** — every genuine query accepted and correctly identified, impostors rejected at the 1 % bound. Under partial overlap (keep-0.5) it degrades to **0.74** — the *best* of all methods (vs GICP 0.78, embedding 0.87) but it does not escape the #3 ceiling: open-set rejection is a near-full-coverage property, so the unified decision **abstains** under heavy tooth loss rather than risk a false accept. One pipeline, one conformal verdict, honest about when to decline. `evaluation/scripts/eval_unified.py`, `unified_identity.json`.
-
-## Change — certify a bone-level shift
-
-On a real DenPAR tooth the bone margin recedes between visits and the certificate's **sub-pixel registration** tracks it live (green = baseline, red = now), flipping to *changed* once it clears the clinical threshold — false progression bounded by α:
+On a real DenPAR tooth the bone margin recedes between visits and the certificate's **sub-pixel registration** tracks it live (green = baseline, red = now), flipping to *changed* only once it clears the clinical threshold — false progression bounded by α:
 
 ![Change certificate tracking a receding bone margin — animated](docs/change_measurement.gif)
 
-Measuring the shift *differentially* (sub-pixel registration of the margin between timepoints, not by re-detecting landmarks) is near-perfect: recall **0.98** even when the threshold is set so false-progression is a true **0**. The fully-automatic pipeline reaches **0.91** with a fine-tuned **YOLO26-pose** detector that localizes the CEJ/bone-crest to a **median 18 px** (vs the earlier ViTPose's ~38 px and its 0.81). Coarse localization *attenuates* the differentially-measured signal, so a more precise detector recovers most of the remaining gap to the measurement ceiling — the residual is an honest, isolated data-label limit, not a flaw in the certificate:
+Measured **differentially** (sub-pixel registration of the margin between timepoints, not by re-detecting landmarks), recall is **0.98** even when the threshold is set so false-progression is a true **0**. The fully-automatic pipeline reaches **0.91** with a fine-tuned **YOLO26-pose** detector localizing the CEJ/bone-crest to a **median 18 px** (vs ViTPose's ~38 px / 0.81).
 
 ![Change certificate recall and conformal false-progression bound](docs/change_certificate_v2.png)
 
-Localization is what moved: fine-tuning YOLO26-pose on DenPAR (full-image detect-and-localize, one object per tooth with 5 keypoints) roughly halves the CEJ/crest error vs ViTPose, and that precision translates directly into recall — especially on the small 4–8 px changes that matter clinically (0.71 → 0.88). Reproduce with `evaluation/scripts/train_yolo26_pose.py` → `eval_yolo_pose_px.py` → `run_change_yolo.py`.
-
-**Why 0.91 is the honest ceiling, not laziness.** We trained a 2× larger detector at near-native 1280 px (`train_yolo_hires.py`) to push further — it made localization *worse* (20 px vs 18 px) and recall *lower* (0.87). The ~18 px floor is the DenPAR annotation-label noise, not model capacity: a bigger detector can't close the gap to the 0.98 measurement ceiling, only better labels or real longitudinal pairs can. The negative result is kept so nobody re-runs it.
+**Why 0.91 is the honest ceiling, not laziness.** We trained a 2× larger detector at 1280 px to push further — it made localization *worse* (20 px) and recall *lower* (0.87). The ~18 px floor is DenPAR label noise, not model capacity: only better labels or real longitudinal pairs close the gap to the 0.98 measurement ceiling. The negative result is kept so nobody re-runs it.
 
 ![YOLO26-pose CEJ/bone-crest localization vs ViTPose](docs/detector_px.png)
 
-**Robust to repositioning.** Between visits a patient is re-seated at a different angle and distance, so the radiograph is rotated and magnified. A single crown reference cancels only a translation; a **multi-anchor affine** model cancels the full motion, dropping the spurious "change" ~8× on real teeth with no real bone change:
+**Robust to repositioning.** Between visits a patient is re-seated at a different angle and distance. A **multi-anchor affine** model cancels the full motion, dropping spurious "change" ~8× vs a single-crown reference:
 
 ![Repositioning robustness: single-reference vs multi-anchor affine](docs/repositioning_robustness_v2.png)
 
-## Surface — certify 3D change
+---
 
-The displacement is measured *differentially* and **de-biased** (subtracting the reconstruction-noise power, which the naive mean-of-distances would rectify into a false signal), extending usable reconstruction noise from 0.1 mm to **0.4 mm**. It is also **regional**: a real lesion moves a *patch* that a whole-surface average dilutes to nothing (recall 0.00), which a per-region max statistic recovers (0.99, n=8 arches) and localizes — with the conformal false-change rate still 0:
+## 🗺️ Surface — certify 3D change
+
+The displacement is measured *differentially* and **de-biased** (subtracting the reconstruction-noise power, which a naive mean-of-distances would rectify into a false signal), extending usable noise from 0.1 mm to **0.4 mm**. It's also **regional**: a real lesion moves a *patch* that a whole-surface average dilutes to nothing (recall 0.00), which a per-region max statistic recovers (**0.99**, n=8) and localizes — with the conformal false-change rate still 0:
 
 ![Surface certificate recall vs reconstruction noise](docs/surface_certificate_v2.png)
 
-**Benchmarked against M3C2** (the geomorphology-standard change distance), on a 0.5 mm lesion over 2 % of the arch: the whole-surface average dilutes it away (recall → 0.10 under noise), while M3C2 and our regional method both localize it. M3C2 edges us on raw recall at extreme noise — we don't claim to beat it there; our complementary edge is the **finite-sample conformal false-change bound** it lacks:
+**Benchmarked against M3C2** (the geomorphology-standard change distance) on a 0.5 mm lesion over 2% of the arch: both localize what the whole-surface average dilutes away. M3C2 edges us on raw recall at extreme noise — we don't claim to beat it there; our complementary edge is the **finite-sample conformal false-change bound** it lacks.
 
 ![Localized surface change vs the M3C2 baseline](docs/surface_sota.png)
 
-## Reconstruction — photos to a dentist-usable mesh
+---
 
-No scanner? **2D Gaussian Splatting (oriented surfels) + multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight ~1 M-triangle mesh (not a point cloud, not smoothed-away Poisson). 2DGS disks lie *on* the surface, so meshing from the **median** depth (the first-surface crossing — not the alpha-weighted mean, which averages an arch's front and back walls) is markedly sharper than 3DGS: **~0.3 mm median, 38% better** (and 2.4× better on the hardest arch). The input is just photos:
+## 🧱 Reconstruction — photos to a dentist-usable mesh
+
+No scanner? **2D Gaussian Splatting (oriented surfels) + multi-view TSDF fusion** rebuilds a real arch from shaded photos into a watertight ~1 M-triangle mesh. 2DGS disks lie *on* the surface, so meshing from the **median** depth (the first-surface crossing, not the alpha-weighted mean that averages an arch's front and back walls) is markedly sharper than 3DGS: **~0.3 mm median, 38% better** (2.4× on the hardest arch).
 
 ![Input: shaded multi-view photos of the arch](docs/input_photos.png)
-
-…the output is the mesh, matching the ground-truth scan across five different arches:
 
 ![Five reconstructions: ground-truth scan, 2DGS mesh, error heatmap](docs/recon_gallery.png)
 
 ![Photos to a high-detail mesh, with error heatmap — animated](docs/recon_turntable.gif)
 
+---
+
 ## The desktop app
 
-A cross-platform desktop app (Linux · Windows · macOS) — **ToothPrint Studio** — presents the three certificates as a forensic *Certificate of Dental Analysis*: drop in any scan or radiograph, run an examination, and the seal stamps only when the conformal interval clears the threshold. Files never leave the machine.
+**ToothPrint Studio** (Linux · Windows · macOS) presents the three certificates as a forensic *Certificate of Dental Analysis*: drop in any scan or radiograph, run an examination, and the seal stamps only when the conformal interval clears the threshold. Files never leave the machine.
 
-![ToothPrint Studio — the specimen sheet](docs/studio.png)
-
-![ToothPrint Studio — a certificate issued, with the conformal seal](docs/studio_certificate.png)
+<div align="center">
+<img src="docs/studio.png" width="49%"> <img src="docs/studio_certificate.png" width="49%">
+</div>
 
 ```bash
 pip install -e ".[api,io,desktop]"
@@ -178,7 +185,7 @@ Build native installers per OS with the bundled PyInstaller spec — see [deskto
 
 ## Reads every format a dentist has
 
-`toothprint.io` ingests every common dental format behind one safe loader — radiographs (**DICOM**, PNG/JPG/TIFF/BMP), intraoral scans (**STL/PLY/OBJ/OFF/GLB/3MF**), and CBCT volumes (**NIfTI**, DICOM series) — detected by content (magic bytes), normalized to a radiograph / scan / volume in known units, and **hardened against hostile files** (decompression bombs, billion-element headers, external-reference smuggling). The `[io]` extra keeps the certification core dependency-light.
+`toothprint.io` ingests every common dental format behind one safe loader — radiographs (**DICOM**, PNG/JPG/TIFF/BMP), intraoral scans (**STL/PLY/OBJ/OFF/GLB/3MF**), CBCT volumes (**NIfTI**, DICOM series) — detected by content (magic bytes), normalized to known units, and **hardened against hostile files** (decompression bombs, billion-element headers, external-reference smuggling).
 
 ```python
 from toothprint.io import load
@@ -190,47 +197,27 @@ xray = load("bitewing.dcm")          # -> Radiograph (MONOCHROME1-corrected, pix
 
 ```
 scan / radiograph ─▶ detect ─▶ register ─▶ certify
-                     teeth +    rigid       conformal interval ─▶ identity
-                     landmarks  best-fit ·  ─▶ change
-                     or cloud   sub-pixel   ─▶ surface
+                     teeth +    rigid /     conformal interval ─▶ identity
+                     landmarks  learned     (FMR ≤ α)           ─▶ change
+                     or cloud   correspond.                     ─▶ surface
 ```
 
-- **Identity (3D):** give the query its best rigid alignment to each gallery arch (PCA principal-axis init → multi-scale **Generalized-ICP**), then pick the smallest mean surface distance — fair to every candidate, so the score is shape, not pose. Feature-based global registration (FGR) was evaluated and rejected: the self-similar palate makes FPFH features ambiguous (Rank-1 0.62).
-- **Identity (2D):** the per-tooth landmark constellation, scale-normalised so magnification cancels, aligned by rigid ICP.
-- **Change:** the bone-level shift measured *differentially* — sub-pixel template matching of the margin between timepoints, referenced to multiple stationary crown anchors fitted to an affine motion model — then certified conformally.
-- **Surface:** a *de-biased*, *regional* differential displacement (subtract the reconstruction-noise power; measure per region so a localized lesion isn't diluted), with the max region certified conformally.
-
-## Use it
+- **Identity (3D):** best rigid alignment to each gallery arch (PCA-init → Generalized-ICP), smallest mean surface distance wins; **CorrNet** learned point-correspondence for the partial-overlap regime; embedding-retrieve → verify → conformal accept/abstain for the unified decision.
+- **Identity (2D):** per-tooth landmark constellation, scale-normalised, rigid-ICP aligned.
+- **Change:** bone-level shift measured *differentially* (sub-pixel template matching, multi-anchor affine motion model), certified conformally.
+- **Surface:** *de-biased*, *regional* differential displacement, max region certified conformally.
 
 ```python
 import numpy as np
 from toothprint.identity import identify_surface
-from toothprint.change import ConformalCertifier
 from toothprint.surface import certify_surface_change
 
-# Identity: each candidate gets the query's best rigid fit; smallest surface distance wins
 distances = identify_surface(query_points, gallery_scans, voxel_size=0.5)
 person = labels[int(np.argmin(distances))]
-
-# Certify a surface change against calibrated reconstruction noise
-certifier = ConformalCertifier.fit(measured_stable, true_stable, alpha=0.1)
 verdict = certify_surface_change(measured_mm=1.2, certifier=certifier)   # -> "changed"
 ```
 
-A FastAPI service exposes the same logic plus safe file ingest:
-
-```bash
-pip install -e ".[api,io]"
-uvicorn api.main:app --reload      # http://localhost:8000  (/ console, /studio app)
-```
-
-| Endpoint | Does |
-|---|---|
-| `POST /api/inspect` | Safely parse any uploaded medical file → normalized summary |
-| `POST /api/identify/scan` | Identify a person from uploaded arch files |
-| `POST /api/identify/radiograph` | Match a landmark constellation against a gallery |
-| `POST /api/certify/change` · `POST /api/certify/surface` | Issue a conformal certificate |
-| `GET /api/formats` | List supported formats |
+A FastAPI service exposes the same logic plus safe file ingest (`uvicorn api.main:app`): `/api/inspect`, `/api/identify/scan`, `/api/identify/radiograph`, `/api/certify/change`, `/api/certify/surface`.
 
 ---
 
@@ -238,39 +225,39 @@ uvicorn api.main:app --reload      # http://localhost:8000  (/ console, /studio 
 
 <details><summary>Honest placement against the published literature (per mechanism)</summary>
 
-The recurring theme: ToothPrint is in the *registration / conformal* family, and its defensible edge is **certification** (finite-sample bounded error) — a lane the learned-SOTA literature leaves almost empty — not a higher saturated accuracy.
+ToothPrint is in the *registration / conformal* family; its defensible edge is **certification** (finite-sample bounded error) + **learned partial-overlap robustness**, a lane the SOTA literature leaves almost empty — not a higher saturated accuracy.
 
-**Identity.** The only dedicated 3D-IOS identity pipeline with proper Rank-1 is **Zhou et al. 2024** (Bioengineering) — itself FPFH + SAC-IA + ICP + RMSE, *the same family as ours*: Rank-1 100%, genuine 0.198 vs impostor 1.140 mm, on 160 real adults with ~1-yr re-scans. We match it (Rank-1 0.995 / AUC 0.997 on all 200 arches, 0.05 mm fidelity) and **lead on a certified, bounded-FMR decision + open-set rejection that no prior dental work reports**. We trail on real cross-session data (ours is synthetic re-scan). No learned embedding for dental *identity* exists — an open niche.
+**Identity.** The only dedicated 3D-IOS identity pipeline with proper Rank-1 is **Zhou et al. 2024** (Bioengineering) — FPFH + SAC-IA + ICP + RMSE, *the same family as ours*: Rank-1 100% on 160 real adults with ~1-yr re-scans (closed-set, private). We match it (Rank-1 0.995 / AUC 0.997 on 200 arches) and **lead on a certified, bounded-FMR decision + open-set rejection** that no prior dental work reports, **and on learned partial-overlap correspondence** (0.87 at 50% tooth loss vs rigid 0.23) which the dental literature lacks. We trail on real cross-session data (ours is synthetic re-scan).
 
-**Change.** Cross-sectional periodontal staging tops out at ~84% (meta-analysis); we don't compete there. **Differential longitudinal change + a conformal false-progression certificate is named THE open problem by three systematic reviews** and is unoccupied — prior art is BSI/SIENA (brain), classical DSR, sub-pixel NCC. Our detector front-end (~36 px, ~3× behind a 2021 hourglass in px) is the honest weak point.
+**Change.** Cross-sectional periodontal staging tops out at ~84% (meta-analysis); we don't compete there. **Differential longitudinal change + a conformal false-progression certificate is named THE open problem by three systematic reviews** and is unoccupied. Our detector front-end (~18 px) is the honest weak point.
 
-**Surface.** Benchmarked vs **M3C2** (Lague 2013): both localize a lesion the whole-surface average dilutes; M3C2 edges us on raw recall at extreme noise, we add the finite-sample conformal false-change bound it lacks.
+**Surface.** Benchmarked vs **M3C2** (Lague 2013): both localize a lesion the whole-surface average dilutes; M3C2 edges us at extreme noise, we add the conformal false-change bound it lacks.
 
-**Reconstruction.** SOTA GS→mesh (2DGS, GOF) reports sub-mm Chamfer on DTU/T&T; ours (2DGS surfels + TSDF) reaches ~0.3 mm median at arch scale (38% better than our 3DGS baseline, n=5 arches) — usable for the surface certificate's edge, though an IOS scan is still better.
+**Reconstruction.** SOTA GS→mesh reports sub-mm Chamfer on DTU/T&T; ours reaches ~0.3 mm median at arch scale (38% better than our 3DGS baseline) — usable for the surface certificate's edge.
 
-**Bottom line:** competitive on saturated metrics, and ahead on the axis nobody occupies — a distribution-free *certificate* on every verdict. The honest gaps (real longitudinal data, the radiograph detector) are data/label limits, not method.
+**Bottom line:** competitive on saturated metrics, ahead on the axis nobody occupies — a distribution-free *certificate* on every verdict, and the only learned partial-overlap matcher for this domain. The honest gaps (real longitudinal data, the radiograph detector) are data/label limits, not method.
 
 </details>
 
 ## Clinical readiness
 
-<details><summary>Line-by-line status — what stands between this and lawful hospital use</summary>
+<details><summary>What stands between this and lawful hospital use</summary>
 
-**Status: NOT clinically deployable.** The engineering is hardened to deployment grade; the gate is real-world validation and regulatory clearance, neither of which can be produced from code or synthetic data. ✅ done · 🟡 partial · ⬜ requires real data / an institution / a regulator.
+**Status: NOT clinically deployable.** The engineering is hardened to deployment grade; the gate is real-world validation and regulatory clearance, neither producible from code or synthetic data. ✅ done · ⬜ requires real data / an institution / a regulator.
 
 | Item | Status |
-|---|---|
-| Sound, current methods (PCA-init + Generalized-ICP, conformal prediction, Gaussian Splatting) | ✅ |
+|---|:--:|
+| Sound, current methods (GICP, learned correspondence, conformal prediction, 2DGS) | ✅ |
 | Finite-sample false-alarm guarantee, verified ≤ α across ablations | ✅ |
 | No fallbacks — failures raise, not degrade | ✅ |
-| First-class abstention ("uncertain / recapture") + input quality gates | ✅ |
-| Site recalibration + provenance hashing + append-only audit trail | ✅ |
-| 100% unit-test coverage | ✅ |
+| First-class abstention + input quality gates | ✅ |
+| Site recalibration + provenance hashing + audit trail · 100% test coverage | ✅ |
+| Reproducible from committed fixtures (no off-machine data) | ✅ |
 | Real **multi-session / longitudinal** data; cross-device, cross-operator | ⬜ |
-| Expert ground truth; prospective pre-registered study; demographic & pathology diversity | ⬜ |
-| ISO 13485 QMS; ISO 14971 file; FDA 510(k)/De Novo or CE-MDR; post-market surveillance | ⬜ |
+| Expert ground truth; prospective pre-registered study; demographic diversity | ⬜ |
+| ISO 13485 / 14971; FDA 510(k)/De Novo or CE-MDR; post-market surveillance | ⬜ |
 
-**The path:** partner with a clinical/forensic institution (IRB + consent) → acquire real longitudinal data → recalibrate and re-measure (expect lower numbers) → prospective study → QMS + clinical evaluation → regulatory clearance → supervised pilot. **No step from acquisition onward can be completed in code.**
+**The path:** partner with a clinical/forensic institution (IRB) → acquire real longitudinal data → recalibrate and re-measure (expect lower numbers) → prospective study → QMS → regulatory clearance → supervised pilot. **No step from acquisition onward can be completed in code.**
 
 </details>
 
@@ -278,13 +265,13 @@ The recurring theme: ToothPrint is in the *registration / conformal* family, and
 
 <details><summary>Intended use, out-of-scope use, performance, ethics (Mitchell et al. 2019)</summary>
 
-**Intended use:** research and method development; and decision-support, *expert-in-the-loop, after site-specific validation* — a ranked candidate list a forensic examiner confirms (never an automated identity decision), and longitudinal change flagging for clinician review. The system outputs a certificate with an explicit **abstention**; it is designed to defer, not over-claim.
+**Intended use:** research and method development; and decision-support, *expert-in-the-loop, after site-specific validation* — a ranked candidate list a forensic examiner confirms (never an automated identity decision), and longitudinal change flagging for clinician review. The system outputs a certificate with an explicit **abstention**; it defers, not over-claims.
 
 **Out-of-scope / prohibited:** autonomous clinical or forensic decisions; any patient-affecting use without recalibration, prospective validation, and regulatory clearance; populations/devices/pathologies outside the validated distribution.
 
-**Performance:** identity Rank-1 0.995 / EER 0.005 (N=200 synthetic re-scans) with a conformal FMR bound; conformal false-alarm rate ≤ α in every ablation; change and surface recall are strong only in their good-quality regimes and degrade under noise (quantified in the report).
+**Performance:** identity Rank-1 0.995 / EER 0.005 and partial-overlap 0.87 @ 50% tooth loss (N=200/50 synthetic re-scans/crops) with a conformal FMR bound; change/surface recall strong only in good-quality regimes and degrade under noise (quantified in the report and `PAPER.md`).
 
-**Limitations:** validated on synthetic perturbations of single-timepoint data (optimistic ceilings); tooth-detection localization caps end-to-end change recall at ~0.91 (YOLO26-pose; was ~0.81 with ViTPose); 0.84 mm photo reconstruction is still too noisy for a 1 mm global surface change; no demographic/device/pathology diversity.
+**Limitations:** validated on synthetic perturbations of single-timepoint data (optimistic ceilings); the learned correspondence carries a cross-dataset domain gap (0.87 → 0.42); open-set rejection collapses under heavy partial overlap (→ abstain); tooth-detection caps end-to-end change recall at ~0.91; no demographic/device/pathology diversity.
 
 **Ethics:** dental biometrics is sensitive personal data — galleries must be consented, encrypted, access-controlled, retention-limited (ToothPrint stores none; it is a library). Bias risk is unverified across age/ethnicity/dentition. A false identification has severe consequences; identifications must stay expert-confirmed with the candidate evidence shown.
 
@@ -294,19 +281,19 @@ The recurring theme: ToothPrint is in the *registration / conformal* family, and
 
 <details><summary>ISO 14971-style hazard register</summary>
 
-| # | Hazard | Severity | Mitigation (implemented) | Residual risk |
+| # | Hazard | Severity | Mitigation (implemented) | Residual |
 |---|---|---|---|---|
-| H1 | False "no change" — progression missed | Critical | conformal abstention; noise/repositioning-robust registration; regional localized detection | High until real longitudinal validation; never a sole screen |
-| H2 | False "change" — needless intervention | Serious | conformal FPR ≤ α, verified in all ablations | Holds only if calibrated on the deployment distribution (H6) |
-| H3 | Mis-identification | Critical | smallest-distance + separation reported; closed-set; expert confirmation mandated | Open-set/cross-session unvalidated; show candidates, never auto-decide |
+| H1 | False "no change" — progression missed | Critical | conformal abstention; noise/repositioning-robust registration; regional detection | High until real longitudinal validation; never a sole screen |
+| H2 | False "change" — needless intervention | Serious | conformal FPR ≤ α, verified in all ablations | Holds only if calibrated on the deployment distribution |
+| H3 | Mis-identification | Critical | smallest-distance + separation reported; conformal open-set; **abstains under partial overlap**; expert confirmation mandated | Cross-session unvalidated; show candidates, never auto-decide |
 | H4 | Garbage-in verdict | Serious | quality gates → abstain ("recapture") | Thresholds need per-site tuning |
 | H5 | Untraceable decision | Serious | append-only audit log (input hash, calibration id, operator, time) | Must wire into the deploying record system |
-| H6 | Guarantee voided by distribution shift | Critical | site recalibration + provenance hash + min-sample floor | Requires the site to recalibrate and re-validate |
-| H7 | Silent failure | Serious | **no fallbacks** anywhere — bad input/missing dep/unmeasurable patch raise | — |
+| H6 | Guarantee voided by distribution shift | Critical | site recalibration + provenance hash + min-sample floor | Requires the site to recalibrate |
+| H7 | Silent failure | Serious | **no fallbacks** — bad input / missing dep / unmeasurable patch raise | — |
 | H8 | Biased accuracy | Serious | documented out-of-scope until validated | High — needs diverse prospective data |
 | H9 | Privacy breach | Serious | library stores no patient data; integrator owns consent/encryption | Deployment-dependent |
 
-Principles built in: **abstain over guess · no fallbacks · provenance on everything · closed-set, expert-in-the-loop.**
+Principles built in: **abstain over guess · no fallbacks · provenance on everything · expert-in-the-loop.**
 
 </details>
 
@@ -316,27 +303,29 @@ Principles built in: **abstain over guess · no fallbacks · provenance on every
 
 Medical parsers are a documented attack surface. Controls (`toothprint/io/_limits.py`):
 
-- **Decompression / element bombs** → hard caps before decode: file size 1 GiB, decoded pixels 120 MP, mesh vertices/faces 25 M/50 M, volume voxels 1.5 G, decompressed bytes 2 GiB; gzip ISIZE + zip directory checked before inflation.
+- **Decompression / element bombs** → hard caps before decode: file 1 GiB, decoded pixels 120 MP, mesh 25 M/50 M verts/faces, volume 1.5 G voxels; gzip ISIZE + zip directory checked before inflation.
 - **File-type confusion** → detection by magic bytes, not extension.
 - **Path traversal / SSRF** → materials/textures not loaded (OBJ `mtllib`, GLB URIs skipped); no loader follows an external reference.
-- **Process integrity** → every loader raises a `ValueError` subclass; the API maps these to a clean 422, never a 500.
-- **API availability** → Pydantic bounds every list and scalar, rejects NaN/Inf, requires `0<α<1` and `q_lo≤q_hi`; a middleware caps bodies (16 MiB) and uploads stream to disk under a 1 GiB cap; security headers on every response.
+- **Process integrity** → every loader raises a `ValueError` subclass; the API maps these to a clean 422.
+- **API availability** → Pydantic bounds every list/scalar, rejects NaN/Inf; middleware caps bodies (16 MiB), streams uploads under a 1 GiB cap; security headers on every response.
 
 Not covered (deployment responsibilities): authn/authz, rate limiting, TLS, HIPAA/GDPR retention.
 
 </details>
 
-## Full evaluation report
+## Reproduce
 
-<details><summary>Ablated evaluation + the limitations that block clinical use</summary>
+Datasets are large, license-gated, and gitignored — so reproducibility is built in, not "trust the JSON":
 
-**What is solid.** The conformal guarantee held in every ablation (α ∈ {0.05, 0.1, 0.2}, all noise levels: change FPR 0.000–0.005, surface 0.000) — distribution-free, finite-sample; the *specificity* is trustworthy. Identity separates cleanly and the separation is real, not an alignment artifact: each query is a different-sample re-scan given its best rigid fit (PCA-init + Generalized-ICP) to every candidate, scored by mean surface distance — N=200 Rank-1 0.995 with the alignment itself exact (0.05 mm point-to-surface, sub-noise). 100% test coverage.
+```bash
+# runs the 3D identity pipeline end-to-end on committed synthetic fixtures, NO off-machine data:
+TOOTHPRINT_FIXTURES=1 PYTHONPATH=. python evaluation/scripts/smoke_test.py   # -> Rank-1 1.000, SMOKE OK
 
-**What blocks clinical use (quantified).** (1) Validation is synthetic, not longitudinal — one scan/radiograph per subject; every headline is an optimistic ceiling. (2) Change end-to-end recall ≈ 0.91 with the YOLO26-pose detector (median 18 px localization; up from ≈ 0.81 / ~36 px ViTPose) — still short of the 0.98 measurement ceiling and validated only on synthetic change. (3) Surface usable to ~0.4 mm reconstruction noise; the 0.84 mm photo reconstruction is still too noisy for a 1 mm global change, and the regional gain on small changes erodes under spatially-correlated noise. (4) One hard arch is the single Rank-1 miss at N=200 (partial-overlap limit). These gaps are **non-code** — real longitudinal/cross-session data, a prospective study, and FDA/CE clearance — and remain the gate.
+# point at your own data via env vars (TP_POSEIDON3D, TP_TEETH3DS, TP_CBCT_IOS, TP_DENPAR):
+TP_POSEIDON3D=/data/poseidon3d PYTHONPATH=. python evaluation/scripts/eval_correspondence.py
+```
 
-Reproduction scripts and raw results live in the companion repositories (`dental-map-cert`, `dental-change-certificate`).
-
-</details>
+Every result JSON maps to a committed script; reference baselines are read from committed artifacts, not pasted constants. Full guide: **[REPRODUCE.md](REPRODUCE.md)**.
 
 ## Tests
 
@@ -348,37 +337,30 @@ pytest --cov=toothprint --cov=api      # 100%
 ## Layout
 
 ```
-toothprint/
-  toothprint/   the library — identity · change · surface · io · clinical (100% covered)
-  api/          FastAPI service (hardened; safe file ingest)
-  desktop/      ToothPrint Studio cross-platform app + PyInstaller spec
-  web/          the console + studio (HTML/CSS/JS, no build step)
-  docs/         result figures
-  tests/        100% coverage
+toothprint/   the library — identity · change · surface · io · clinical (100% covered)
+api/          FastAPI service (hardened; safe file ingest)
+desktop/      ToothPrint Studio cross-platform app + PyInstaller spec
+evaluation/   eval scripts · result JSONs · synthetic fixtures · smoke test
+paper/        paper.tex + compiled paper.pdf
+docs/         result figures
 ```
 
-## Provenance & limits
+## Help wanted — real longitudinal data
 
-Numbers are measured on the public Poseidon3D (intraoral scans) and DenPAR (radiographs) datasets with **synthetic** perturbations (single-timepoint data — read headline metrics as optimistic ceilings). Datasets and model checkpoints are never committed. ToothPrint is a **validated research prototype, not a cleared medical device** — see the Clinical readiness and Risk sections above.
+**(the one thing I can't do alone)** — every headline here is an *optimistic ceiling* because it's measured on **single-timepoint** public data with synthetic re-scans. The one missing ingredient — **real same-patient data across two timepoints** — is locked behind academic data-use agreements I can't sign for a personal project. This is the binding constraint between ToothPrint and a real-world-validated claim, and it's **open progress: I'm looking for help.**
 
-## Help wanted — real longitudinal data (the one thing I can't do alone)
-
-Every headline here is an *optimistic ceiling* because it's measured on **single-timepoint** public data with synthetic re-scans. The one missing ingredient — **real same-patient data across two timepoints** (or two devices) — is locked behind academic data-use agreements I can't sign for a personal project. This is the binding constraint between ToothPrint and a real-world-validated claim, and it's **open progress: I'm looking for help.**
-
-Two datasets would close it:
-
-- **Multimodal Dental Dataset (PhysioNet)** — 169 patients with multi-visit timestamps + CBCT + 16k periapical radiographs (real longitudinal change). Credentialed access. <https://physionet.org/content/multimodal-dental-dataset/>
+- **Multimodal Dental Dataset (PhysioNet)** — 169 patients, multi-visit timestamps + CBCT + 16k periapical radiographs. Credentialed. <https://physionet.org/content/multimodal-dental-dataset/>
 - **3D pre/post-orthodontic models (Zenodo 11392406)** — 1,060 real pre/post 3D intraoral pairs from 435 patients, *our exact modality*. Maintained by **Prof. Liu Yongjin, Tsinghua University — `liuyongjin@tsinghua.edu.cn`**. <https://zenodo.org/records/11392406>
 
-If you're an academic who can legitimately access either, or you know the maintainers and could introduce me, please reach out: **`kattri@snu.ac.kr`**. With real timepoints the change and identity certificates run on real re-acquisitions and every synthetic ceiling becomes a real number — any contribution gratefully credited.
+If you're an academic who can legitimately access either, or can introduce me to the maintainers, please reach out: **`kattri@snu.ac.kr`**. Any contribution gratefully credited.
 
-<details><summary>A short email I'd send (or that you could forward on my behalf)</summary>
+<details><summary>A short email I'd send (or that you could forward)</summary>
 
 > **Subject:** Access to [dataset] for an independent dental-imaging project
 >
 > Dear [maintainer],
 >
-> I'm Krishi Attri, a master's student working on an independent, non-commercial project — *ToothPrint*, a conformal-certified system for dental identity and longitudinal change detection. My methods are currently validated only on synthetic perturbations of single-timepoint public scans; your dataset's real same-patient [pre/post · multi-visit] data is exactly what I need to test them on genuine re-acquisitions. I'd be grateful for access under whatever terms you require — I'll use it strictly for non-commercial research, will not redistribute it, and will acknowledge the dataset in any results. Happy to share more about the project. Thank you for considering.
+> I'm Krishi Attri, a master's student working on an independent, non-commercial project — *ToothPrint*, a conformal-certified system for dental identity and longitudinal change detection. My methods are currently validated only on synthetic perturbations of single-timepoint public scans; your dataset's real same-patient [pre/post · multi-visit] data is exactly what I need to test them on genuine re-acquisitions. I'd be grateful for access under whatever terms you require — I'll use it strictly for non-commercial research, will not redistribute it, and will acknowledge the dataset in any results. Happy to share more. Thank you for considering.
 >
 > — Krishi Attri · `kattri@snu.ac.kr`
 
