@@ -1,100 +1,249 @@
 \documentclass[10pt,twocolumn]{article}
-\usepackage[margin=0.75in]{geometry}
-\usepackage{graphicx,booktabs,xcolor,amssymb,amsmath}
+\usepackage[margin=0.72in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{microtype}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage[colorlinks=true,linkcolor=teal,citecolor=teal,urlcolor=teal]{hyperref}
 \usepackage{titlesec}
-\definecolor{ink}{HTML}{1F2A37}
-\definecolor{teal}{HTML}{0D9488}
+
+\definecolor{ink}{HTML}{182229}
+\definecolor{teal}{HTML}{0F5261}
 \titleformat{\section}{\large\bfseries\color{ink}}{\thesection}{0.6em}{}
 \titleformat{\subsection}{\normalsize\bfseries\color{ink}}{\thesubsection}{0.5em}{}
-\setlength{\parskip}{3pt}\setlength{\parindent}{0pt}
-\newcommand{\R}{\textcolor{teal}}
+\setlength{\parskip}{2pt}
+\setlength{\parindent}{10pt}
+\setlength{\bibsep}{1pt}
+\newcommand{\method}{ToothPrint}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\score}{s}
 
-\title{\vspace{-1.5em}\textbf{\color{ink}ToothPrint: A Certified, Partial-Overlap-Robust System\\for Dental Biometric Identification}}
-\author{Krishi Attri\\\small Independent research \quad\textbar\quad \texttt{kattri@snu.ac.kr} \quad\textbar\quad \href{https://github.com/Archerkattri/toothprint}{github.com/Archerkattri/toothprint}}
-\date{\vspace{-1em}\small Methods report. Every number is reproduced by a committed script + result JSON; every limitation is stated.}
+\title{\vspace{-1.4em}\textbf{\color{ink}Certified Dental Biometric Verification Under Partial Overlap}}
+\author{Krishi Attri\\
+\small Independent research\\
+\small \texttt{kattri@snu.ac.kr}\quad
+\href{https://github.com/Archerkattri/toothprint}{github.com/Archerkattri/toothprint}}
+\date{\vspace{-1em}}
 
 \begin{document}
 \twocolumn[
 \maketitle
 \begin{abstract}
-\noindent The dental arch is an individual ``tooth print'': crown contours, cusp geometry, the gingival margin, and the pattern of restorations. We assemble a dental-identity system that (i) recognises a person from a 3D intraoral scan or a 2D radiograph, (ii) returns a \textbf{certified} accept/abstain decision with a distribution-free false-match-rate bound, and (iii) is \textbf{robust to partial overlap}---the missing-teeth query where prior rigid methods collapse. Our contributions are a learned point-correspondence matcher that lifts 50\%-tooth-loss identification from 0.23 (rigid GICP) to \textbf{0.87}, a conformal open-set decision hardened against look-alikes, a restoration biometric demonstrated on both CBCT and plain radiographs, and an honest characterisation: full DET curves, ablations, a cross-dataset domain-gap measurement, and the regimes where the system must abstain. The one limit no method here closes is real cross-session data. \vspace{0.5em}
+\noindent Dental identification is usually evaluated as closed-set retrieval: given a dental scan, rank the enrolled gallery and report whether the correct subject appears first. This framing hides two operational requirements. First, forensic and clinical deployments need an \emph{accept/abstain} decision with a controlled false-match rate (FMR), not only a Rank-1 score. Second, practical queries are often partial: field-of-view limits, trauma, extractions, and missing teeth break the rigid alignment assumption used by most 3D dental matching pipelines. We present \method, a dental biometric verification pipeline for 3D intraoral scans and 2D radiographs that combines rigid surface verification, learned partial-overlap correspondence, and split-conformal calibration. On 200 public 3D dental arches, rigid surface verification achieves Rank-1 0.995 and EER 0.005 under full coverage. Under realistic whole-tooth dropout, however, rigid GICP falls to Rank-1 0.23 at 50\% tooth retention. A learned point-correspondence verifier lifts this regime to Rank-1 0.867 (AUC 0.984), while a crop-hardened embedding baseline reaches 0.635. The same score family supports a conformal open-set decision: full-coverage FNIR at FMR=1\% is 0.00, while heavy tooth loss is correctly exposed as an abstention regime. We report DET curves, hard-negative calibration, an untrained-correspondence control, a cross-dataset transfer test on Teeth3DS+, and auxiliary 2D radiograph and restoration-pattern results. The central limitation is explicit: because available public 3D dental scans are mostly single-session, identity queries are synthetic reacquisitions. The method is therefore evidence for a research direction, not a clinical claim.
 \end{abstract}
+\vspace{0.6em}
 ]
 
 \section{Introduction}
-Forensic and clinical dental identification is classically manual (charting) or, recently, rigid 3D scan registration. Two gaps persist: (a) no \emph{certificate}---methods report Rank-N accuracy but never a finite-sample bound on the false-match rate of an individual verdict; and (b) \emph{partial overlap}---a query arch missing teeth (extraction, trauma, field-of-view) breaks the rigid alignment that all registration methods depend on. ToothPrint targets both, and treats honesty about failure regimes as a first-class deliverable.
+Dental structures are among the most durable biometric signals. Forensic odontology has long used dental charting, restorations, and radiographs for post-mortem identification; modern intraoral scanners now provide dense 3D crown and gingival surfaces. Recent work has shown that 3D intraoral scans can identify individuals with high closed-set accuracy using registration pipelines based on handcrafted descriptors and ICP refinement \citep{zhou2024dentalbiometrics}. Yet a high Rank-1 number is not the same as a deployable biometric decision.
 
-\section{Related work and positioning}
-The only dedicated 3D-intraoral identity pipeline with proper Rank-1 is \textbf{Zhou et al. 2024} (\emph{Bioengineering})---FPFH + SAC-IA + ICP + RMSE, the same registration family as our geometric core---reporting Rank-1 100\% on 160 real adults with $\sim$1-year re-scans (closed-set, private data). We match its saturated accuracy (Rank-1 0.995 / EER 0.5\% on 200 arches) and \textbf{lead on a certified, bounded-FMR decision with open-set rejection} that no prior dental work reports, and on \textbf{learned partial-overlap correspondence}, which the registration literature lacks for this domain. ToothPrint's defensible lane is \emph{certification + partial-overlap robustness}, not a higher saturated number.
+Two gaps motivate this paper. The first is \emph{certification}. A forensic examiner or clinical reviewer needs to know when a system should accept a match, reject it, or decline to decide. Standard dental-identification papers typically report Rank-$N$ retrieval, not a finite-sample bound on the false-match rate of an individual accept decision. The second is \emph{partial overlap}. A full dental arch is the easy case: a rigid surface alignment can exploit the entire crown geometry. A real query can be incomplete because the scan did not cover the full arch, because teeth are missing, or because a fragment is available. Rigid methods then fail before scoring: the geometry used to initialize and refine the alignment is no longer the same geometry as the enrolled scan.
+
+We study dental biometric verification under these two requirements. \method\ is a research pipeline with three layers. A rigid point-to-surface verifier provides a strong full-coverage baseline. A learned correspondence verifier emits a descriptor per point and verifies partial queries by mutual nearest-neighbour correspondences followed by weighted Procrustes alignment. A split-conformal calibration layer converts similarity scores into accept/abstain decisions with a target FMR.
+
+The contribution is not a new clinical device. All public 3D identity experiments here use synthetic reacquisition of single-session scans. The contribution is a reproducible benchmark and method study showing that (i) certified dental verification is feasible under full coverage, (ii) partial overlap is the dominant failure mode of rigid dental biometrics, and (iii) learned point correspondence substantially raises performance in that regime while still exposing when open-set rejection must abstain.
+
+\paragraph{Contributions.}
+\begin{itemize}
+  \item We formulate dental identity as open-set verification with a conformal accept/abstain rule, rather than only closed-set retrieval.
+  \item We introduce a point-correspondence verifier for partial dental arches and compare it against rigid GICP and crop-hardened embedding baselines under realistic whole-tooth dropout.
+  \item We report full DET curves, hard-negative calibration, untrained-correspondence controls, and cross-dataset transfer to Teeth3DS+.
+  \item We provide a reproducible open-source implementation, result artifacts, and a clear statement of the data limitation: real cross-session 3D dental identity validation remains the missing gate.
+\end{itemize}
+
+\section{Related Work}
+\paragraph{Dental biometrics.}
+Dental identification is traditionally performed through expert comparison of dental charts, restorations, radiographs, and anatomical features. Dedicated 3D intraoral-scan biometrics is newer. The closest prior system is the digital dental biometrics framework of Zhou et al. \citep{zhou2024dentalbiometrics}, which uses FPFH, SAC-IA, ICP, and RMSE on private real re-scan data and reports saturated closed-set performance. We share the registration family but study a different operating point: public data, open-set calibration, partial overlap, and explicit abstention.
+
+\paragraph{3D dental scan datasets.}
+Public intraoral scan datasets have primarily been released for segmentation, labeling, and landmarking rather than biometric reacquisition. Poseidon3D contains challenging orthodontic surface scans with crowding and missing-teeth cases \citep{kubik2024poseidon}; Teeth3DS+ is a large benchmark for intraoral 3D scan analysis and MICCAI dental challenges \citep{ben2022teeth3ds}. These datasets make dental-shape learning possible, but they do not solve longitudinal identity validation: they are not designed as repeated scans of the same subject across visits.
+
+\paragraph{Point-cloud registration and descriptors.}
+ICP and its variants remain a standard surface-registration tool. Generalized ICP \citep{segal2009gicp} combines point-to-plane and ICP ideas in a probabilistic framework and is a natural baseline for dental surfaces. Learned point-cloud features such as DGCNN/EdgeConv \citep{wang2019dgcnn} and metric-learning heads such as ArcFace and sub-center ArcFace \citep{deng2019arcface,deng2020subcenter} motivate our embedding baselines. Correspondence networks and transformer-based point matching \citep{qin2022geotransformer} show that local descriptors can support partial matching; we adapt this idea to dental arches where crop-induced correspondences are available without manual labels.
+
+\paragraph{Conformal prediction for biometric decisions.}
+Conformal prediction provides finite-sample, distribution-free calibration under exchangeability \citep{vovk2005algorithmic,angelopoulos2021gentle}. In this work we use split conformal calibration as a decision wrapper over dental similarity scores. The guarantee is intentionally modest: it controls the empirical false-match rate under the calibration distribution, and it should be recalibrated for a new site, scanner, or population.
+
+\section{Problem Formulation}
+Let an enrolled gallery contain subjects $G=\{(y_i,P_i)\}_{i=1}^{N}$, where $P_i\subset\R^3$ is a point cloud sampled from an upper dental arch and $y_i$ is the subject identity. A query $Q\subset\R^3$ may be full coverage or partial. A verifier produces a dissimilarity score
+\begin{equation}
+  \score(Q,P_i) \in \R_{\ge 0},
+\end{equation}
+where smaller is more similar. Closed-set retrieval ranks gallery subjects by $\score(Q,P_i)$. Open-set verification additionally chooses whether the best candidate is acceptable.
+
+We evaluate three regimes. In \emph{full coverage}, $Q$ is a synthetically reacquired version of the full arch. In \emph{partial overlap}, $Q$ retains only a fraction $\rho$ of teeth or points. We report $\rho=0.5$ and $\rho=0.3$ as the main stress tests. In \emph{cross-dataset transfer}, a model trained on Poseidon3D is evaluated on Teeth3DS+ without retraining.
+
+For a threshold $\tau$, accepting the nearest candidate when $\min_i \score(Q,P_i)\le \tau$ induces a false-match rate on impostor queries and a false-non-identification rate on genuine queries. We report Rank-1, AUC, EER, DET curves, and FNIR at FMR=1\%.
 
 \section{Methods}
-\textbf{Geometric identity (3D).} A query re-scan is given its best \emph{rigid} fit to each gallery arch---PCA principal-axis initialisation (four proper-rotation hypotheses; robust to the self-similar palate that defeats FPFH) refined by multi-scale Generalised-ICP---and scored by mean point-to-surface distance. Rigid (no scale) so the score is shape, not pose.
+\subsection{Rigid Surface Verification}
+The rigid verifier aligns a query $Q$ to each gallery surface $P_i$. We initialize with PCA principal axes and enumerate proper-rotation hypotheses to reduce sensitivity to the arch's bilateral symmetry. Each candidate is refined with multi-scale GICP. The score is the mean point-to-surface distance from aligned query points to the gallery surface:
+\begin{equation}
+  \score_{\text{rigid}}(Q,P_i)
+  = \frac{1}{|Q|}\sum_{q\in Q}
+      d\!\left(R^\star q+t^\star,\,\mathcal{S}(P_i)\right),
+\end{equation}
+where $(R^\star,t^\star)$ is the best rigid transform and $\mathcal{S}(P_i)$ is the triangle or nearest-neighbour surface approximation. We do not allow scale changes; the biometric signal is shape, not size-normalized pose.
 
-\textbf{Learned embedding.} A DGCNN (EdgeConv) encoder with a sub-centre ArcFace head maps an arch to an L2-normalised descriptor. \emph{Crop-hardening}: training with aggressive partial crops (keep $\geq 0.35$) makes the descriptor coverage-robust at no full-coverage cost.
+\subsection{Crop-Hardened Embedding}
+The embedding baseline uses a DGCNN encoder $f_\theta(P)\in\R^d$ with L2 normalization and a sub-center ArcFace classification head. During training, each arch is randomly cropped with retention $\rho\ge0.35$ so the descriptor sees partial coverage. At test time, identities are ranked by cosine distance. This baseline tests whether a global descriptor can survive missing teeth without explicit correspondence.
 
-\textbf{Learned point correspondence (CorrNet).} The key partial-overlap result. A DGCNN backbone emits a \textbf{unit descriptor per point}, trained with an InfoNCE correspondence loss---cropping a canonical point set yields ground-truth point matches for free. At test, a partial query is matched point-to-point against each gallery arch (mutual nearest-neighbours $\rightarrow$ weighted Procrustes), and the residual over \emph{all} query points scores the fit.
+\subsection{Point-Correspondence Verification}
+The partial-overlap verifier learns local descriptors rather than a single pooled descriptor. Given an arch point cloud $P=\{p_j\}_{j=1}^m$, a DGCNN backbone emits unit descriptors $z_j\in\R^d$. Training pairs are generated by cropping the same canonical point set twice; point indices provide positive correspondences for free. For anchor point $a$ and positive point $p^+$, we use an InfoNCE loss over candidate descriptors:
+\begin{equation}
+  \mathcal{L}_{\mathrm{NCE}}
+  = -\log \frac{\exp(z_a^\top z_{p^+}/T)}
+  {\sum_{b\in \mathcal{B}}\exp(z_a^\top z_b/T)}.
+\end{equation}
+At test time, we compute descriptors for $Q$ and $P_i$, keep mutual nearest-neighbour descriptor matches, estimate a weighted Procrustes transform, and score the residual over all query points:
+\begin{equation}
+  \score_{\text{corr}}(Q,P_i)
+  = \frac{1}{|Q|}\sum_{q\in Q}
+     \left\| R_i q + t_i - \Pi_{P_i}(R_i q+t_i) \right\|_2 .
+\end{equation}
+Scoring all query points, not only matched points, penalizes an impostor that finds a few accidental local correspondences but fails to align the full partial arch.
 
-\textbf{Conformal certificate.} Calibrating a threshold on held-out genuine / nearest-impostor scores yields an empirical false-match rate $\leq \alpha$, distribution-free and finite-sample.
+\subsection{Conformal Accept/Abstain Rule}
+Let calibration impostor scores be $\{u_k\}_{k=1}^n$, where smaller scores are more match-like. To target FMR $\alpha$, choose the lower-tail quantile threshold $\hat{\tau}_\alpha$ using split conformal calibration. A query is accepted as subject $\hat{i}$ only if
+\begin{equation}
+  \hat{i}=\arg\min_i \score(Q,P_i),
+  \qquad
+  \score(Q,P_{\hat{i}})\le \hat{\tau}_\alpha .
+\end{equation}
+Otherwise the system abstains. We also evaluate a hard-negative variant in which calibration impostors are each subject's nearest impostors rather than random impostors.
 
-\textbf{Unified decision.} Retrieve by embedding (recall) $\rightarrow$ verify the shortlist by CorrNet correspondence (precision) $\rightarrow$ accept above the conformal threshold, else \textbf{abstain}.
+\subsection{Unified Retrieve--Verify--Certify Pipeline}
+The full pipeline uses the embedding for recall, keeping the top-$k$ gallery candidates, then verifies that shortlist with correspondence scores and applies the conformal threshold. This separates the roles of representation learning: global descriptors retrieve candidates quickly; correspondence supplies the final geometric evidence.
 
-\textbf{Multimodal \& dental-work.} On paired CBCT+IOS, three independent biometrics---IOS crowns, CBCT bone/root geometry, CBCT restoration cloud (HU $>2500$)---are scored and fused. The restoration pattern also extends to 2D radiographs via a per-tooth local-contrast extractor (a restoration is the patch far brighter than its own tooth's median).
+\section{Experimental Protocol}
+\paragraph{Datasets.}
+Poseidon3D provides 3D intraoral surface scans with challenging orthodontic variation. We use 200 arches, with 150 subjects for training learned models and 50 held out for learned partial-overlap evaluation; the rigid full-coverage analysis uses all 200 as a public benchmark. Teeth3DS+ is used only for cross-dataset transfer of the learned correspondence model. DenPAR periapical radiographs support auxiliary 2D landmark-constellation identity experiments. A paired CBCT+IOS dataset supports auxiliary multimodal and restoration-pattern analyses.
 
-\section{Datasets and protocols}
-Poseidon3D (intraoral STL, 200: 150 train / 50 held-out), Teeth3DS+ (intraoral OBJ, 150, cross-dataset), DenPAR (periapical radiographs, 400 / 165 restoration-bearing), Figshare CBCT+IOS (paired, 55). All are single-timepoint, so \textbf{genuine queries are synthetic}---acquisition repositioning, sensor noise, and partial crops (planar or realistic whole-tooth dropout). This is disclosed on every result and is the central limitation (\S7).
+\paragraph{Synthetic reacquisition.}
+Because public datasets do not provide repeated 3D scans of the same subject across visits, genuine queries are synthetic reacquisitions. We apply rigid repositioning, acquisition noise, voxel/subsampling changes, and partial crops. We distinguish planar cuts from realistic whole-tooth dropout. The latter removes discrete teeth or tooth regions and is the primary reported partial-overlap setting.
 
-\section{Results}
-\textbf{Identity (full coverage).} 3D Rank-1 \textbf{0.995} (N=200, EER 0.5\%, AUC 0.997, fidelity 0.05\,mm); 2D Rank-1 \textbf{1.000} (N=400, EER 0). Conformal empirical FMR tracks $\alpha$ in every ablation. Fig.~\ref{fig:det} gives full DET curves---a first for dental identity.
+\paragraph{Metrics and leakage control.}
+Learned models are trained on the training subjects only and evaluated on held-out subjects. Cross-dataset transfer uses a Poseidon3D-trained model without Teeth3DS+ retraining. We report mean Rank-1 over repeated crops, AUC, EER, DET curves, and open-set FNIR at FMR=1\%. All result JSONs and scripts are committed in the repository.
 
-\textbf{Partial overlap (the contribution).} Table~\ref{tab:partial} and Fig.~\ref{fig:panel} (top-left): under realistic whole-tooth dropout, CorrNet lifts keep-0.5 from 0.23 (GICP) to \textbf{0.87}. An \emph{untrained} CorrNet already scores 0.70---so the gain is $\sim$half the correspondence-plus-rigid-verification \emph{architecture} and $\sim$half the \emph{learned} descriptors. Honest correction kept: planar-crop numbers were optimistic vs realistic dropout (keep-0.3 $0.80\!\rightarrow\!0.57$).
-
-\begin{table}[t]\centering\small
-\begin{tabular}{lcc}\toprule
-method & keep-0.5 & keep-0.3 \\\midrule
-rigid GICP & 0.23 & 0.10 \\
-crop-hardened embedding & 0.64 & 0.26 \\
-\textbf{CorrNet (realistic dropout)} & \textbf{0.87} & \textbf{0.57} \\
-CorrNet (planar crop) & 0.91 & 0.80 \\\bottomrule
+\begin{table}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llcc}
+\toprule
+Dataset & Role & Subjects & Modality \\
+\midrule
+Poseidon3D & 3D train/test identity & 200 & IOS mesh \\
+Teeth3DS+ & transfer & 80 eval & IOS mesh \\
+DenPAR & 2D identity & 400 & radiograph \\
+CBCT+IOS & fusion & 55 & CBCT + IOS \\
+\bottomrule
 \end{tabular}
-\caption{Rank-1 under tooth loss, held-out unseen subjects.}\label{tab:partial}
+\caption{Datasets used in the experiments. The primary paper claim is on 3D dental identity; 2D and fusion results are secondary evidence that the signal appears across dental modalities.}
+\label{tab:datasets}
 \end{table}
 
-\textbf{Multimodal fusion.} On 55 paired patients: IOS 1.000, CBCT-bone 0.945, dental-work 0.927. In a degraded regime the \textbf{oracle bound is 1.000} (modalities complementary), naive equal-weight fusion \emph{hurts} (dilution), and quality-weighted fusion beats the best single (0.867 vs 0.833)---a real but Rank-1-only gain (its AUC regresses).
+\section{Results}
+\subsection{Full-Coverage Dental Identity}
+Under full coverage, rigid surface verification is already strong. On 200 Poseidon3D arches, Rank-1 is 0.995, AUC is 0.997, and EER is 0.005. Point-to-surface fidelity separates genuine re-scans from impostors: mean genuine surface distance is 0.060\,mm, while the nearest impostor tail starts around 0.82\,mm in the point-to-surface analysis. This confirms that the full dental arch is a strong biometric signal.
 
-\textbf{Dental-work on 2D radiographs.} Per-tooth local contrast (global thresholding fails on over-saturated JPEGs) identifies 165 subjects at Rank-1 \textbf{0.91--0.99} (robust to jitter + a dropped restoration; chance 0.006).
+The 2D radiograph constellation experiment is auxiliary but consistent: on 400 DenPAR subjects, scale-normalized per-tooth landmarks reach Rank-1 1.000 in the main protocol and remain robust to moderate jitter and magnification. We do not present this as a deployment-ready radiograph system; it is evidence that dental geometry and arrangement carry identity beyond 3D meshes.
 
-\textbf{Unified certified decision.} Full coverage FNIR@FMR=1\% $= 0.00$; partial (keep-0.5) 0.74---best of all methods but does not escape the open-set ceiling (\S6), so it abstains.
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.86\linewidth]{../docs/paper_identity_pair.png}
+\caption{Qualitative identity evidence. A genuine synthetic re-scan aligns tightly to the enrolled arch, while the nearest impostor remains visibly inconsistent. The figure is included to make the biometric evidence inspectable rather than only tabular.}
+\label{fig:identity_gallery}
+\end{figure*}
 
-\begin{figure}[t]\centering
-\includegraphics[width=\linewidth]{../docs/results_panel.png}
-\caption{Headline results: partial-overlap breakthrough, fusion complementarity, dental-work across modalities, the certified decision.}\label{fig:panel}
-\end{figure}
+\subsection{Rigid Matching Fails Under Whole-Tooth Dropout}
+Partial overlap is the dominant failure mode. At 50\% retention, rigid GICP falls to Rank-1 0.23; at 30\% retention it falls to 0.10. The failure is not only the distance statistic. If the initialization and correspondence are wrong, robust statistics over the wrong alignment cannot recover the identity. Table~\ref{tab:partial} shows the main comparison.
 
-\begin{figure}[t]\centering
-\includegraphics[width=0.92\linewidth]{../docs/det_curves.png}
-\caption{Full DET curves per identity pillar (first for dental identity).}\label{fig:det}
-\end{figure}
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+Method & keep-1.0 & keep-0.5 & keep-0.3 \\
+\midrule
+Rigid GICP & 1.00 & 0.23 & 0.10 \\
+Embedding baseline & 0.93 & 0.46 & 0.10 \\
+Crop-hardened embedding & 0.92 & 0.635 & 0.26 \\
+CorrNet, planar crop & -- & 0.913 & 0.800 \\
+\textbf{CorrNet, tooth dropout} & -- & \textbf{0.867} & \textbf{0.567} \\
+\bottomrule
+\end{tabular}
+\caption{Rank-1 under partial coverage. Whole-tooth dropout is the primary realistic setting. CorrNet improves the 50\%-retention regime by 3.8$\times$ over rigid GICP.}
+\label{tab:partial}
+\end{table}
 
-\section{Honest limitations}
-\textbf{(1) Open-set collapses under partial overlap.} At keep-0.5 every method's FNIR@FMR=1\% is 0.74--0.87 (vs 0.03 full)---a half-arch fits many gallery arches, so impostor/genuine score tails overlap. Certified rejection is a near-full-coverage property; under heavy tooth loss the correct behaviour is to \textbf{abstain}. \textbf{(2) Cross-dataset domain gap.} CorrNet trained on Poseidon3D, run on Teeth3DS+, drops keep-0.5 $0.87\!\rightarrow\!\textbf{0.42}$ (still 34$\times$ chance, still $>$GICP); the learned descriptors are partly dataset-specific. \textbf{(3) Extreme tooth loss} (keep-0.3) is the hard tail (0.57 realistic). \textbf{(4) Fusion gain is Rank-1-only and small} (AUC regresses under naive weighting).
+\subsection{Correspondence Helps Beyond Architecture Alone}
+The untrained correspondence control reaches Rank-1 0.72 at keep-0.5. This is important: some of the gain comes from the architecture of local matching plus rigid verification, not only from learned descriptor semantics. Training still contributes substantially, raising the realistic keep-0.5 result to 0.867 and AUC to 0.984.
 
-\section{The binding constraint: real cross-session data}
-Every identity number here---CorrNet's 0.87, the 0.995, the Teeth3DS results---rests on \textbf{synthetic} re-scans/crops of single-timepoint arches, because no open dataset pairs the same person across visits with the needed modality. This is a \emph{data} limit no code closes. Until such data validates the pipeline, ToothPrint is \textbf{best-by-design and validated in simulation}, not proven on real longitudinal data---and the repository states this throughout.
+Planar crops are easier than tooth dropout. CorrNet reaches 0.913 at keep-0.5 and 0.800 at keep-0.3 under planar cuts, but those numbers overstate performance on missing-teeth queries. We therefore report whole-tooth dropout as the main partial-overlap protocol.
+
+\subsection{Open-Set Certification and Abstention}
+Full-coverage conformal verification is strong. With the unified retrieve--verify--certify pipeline, FNIR at FMR=1\% is 0.00 under full coverage. Hard-negative calibration remains close to the target FMR but costs genuine accept rate, as expected. Under 50\% tooth retention, FNIR at FMR=1\% rises to approximately 0.735. This is not a failure of calibration; it is the correct signal that a half-arch often cannot support safe open-set acceptance. The desired behavior in this regime is abstention rather than a forced identification.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\linewidth]{../docs/identity_metrics.png}
+\caption{Full-coverage identity metrics: score separation, CMC, conformal FMR tracking, and open-set decision behavior on Poseidon3D.}
+\label{fig:identity_metrics}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.88\linewidth]{../docs/det_curves.png}
+\caption{Detection-error tradeoff curves for identity pillars. The full-coverage 3D curve is near-saturated; learned correspondence under 50\% tooth loss remains usable but exposes the open-set difficulty.}
+\label{fig:det}
+\end{figure*}
+
+\subsection{Cross-Dataset Transfer}
+CorrNet trained on Poseidon3D transfers imperfectly to Teeth3DS+. At realistic keep-0.5, Rank-1 drops from 0.867 to 0.425; at keep-0.3 it drops to 0.242. These results are still well above chance and above the rigid partial-overlap baseline, but they show that learned local descriptors are dataset-specific. A submission should treat this as a limitation and an experimental finding, not as a hidden weakness.
+
+\subsection{Robustness to Sensor Perturbation}
+The rigid full-coverage pipeline is not fragile to ordinary scanner perturbations in the synthetic protocol. Rank-1 remains 1.0 through 0.4\,mm added sensor noise and 4$\times$ voxel coarsening after randomized rotation and translation. This distinction matters: the hard case is not small pose noise or modest resolution loss, but missing anatomy. The method therefore focuses learning capacity on partial overlap rather than replacing a rigid matcher that is already adequate when the full arch is present.
+
+\subsection{Auxiliary Dental-Work and Multimodal Evidence}
+Restoration patterns provide an additional forensic cue. On CBCT+IOS paired data, CBCT dental-work geometry reaches Rank-1 0.927. On DenPAR radiographs, a per-tooth local-contrast restoration extractor identifies 165 restoration-bearing subjects with Rank-1 0.91--0.99 under jitter/dropout perturbations. These are auxiliary results because they rely on restoration-bearing subsets and synthetic reacquisition, but they support the broader claim that dental identity is multi-cue.
+
+Multimodal fusion is complementary but not uniformly beneficial. In high-quality paired data, IOS crowns already saturate. In a degraded hard regime, simple fusion can dilute evidence. Quality weighting improves Rank-1 in some settings but can regress AUC. We therefore keep fusion out of the primary claim.
+
+\section{Ablations and Negative Results}
+\paragraph{Partial-overlap protocol.}
+Planar crops are too easy. Whole-tooth dropout better reflects missing teeth and field-of-view artifacts; it lowers keep-0.3 from 0.800 to 0.567.
+
+\paragraph{Global descriptors.}
+Crop-hardening improves global embeddings under tooth loss, but it does not close the gap. At keep-0.5 it reaches 0.635 compared with 0.867 for correspondence verification.
+
+\paragraph{Open-set partial identity.}
+Even the best partial-overlap matcher cannot make a half-arch uniquely identifiable in every open-set case. Reporting FNIR at controlled FMR is therefore more informative than reporting only closed-set Rank-1.
+
+\section{Limitations}
+\paragraph{No public real cross-session 3D identity benchmark.}
+The largest limitation is data. The experiments synthesize reacquisition from single-session public scans. This permits controlled method comparison but cannot establish real longitudinal performance across scanners, operators, patient changes, restorations, or time.
+
+\paragraph{Domain shift.}
+The Teeth3DS+ transfer result shows that learned dental descriptors should be trained and calibrated across multiple acquisition sources before any serious deployment study.
+
+\paragraph{Clinical and forensic use.}
+This work does not support autonomous clinical or forensic decisions. A real deployment would require consented galleries, site-specific calibration, access control, expert review, prospective validation, and regulatory governance.
+
+\section{Ethics and Security}
+Dental biometrics are sensitive personal data. A false identification can have severe forensic or clinical consequences. The system is designed to abstain, to show score evidence, and to avoid silent fallbacks, but those design choices do not remove the need for human review. The released code stores no patient database and includes hardened medical-file loaders; deployment security, retention policy, and legal basis remain the responsibility of any integrator.
 
 \section{Reproducibility}
-Datasets are gitignored; paths are env-configurable, reference baselines are read from committed artifacts, and committed synthetic fixtures run the 3D pipeline end-to-end with no off-machine data (\texttt{TOOTHPRINT\_FIXTURES=1}; see \texttt{REPRODUCE.md}).
+The repository includes source code, evaluation scripts, result JSONs, figures, and a fixture smoke test that runs without off-machine data. External datasets are license-gated or large and are intentionally not committed. Paths are configured through environment variables, and the result tables in this manuscript correspond to committed artifacts under \texttt{evaluation/results}. The paper should be read together with \texttt{REPRODUCE.md}.
 
 \section{Conclusion}
-ToothPrint is, to our knowledge, the most complete and most partial-overlap-robust \textbf{certified} dental-identity system demonstrable without gated longitudinal data: a learned correspondence matcher that quadruples rigid performance under 50\% tooth loss, a conformal accept/abstain certificate, a dental-work biometric across CBCT and radiographs, and a discipline of reporting the regimes where it must decline. The path to a clinical claim runs through real cross-session data, not more code.
+Dental arches are strong biometric signals under full coverage, but the research problem becomes more interesting and more realistic under partial overlap and open-set operation. \method\ shows that learned point correspondence can recover much of the identity signal lost by rigid registration under missing teeth, while conformal calibration turns retrieval scores into accept/abstain decisions with an explicit FMR target. The resulting system is research-worthy because it identifies a concrete gap in dental biometrics---certified partial-overlap verification---and provides reproducible evidence, ablations, and negative results. Its central open requirement is equally clear: real cross-session dental data is needed before any clinical or forensic claim can be made.
 
-\small
-\textbf{References.}
-Zhou et al. (2024), \emph{Bioengineering}---3D intraoral-scan identification.
-Wang et al. (2019)---Dynamic Graph CNN (EdgeConv).
-Deng et al. (2019/2020)---(Sub-centre) ArcFace.
-Segal et al. (2009)---Generalised-ICP.
-Vovk et al.---Conformal prediction.
-Qin et al. (2022)---GeoTransformer.
-
+{\small
+\bibliographystyle{plainnat}
+\bibliography{refs}
+}
 \end{document}
