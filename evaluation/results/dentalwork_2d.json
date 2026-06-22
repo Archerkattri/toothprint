@@ -1,0 +1,21 @@
+{
+ "n_subjects": 165,
+ "min_restorations": 3,
+ "chance_rank1": 0.006,
+ "extraction": "per-tooth local contrast (bright vs own-tooth median); ~1-4 restorations/image",
+ "robustness_ablation": {
+  "easy(jit0.02)": {
+   "rank1": 0.994,
+   "auc": 0.999
+  },
+  "hard(jit0.05+drop1)": {
+   "rank1": 0.915,
+   "auc": 0.996
+  },
+  "harder(jit0.10+drop1)": {
+   "rank1": 0.909,
+   "auc": 0.995
+  }
+ },
+ "caveat": "single-timepoint; synthetic re-acquisition perturbs positions not which restorations are detected; restoration-bearing subjects only"
+}
