@@ -18,6 +18,10 @@ outputs/
 !evaluation/fixtures/
 !evaluation/fixtures/**
 
+# generated video intermediates (the final docs/toothprint_showcase.mp4 IS committed)
+video/_work/
+video/cli_demo.mp4
+
 # Python
 __pycache__/
 *.py[cod]

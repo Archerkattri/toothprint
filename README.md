@@ -26,7 +26,7 @@
 
 Every verdict is **conformal**: it fires only when the interval around the measurement lies entirely past the threshold, so the false-alarm rate is bounded by **α** in finite samples — distribution-free, no model assumptions. The certification core depends only on `numpy`, `scipy`, `opencv`, `open3d`; learned front-ends (tooth detection, point-correspondence, Gaussian-splatting reconstruction) are pluggable and optional, so the guarantees run without a GPU.
 
-📄 **[Read the methods paper (PDF)](paper/paper.pdf)** · 🔁 **[Reproduce in one command](REPRODUCE.md)** · 🔬 **[Full methods write-up](PAPER.md)**
+📄 **[Read the methods paper (PDF)](paper/paper.pdf)** · 🔁 **[Reproduce in one command](REPRODUCE.md)** · 🔬 **[Full methods write-up](PAPER.md)** · ▶ **[90-second showcase video](docs/toothprint_showcase.mp4)**
 
 > **Contents** — [Results](#results) · [Identity](#-identity--recognise-a-person-by-their-teeth) · [Change](#-change--certify-a-bone-level-shift) · [Surface](#-surface--certify-3d-change) · [Reconstruction](#-reconstruction--photos-to-a-dentist-usable-mesh) · [App](#the-desktop-app) · [Formats](#reads-every-format-a-dentist-has) · [How it works](#how-it-works) · [vs SOTA](#vs-the-state-of-the-art) · [Clinical readiness](#clinical-readiness) · [Risk](#risk-analysis) · [Security](#security) · [Help wanted](#help-wanted--real-longitudinal-data)
 
