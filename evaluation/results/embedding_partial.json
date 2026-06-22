@@ -1,0 +1,30 @@
+{
+ "n_heldout": 50,
+ "query_reps": 4,
+ "keep_ablation": {
+  "1.0": {
+   "baseline_rank1": 0.925,
+   "baseline_std": 0.038,
+   "crop_hardened_rank1": 0.92,
+   "ensemble_rank1": 0.94,
+   "ensemble_std": 0.037,
+   "ensemble_gain_over_baseline": 0.015
+  },
+  "0.5": {
+   "baseline_rank1": 0.455,
+   "baseline_std": 0.054,
+   "crop_hardened_rank1": 0.635,
+   "ensemble_rank1": 0.625,
+   "ensemble_std": 0.033,
+   "ensemble_gain_over_baseline": 0.17
+  },
+  "0.3": {
+   "baseline_rank1": 0.1,
+   "baseline_std": 0.045,
+   "crop_hardened_rank1": 0.26,
+   "ensemble_rank1": 0.25,
+   "ensemble_std": 0.057,
+   "ensemble_gain_over_baseline": 0.15
+  }
+ }
+}

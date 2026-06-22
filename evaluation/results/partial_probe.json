@@ -1,0 +1,14 @@
+{
+ "n": 30,
+ "keep": 0.5,
+ "prior_baselines": {
+  "gicp_mean": 0.23,
+  "embedding": 0.52
+ },
+ "rank1": {
+  "mean(baseline)": 0.233,
+  "trim70": 0.167,
+  "median": 0.167,
+  "1-fitness": 0.233
+ }
+}

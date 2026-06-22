@@ -11,6 +11,7 @@ Run from the shared eval working dir (data/poseidon3d present); needs a GPU.
 """
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 
@@ -21,9 +22,12 @@ from torch.utils.data import DataLoader, Dataset
 
 from toothprint.identity.embedding import DGCNN, SubCenterArcFace
 
-DATA = "data/poseidon3d/extracted/data"
-WEIGHTS = Path("/tmp/toothprint_embedding/encoder.pt")
-N_PTS, EMB, N_TRAIN, EPOCHS, BATCH = 1024, 256, 150, 80, 32
+DATA = os.environ.get("TP_DATA", "data/poseidon3d/extracted/data")
+WEIGHTS = Path(os.environ.get("TP_WEIGHTS", "/tmp/toothprint_embedding/encoder.pt"))
+N_PTS, EMB, N_TRAIN, BATCH = 1024, 256, 150, 32
+EPOCHS = int(os.environ.get("TP_EPOCHS", "80"))
+KEEP_LO = float(os.environ.get("TP_KEEP_LO", "0.6"))    # min fraction of arch kept during crop-augmentation
+REPS = int(os.environ.get("TP_REPS", "8"))
 
 
 def load_norm(path, n):
@@ -41,7 +45,7 @@ def rand_rot(rng):
     return (np.eye(3) + np.sin(a) * K + (1 - np.cos(a)) * (K @ K)).astype(np.float32)
 
 
-def augment(p, rng, jitter=0.015, keep_lo=0.6):
+def augment(p, rng, jitter=0.015, keep_lo=KEEP_LO):
     q = p @ rand_rot(rng).T
     kf = rng.uniform(keep_lo, 1.0)
     if kf < 1.0:
@@ -54,7 +58,7 @@ def augment(p, rng, jitter=0.015, keep_lo=0.6):
 
 
 class ArchDS(Dataset):
-    def __init__(self, clouds, reps=8):
+    def __init__(self, clouds, reps=REPS):
         self.c = clouds; self.reps = reps
 
     def __len__(self):
