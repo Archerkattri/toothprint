@@ -34,203 +34,184 @@
   <main>
     <!-- HERO -->
     <section class="hero">
-      <div class="hero-grid">
-        <div>
-          <p class="eyebrow">Forensic dental biometrics · certified · open source</p>
-          <h1>A face can be lost.<br>The teeth still <span class="em">know</span> who you are.</h1>
-          <p class="lede">ToothPrint reads a dental arch three ways — <strong>who</strong> it belongs to, <strong>whether</strong> it changed, and <strong>where</strong> its surface moved — and returns a <strong>certificate</strong>, not a guess. Every verdict carries a finite-sample false-alarm bound, and identity holds even when half the teeth are gone.</p>
-          <div class="hero-cta">
-            <a class="btn btn-solid" href="#evidence">See the evidence</a>
-            <a class="btn btn-line" href="https://github.com/Archerkattri/toothprint/blob/main/paper/paper.pdf">Read the paper (PDF) ↗</a>
-          </div>
-          <dl class="stats">
-            <div><dt>Rank-1 · 200 3D scans</dt><dd>0.995</dd></div>
-            <div><dt>Rank-1 · 50% tooth loss</dt><dd>0.87</dd></div>
-            <div><dt>Conformal false-match</dt><dd>≤ α</dd></div>
-          </dl>
+      <div class="wrap">
+        <p class="eyebrow">Forensic dental biometrics · certified · open source</p>
+        <h1>A face can be lost.<br>The teeth still <span class="em">know</span> who you are.</h1>
+        <p class="lede">ToothPrint reads a dental arch three ways — <strong>who</strong> it belongs to, <strong>whether</strong> it changed, and <strong>where</strong> its surface moved — and returns a <strong>certificate</strong>, not a guess. Every verdict carries a finite-sample false-alarm bound, and identity holds even when half the teeth are gone.</p>
+        <div class="hero-cta">
+          <a class="btn btn-solid" href="#evidence">See the evidence</a>
+          <a class="btn btn-line" href="https://github.com/Archerkattri/toothprint/blob/main/paper/paper.pdf">Read the paper (PDF) ↗</a>
         </div>
-        <figure class="hero-fig">
-          <span class="glow" aria-hidden="true"></span>
-          <div class="lightbox">
-            <span class="lb-tag"><span class="led"></span> Genuine vs impostor · live</span>
-            <video src="assets/identity_match.mp4" autoplay muted loop playsinline aria-label="A genuine re-scan settles onto the enrolled arch at 0.05 mm; a stranger's best fit floats 4.5 mm off the surface."></video>
-          </div>
+        <dl class="stats">
+          <div><dt>Rank-1 · 200 3D scans</dt><dd>0.995</dd></div>
+          <div><dt>Rank-1 · 50% tooth loss</dt><dd>0.87</dd></div>
+          <div><dt>Conformal false-match</dt><dd>≤ α</dd></div>
+        </dl>
+      </div>
+      <div class="mwrap hero-media">
+        <figure class="exhibit reveal">
+          <video src="assets/identity_match.mp4" autoplay muted loop playsinline aria-label="A genuine re-scan settles onto the enrolled arch at 0.05 mm; a stranger's best fit floats 4.5 mm off the surface."></video>
+          <figcaption><span>A genuine re-scan settles at 0.05 mm — a stranger's nearest fit floats 4.5 mm off the surface</span><b>match vs no-match</b></figcaption>
         </figure>
       </div>
     </section>
 
     <!-- RESULTS LEDGER -->
     <section id="evidence">
-      <div class="wrap">
-        <div class="head">
-          <p class="eyebrow">The ledger</p>
-          <h2 class="h2">Held to the bar that matters — and honest about the rest</h2>
-          <p class="lede">Measured on public single-timepoint data (Poseidon3D, Teeth3DS+, DenPAR, Figshare CBCT+IOS) with synthetic re-scans and crops, so the numbers are in-simulation ceilings. The one binding gate — real cross-session data — is stated plainly below.</p>
-        </div>
-        <div class="ledger-wrap">
-          <table class="ledger">
-            <caption>Certificate of analysis · per capability</caption>
-            <thead><tr><th>Capability</th><th>Result</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td class="cap">Identity — 3D scans</td><td class="val">Rank-1 <b>0.995</b> · EER 0.005 · AUC 0.997 · open-set FNIR 0.030 · 0.05 mm fidelity</td><td><span class="chip pass">✓ pass</span></td></tr>
-              <tr><td class="cap">Identity — partial overlap</td><td class="val">Rank-1 <b>0.87</b> at 50% tooth loss — ≈3.8× rigid GICP's 0.23 (learned correspondence)</td><td><span class="chip pass">✓ pass</span></td></tr>
-              <tr><td class="cap">Identity — 2D radiographs</td><td class="val">Rank-1 <b>1.000</b> (N=400, EER 0), robust to jitter &amp; magnification</td><td><span class="chip pass">✓ pass</span></td></tr>
-              <tr><td class="cap">Identity — certified decision</td><td class="val">FNIR@FMR=1% <b>0.00</b> full coverage; abstains under heavy tooth loss</td><td><span class="chip pass">✓ pass</span></td></tr>
-              <tr><td class="cap">Dental-work biometric</td><td class="val">Rank-1 <b>0.93</b> CBCT · <b>0.91–0.99</b> radiograph (restoration pattern)</td><td><span class="chip pass">✓ pass</span></td></tr>
-              <tr><td class="cap">Change — measurement</td><td class="val">recall <b>0.98</b> at a true 0% false-progression rate</td><td><span class="chip pass">✓ pass</span></td></tr>
-              <tr><td class="cap">Change — fully automatic</td><td class="val">0.91 end-to-end (YOLO26-pose detector; 0.98 measurement ceiling)</td><td><span class="chip work">◐ detector-limited</span></td></tr>
-              <tr><td class="cap">Surface certificate</td><td class="val">localized recall <b>0.99</b> vs 0.00 naive, to 0.4 mm noise, 0% false-change</td><td><span class="chip pass">✓ pass</span></td></tr>
-              <tr><td class="cap">Reconstruction (photos → mesh)</td><td class="val">≈0.3 mm median 2DGS mesh, 38% better than 3DGS</td><td><span class="chip pass">✓ pass</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="ledger-note">Specificity is the design target: the conformal false-positive rate is bounded by <em>α</em> in finite samples, and held a true <em>0</em> in most tests. All identity numbers come from public single-timepoint scans with synthetic re-scans/crops — read them as ceilings, not field performance.</p>
+      <div class="head">
+        <p class="eyebrow">The ledger</p>
+        <h2 class="h2">Held to the bar that matters — and honest about the rest</h2>
+        <p class="lede">Measured on public single-timepoint data (Poseidon3D, Teeth3DS+, DenPAR, Figshare CBCT+IOS) with synthetic re-scans and crops, so the numbers are in-simulation ceilings. The one binding gate — real cross-session data — is stated plainly below.</p>
       </div>
+      <div class="ledger-wrap">
+        <table class="ledger">
+          <caption>Certificate of analysis · per capability</caption>
+          <thead><tr><th>Capability</th><th>Result</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="cap">Identity — 3D scans</td><td class="val">Rank-1 <b>0.995</b> · EER 0.005 · AUC 0.997 · open-set FNIR 0.030 · 0.05 mm fidelity</td><td><span class="chip pass">✓ pass</span></td></tr>
+            <tr><td class="cap">Identity — partial overlap</td><td class="val">Rank-1 <b>0.87</b> at 50% tooth loss — ≈3.8× rigid GICP's 0.23 (learned correspondence)</td><td><span class="chip pass">✓ pass</span></td></tr>
+            <tr><td class="cap">Identity — 2D radiographs</td><td class="val">Rank-1 <b>1.000</b> (N=400, EER 0), robust to jitter &amp; magnification</td><td><span class="chip pass">✓ pass</span></td></tr>
+            <tr><td class="cap">Identity — certified decision</td><td class="val">FNIR@FMR=1% <b>0.00</b> full coverage; abstains under heavy tooth loss</td><td><span class="chip pass">✓ pass</span></td></tr>
+            <tr><td class="cap">Dental-work biometric</td><td class="val">Rank-1 <b>0.93</b> CBCT · <b>0.91–0.99</b> radiograph (restoration pattern)</td><td><span class="chip pass">✓ pass</span></td></tr>
+            <tr><td class="cap">Change — measurement</td><td class="val">recall <b>0.98</b> at a true 0% false-progression rate</td><td><span class="chip pass">✓ pass</span></td></tr>
+            <tr><td class="cap">Change — fully automatic</td><td class="val">0.91 end-to-end (YOLO26-pose detector; 0.98 measurement ceiling)</td><td><span class="chip work">◐ detector-limited</span></td></tr>
+            <tr><td class="cap">Surface certificate</td><td class="val">localized recall <b>0.99</b> vs 0.00 naive, to 0.4 mm noise, 0% false-change</td><td><span class="chip pass">✓ pass</span></td></tr>
+            <tr><td class="cap">Reconstruction (photos → mesh)</td><td class="val">≈0.3 mm median 2DGS mesh, 38% better than 3DGS</td><td><span class="chip pass">✓ pass</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="ledger-note">Specificity is the design target: the conformal false-positive rate is bounded by <em>α</em> in finite samples, and held a true <em>0</em> in most tests. All identity numbers come from public single-timepoint scans with synthetic re-scans/crops — read them as ceilings, not field performance.</p>
     </section>
 
     <!-- 01 · WHO -->
     <section id="identity">
-      <div class="wrap">
-        <div class="head">
-          <p class="eyebrow"><span class="idx">01</span> · Who — identity</p>
-          <h2 class="h2">Recognise a person by their teeth — even half of them</h2>
-          <p class="lede">A genuine re-scan settles onto its enrolled arch; a stranger's anatomy cannot. The hard case is a query <em>missing teeth</em>, where every rigid method collapses — ToothPrint recovers it with a learned point-correspondence matcher.</p>
+      <div class="head">
+        <p class="eyebrow"><span class="idx">01</span> · Who — identity</p>
+        <h2 class="h2">Recognise a person by their teeth — even half of them</h2>
+        <p class="lede">A genuine re-scan settles onto its enrolled arch; a stranger's anatomy cannot. The hard case is a query <em>missing teeth</em>, where every rigid method collapses — ToothPrint recovers it with a learned point-correspondence matcher.</p>
+      </div>
+      <div class="mwrap">
+        <figure class="exhibit reveal">
+          <img src="assets/identity_metrics.png" loading="lazy" alt="Score separation, CMC, conformal false-match tracking, and open-set decision behaviour across 200 Poseidon3D arches." />
+          <figcaption><span>Full-coverage identity on 200 Poseidon3D arches — separation · CMC · conformal FMR · open-set DIR</span><b>Rank-1 0.995 · AUC 0.997</b></figcaption>
+        </figure>
+        <figure class="exhibit mid reveal">
+          <img src="assets/det_curves.png" loading="lazy" alt="Detection-error-tradeoff curves per identity pillar — the first full DET curves reported for dental identity." />
+          <figcaption><span>Detection-error-tradeoff curves per pillar — the first full DET reported for dental identity</span><b>EER 0.5%</b></figcaption>
+        </figure>
+      </div>
+      <div class="readrow">
+        <div class="readout">
+          <div class="row"><span class="k">Rank-1 · 3D scans (N=200)</span><span class="v good">0.995</span></div>
+          <div class="row"><span class="k">EER · AUC</span><span class="v">0.005 · 0.997</span></div>
+          <div class="row"><span class="k">Rank-1 · 2D radiographs (N=400)</span><span class="v good">1.000</span></div>
+          <div class="row"><span class="k">Open-set FNIR @ 1% FPIR</span><span class="v">0.030</span></div>
         </div>
-        <div class="reading">
-          <div>
-            <div class="readout">
-              <div class="row"><span class="k">Rank-1 · 3D scans (N=200)</span><span class="v good">0.995</span></div>
-              <div class="row"><span class="k">EER · AUC</span><span class="v">0.005 · 0.997</span></div>
-              <div class="row"><span class="k">Rank-1 · 2D radiographs (N=400)</span><span class="v good">1.000</span></div>
-              <div class="row"><span class="k">Open-set FNIR @ 1% FPIR</span><span class="v">0.030</span></div>
-            </div>
-            <div class="bars" aria-hidden="true">
-              <div class="bar"><span>rigid GICP · 50% loss</span><span class="track"><span class="fill lo" style="width:23%"></span></span><span class="n">0.23</span></div>
-              <div class="bar"><span>crop-hardened emb.</span><span class="track"><span class="fill lo" style="width:64%"></span></span><span class="n">0.64</span></div>
-              <div class="bar"><span>CorrNet (learned)</span><span class="track"><span class="fill hi" style="width:87%"></span></span><span class="n">0.87</span></div>
-            </div>
-            <p class="how"><b>Full coverage:</b> best rigid fit to each arch (PCA-axis init → Generalized-ICP), smallest surface distance wins — shape, not pose. <b>Partial overlap:</b> CorrNet learns a descriptor per point (InfoNCE on crop correspondences); a half-arch is matched point-to-point and verified by a rigid Procrustes residual, lifting 50%-loss identity from 0.23 to 0.87.</p>
+        <div>
+          <div class="bars" aria-hidden="true">
+            <div class="bar"><span>rigid GICP · 50% loss</span><span class="track"><span class="fill lo" style="width:23%"></span></span><span class="n">0.23</span></div>
+            <div class="bar"><span>crop-hardened emb.</span><span class="track"><span class="fill lo" style="width:64%"></span></span><span class="n">0.64</span></div>
+            <div class="bar"><span>CorrNet (learned)</span><span class="track"><span class="fill hi" style="width:87%"></span></span><span class="n">0.87</span></div>
           </div>
-          <div class="col-fig">
-            <figure class="sheet reveal">
-              <img src="assets/det_curves.png" loading="lazy" alt="Detection-error-tradeoff curves per identity pillar — the first full DET curves reported for dental identity." />
-              <figcaption class="sheet-tag"><span>Exhibit · DET curves (first for dental ID)</span><b>EER 0.5%</b></figcaption>
-            </figure>
-          </div>
-        </div>
-        <div class="figband">
-          <figure class="sheet reveal">
-            <img src="assets/identity_metrics.png" loading="lazy" alt="Score separation, CMC, conformal false-match tracking, and open-set decision behaviour across 200 Poseidon3D arches." />
-            <figcaption class="sheet-tag"><span>Exhibit · full-coverage identity metrics · N=200 Poseidon3D</span><b>Rank-1 0.995 · AUC 0.997</b></figcaption>
-          </figure>
+          <p class="how"><b>Full coverage:</b> best rigid fit to each arch (PCA-axis init → Generalized-ICP), smallest surface distance wins — shape, not pose. <b>Partial overlap:</b> CorrNet learns a descriptor per point and verifies a half-arch by mutual-nearest-neighbour correspondence plus a rigid Procrustes residual, lifting 50%-loss identity from 0.23 to 0.87.</p>
         </div>
       </div>
     </section>
 
     <!-- 02 · WHETHER -->
     <section id="change">
-      <div class="wrap">
-        <div class="head">
-          <p class="eyebrow"><span class="idx">02</span> · Whether — change</p>
-          <h2 class="h2">Did the bone level really change between visits?</h2>
-          <p class="lede">Re-positioning, exposure, and detector error swamp a real sub-millimetre shift. ToothPrint measures it <em>differentially</em> — registering the bone-margin patch against a stationary crown reference — and certifies the change only when its conformal interval clears the clinical threshold.</p>
+      <div class="head">
+        <p class="eyebrow"><span class="idx">02</span> · Whether — change</p>
+        <h2 class="h2">Did the bone level really change between visits?</h2>
+        <p class="lede">Re-positioning, exposure, and detector error swamp a real sub-millimetre shift. ToothPrint measures it <em>differentially</em> — registering the bone-margin patch against a stationary crown reference — and certifies the change only when its conformal interval clears the clinical threshold.</p>
+      </div>
+      <div class="mwrap">
+        <figure class="exhibit reveal">
+          <video src="assets/change_measurement.mp4" autoplay muted loop playsinline aria-label="On a real radiograph the bone crest recedes; sub-pixel registration measures 16.2 px = 1.62 mm and flips to CHANGED only past the clinical threshold."></video>
+          <figcaption><span>Sub-pixel registration tracks a receding bone margin on a real radiograph — 16.2 px = 1.62 mm</span><b>certified changed</b></figcaption>
+        </figure>
+        <figure class="exhibit reveal">
+          <img src="assets/change_certificate_v2.png" loading="lazy" alt="Measurement recall versus the conformal false-progression bound; the fully-automatic pipeline is detector-limited." />
+          <figcaption><span>Measurement recall vs the conformal false-progression bound</span><b>0.98 @ 0%</b></figcaption>
+        </figure>
+      </div>
+      <div class="readrow">
+        <div class="readout">
+          <div class="row"><span class="k">Measurement recall</span><span class="v good">0.98</span></div>
+          <div class="row"><span class="k">False-progression rate</span><span class="v good">0.000</span></div>
+          <div class="row"><span class="k">End-to-end (YOLO26-pose)</span><span class="v warn">0.91</span></div>
+          <div class="row"><span class="k">Stable-pair noise floor</span><span class="v">0.1 px</span></div>
         </div>
-        <div class="reading flip">
-          <div>
-            <div class="readout">
-              <div class="row"><span class="k">Measurement recall</span><span class="v good">0.98</span></div>
-              <div class="row"><span class="k">False-progression rate</span><span class="v good">0.000</span></div>
-              <div class="row"><span class="k">End-to-end (YOLO26-pose)</span><span class="v warn">0.91</span></div>
-              <div class="row"><span class="k">Stable-pair noise floor</span><span class="v">0.1 px</span></div>
-            </div>
-            <p class="how"><b>YOLO26-pose</b> localises the CEJ/bone-crest (median 18 px); sub-pixel template matching measures the margin shift against a stationary reference; a conformal certificate decides — and never certifies change it cannot distinguish from acquisition noise. The 0.91 ceiling is DenPAR label noise, shown not hidden: a 2× larger detector made it <em>worse</em>.</p>
-          </div>
-          <div class="col-fig">
-            <figure class="lightbox reveal">
-              <span class="lb-tag"><span class="led"></span> Sub-pixel margin tracking · live</span>
-              <video src="assets/change_measurement.mp4" autoplay muted loop playsinline aria-label="On a real radiograph the bone crest recedes; sub-pixel registration measures 16.2 px = 1.62 mm and flips to CHANGED only past the clinical threshold."></video>
-            </figure>
-          </div>
-        </div>
-        <div class="figband">
-          <figure class="sheet reveal">
-            <img src="assets/change_certificate_v2.png" loading="lazy" alt="Measurement recall versus the conformal false-progression bound; the fully-automatic pipeline is detector-limited." />
-            <figcaption class="sheet-tag"><span>Exhibit · recall vs false-progression bound</span><b>0.98 @ 0%</b></figcaption>
-          </figure>
+        <div>
+          <p class="how"><b>YOLO26-pose</b> localises the CEJ/bone-crest (median 18 px); sub-pixel template matching measures the margin shift against a stationary reference; a conformal certificate decides — and never certifies change it cannot distinguish from acquisition noise. The 0.91 ceiling is DenPAR label noise, shown not hidden: a 2× larger detector made it <em>worse</em>, so it is a data limit, not a method limit.</p>
         </div>
       </div>
     </section>
 
     <!-- 03 · WHERE -->
     <section id="surface">
-      <div class="wrap">
-        <div class="head">
-          <p class="eyebrow"><span class="idx">03</span> · Where — surface</p>
-          <h2 class="h2">Where did the 3D surface move?</h2>
-          <p class="lede">From an intraoral scan or a handful of photos, ToothPrint certifies a surface change against the reconstruction's own error — so a real lesion is flagged, scanner noise is not, and the change is <em>localized</em>.</p>
+      <div class="head">
+        <p class="eyebrow"><span class="idx">03</span> · Where — surface</p>
+        <h2 class="h2">Where did the 3D surface move?</h2>
+        <p class="lede">From an intraoral scan or a handful of photos, ToothPrint certifies a surface change against the reconstruction's own error — so a real lesion is flagged, scanner noise is not, and the change is <em>localized</em>.</p>
+      </div>
+      <div class="mwrap">
+        <figure class="exhibit reveal">
+          <img src="assets/surface_certificate_v2.png" loading="lazy" alt="De-biasing extends usable reconstruction noise to 0.4 mm; a regional max statistic recovers a localized patch change a whole-surface average dilutes to zero, at zero false-change." />
+          <figcaption><span>Localized recall vs reconstruction noise — regional max statistic vs whole-surface average</span><b>0.99 vs 0.00</b></figcaption>
+        </figure>
+        <figure class="exhibit mid reveal">
+          <img src="assets/surface_sota.png" loading="lazy" alt="Localized surface change versus the M3C2 geomorphology-standard baseline." />
+          <figcaption><span>Localized change vs the M3C2 geomorphology-standard baseline</span><b>+ conformal bound</b></figcaption>
+        </figure>
+      </div>
+      <div class="readrow">
+        <div class="readout">
+          <div class="row"><span class="k">Localized recall</span><span class="v good">0.99</span></div>
+          <div class="row"><span class="k">Whole-surface average</span><span class="v warn">0.00</span></div>
+          <div class="row"><span class="k">Usable recon noise</span><span class="v">0.4 mm</span></div>
+          <div class="row"><span class="k">False-change rate</span><span class="v good">0.000</span></div>
         </div>
-        <div class="reading">
-          <div>
-            <div class="readout">
-              <div class="row"><span class="k">Localized recall</span><span class="v good">0.99</span></div>
-              <div class="row"><span class="k">Whole-surface average</span><span class="v warn">0.00</span></div>
-              <div class="row"><span class="k">Usable recon noise</span><span class="v">0.4 mm</span></div>
-              <div class="row"><span class="k">False-change rate</span><span class="v good">0.000</span></div>
-            </div>
-            <p class="how"><b>De-biased</b> (subtract the reconstruction-noise power a naive mean would rectify into false signal) → <b>regional</b> max displacement vs calibrated noise → conformal certificate that says <em>where</em>. Benchmarked against <b>M3C2</b>, the geomorphology-standard change distance; our complementary edge is the finite-sample false-change bound it lacks.</p>
-          </div>
-          <div class="col-fig">
-            <figure class="sheet reveal">
-              <img src="assets/surface_sota.png" loading="lazy" alt="Localized surface change versus the M3C2 geomorphology-standard baseline." />
-              <figcaption class="sheet-tag"><span>Exhibit · vs M3C2 baseline</span><b>+ conformal bound</b></figcaption>
-            </figure>
-          </div>
-        </div>
-        <div class="figband">
-          <figure class="sheet reveal">
-            <img src="assets/surface_certificate_v2.png" loading="lazy" alt="De-biasing extends usable reconstruction noise to 0.4 mm; a regional max statistic recovers a localized patch change a whole-surface average dilutes to zero, at zero false-change." />
-            <figcaption class="sheet-tag"><span>Exhibit · localized recall vs reconstruction noise</span><b>0.99 regional vs 0.00 global</b></figcaption>
-          </figure>
+        <div>
+          <p class="how"><b>De-biased</b> (subtract the reconstruction-noise power a naive mean would rectify into false signal) → <b>regional</b> max displacement vs calibrated noise → conformal certificate that says <em>where</em>. Benchmarked against <b>M3C2</b>, the geomorphology-standard change distance; our complementary edge is the finite-sample false-change bound it lacks.</p>
         </div>
       </div>
     </section>
 
     <!-- RECONSTRUCTION -->
     <section id="recon">
-      <div class="wrap">
-        <div class="head">
-          <p class="eyebrow">No scanner? · reconstruction</p>
-          <h2 class="h2">Photographs to a dentist-usable mesh</h2>
-          <p class="lede">2D Gaussian-Splatting surfels lie <em>on</em> the surface, so meshing from the median (first-surface) depth is markedly sharper than 3DGS — a watertight arch from shaded photos, accurate enough to feed the surface certificate.</p>
+      <div class="head">
+        <p class="eyebrow">No scanner? · reconstruction</p>
+        <h2 class="h2">Photographs to a dentist-usable mesh</h2>
+        <p class="lede">2D Gaussian-Splatting surfels lie <em>on</em> the surface, so meshing from the median (first-surface) depth is markedly sharper than 3DGS — a watertight arch from shaded photos, accurate enough to feed the surface certificate.</p>
+      </div>
+      <div class="mwrap">
+        <figure class="exhibit reveal">
+          <video src="assets/recon_turntable.mp4" autoplay muted loop playsinline aria-label="Turntable comparing the ground-truth scan, the 2D Gaussian-Splatting mesh, and a per-vertex error heatmap."></video>
+          <figcaption><span>Shaded photos → 2DGS mesh → per-vertex error heatmap (ground-truth scan · reconstruction · error)</span><b>≈0.3 mm median</b></figcaption>
+        </figure>
+      </div>
+      <div class="readrow">
+        <div class="readout">
+          <div class="row"><span class="k">Median mesh error</span><span class="v good">≈0.3 mm</span></div>
+          <div class="row"><span class="k">Improvement over 3DGS</span><span class="v good">38%</span></div>
+          <div class="row"><span class="k">Hardest arch</span><span class="v">2.4× sharper</span></div>
+          <div class="row"><span class="k">Pipeline</span><span class="v">2DGS + TSDF</span></div>
         </div>
-        <div class="reading flip">
-          <div>
-            <div class="readout">
-              <div class="row"><span class="k">Median mesh error</span><span class="v good">≈0.3 mm</span></div>
-              <div class="row"><span class="k">Improvement over 3DGS</span><span class="v good">38%</span></div>
-              <div class="row"><span class="k">Hardest arch</span><span class="v">2.4× sharper</span></div>
-              <div class="row"><span class="k">Pipeline</span><span class="v">2DGS + TSDF</span></div>
-            </div>
-            <p class="how"><b>Oriented surfels + multi-view TSDF fusion</b> rebuild a ~1 M-triangle mesh from shaded photos. Meshing from the median depth — the first-surface crossing, not the alpha-weighted mean that averages an arch's front and back walls — is what makes it sharp.</p>
-          </div>
-          <div class="col-fig">
-            <figure class="lightbox reveal">
-              <span class="lb-tag"><span class="led"></span> Scan · mesh · error map</span>
-              <video src="assets/recon_turntable.mp4" autoplay muted loop playsinline aria-label="Turntable comparing the ground-truth scan, the 2D Gaussian-Splatting mesh, and a per-vertex error heatmap."></video>
-            </figure>
-          </div>
+        <div>
+          <p class="how"><b>Oriented surfels + multi-view TSDF fusion</b> rebuild a ~1 M-triangle mesh from shaded photos. Meshing from the median depth — the first-surface crossing, not the alpha-weighted mean that averages an arch's front and back walls — is what makes it sharp enough for the surface certificate.</p>
         </div>
       </div>
     </section>
 
     <!-- THE CERTIFICATE (signature instrument) -->
     <section id="certificate">
+      <div class="head center">
+        <p class="eyebrow">The certificate, in your hands</p>
+        <h2 class="h2">A verdict fires only when the interval is sure</h2>
+        <p class="lede">Drag the measured change. The conformal interval moves with it. The verdict turns <strong>changed</strong> only when the whole band clears the change threshold, <strong>stable</strong> only when it sits entirely below the stable threshold — and <strong>abstains</strong> everywhere between, on purpose.</p>
+      </div>
       <div class="wrap">
-        <div class="head">
-          <p class="eyebrow">The certificate, in your hands</p>
-          <h2 class="h2">A verdict fires only when the interval is sure</h2>
-          <p class="lede">Drag the measured change. The conformal interval moves with it. The verdict turns <strong>changed</strong> only when the whole band clears the change threshold, <strong>stable</strong> only when it sits entirely below the stable threshold — and <strong>abstains</strong> everywhere between, on purpose.</p>
-        </div>
         <div class="instrument reveal">
           <div class="inst-grid">
             <div class="inst-read">
@@ -269,59 +250,53 @@
 
     <!-- STUDIO -->
     <section id="studio">
-      <div class="wrap">
-        <div class="head">
-          <p class="eyebrow">Runs on your machine</p>
-          <h2 class="h2">ToothPrint Studio — a certificate of dental analysis</h2>
-          <p class="lede">Drop in any scan, radiograph, or <em>patient video</em> (it plays in-place with play / pause / seek), run an examination, and log every finding with its conformal interval. Export the whole case as a self-contained PDF report. Files never leave the machine.</p>
-        </div>
-        <div class="studio-grid">
-          <figure class="sheet reveal">
-            <img src="assets/studio.png" loading="lazy" alt="ToothPrint Studio during a live examination: the patient's intraoral video plays in-place, the specimen is recorded, and each finding is logged with its conformal interval." />
-            <figcaption class="sheet-tag"><span>Studio · live examination</span><b>local-only</b></figcaption>
-          </figure>
-          <figure class="sheet reveal">
-            <img src="assets/studio_certificate.png" loading="lazy" alt="The exported ToothPrint PDF report: inputs, every finding, method, provenance, and limitations on one self-contained sheet." />
-            <figcaption class="sheet-tag"><span>Studio · exported PDF report</span><b>provenance + limits</b></figcaption>
-          </figure>
-        </div>
+      <div class="head">
+        <p class="eyebrow">Runs on your machine</p>
+        <h2 class="h2">ToothPrint Studio — a certificate of dental analysis</h2>
+        <p class="lede">Drop in any scan, radiograph, or <em>patient video</em> (it plays in-place with play / pause / seek), run an examination, and log every finding with its conformal interval. Export the whole case as a self-contained PDF report. Files never leave the machine.</p>
+      </div>
+      <div class="studio-grid">
+        <figure class="exhibit reveal">
+          <img src="assets/studio.png" loading="lazy" alt="ToothPrint Studio during an examination: the patient's intraoral video plays in-place, the specimen is recorded, and each finding is logged with its conformal interval." />
+          <figcaption><span>Studio — examination view, findings logged with intervals</span><b>local-only</b></figcaption>
+        </figure>
+        <figure class="exhibit reveal">
+          <img src="assets/studio_certificate.png" loading="lazy" alt="The exported ToothPrint PDF report: inputs, every finding, method, provenance, and limitations on one self-contained sheet." />
+          <figcaption><span>Studio — exported PDF report: inputs · findings · method · limits</span><b>provenance</b></figcaption>
+        </figure>
       </div>
     </section>
 
     <!-- LIMITS -->
     <section id="limits">
-      <div class="wrap">
-        <div class="head">
-          <p class="eyebrow">What the numbers do not claim</p>
-          <h2 class="h2">The honest limits</h2>
-          <p class="lede">A research tool earns trust by stating where it stops. None of these is hidden — each is in the paper, the README, and the committed result JSONs.</p>
-        </div>
-        <div class="limits reveal">
-          <ul>
-            <li><span><b>The binding gate — real cross-session data.</b> Every identity number rests on synthetic re-scans of single-timepoint public data. No code closes this; it needs a real same-patient longitudinal dataset.</span></li>
-            <li><span><b>Open-set rejection collapses under heavy tooth loss.</b> A half-arch fits many gallery arches, so beyond 50% loss the certified decision <em>abstains</em> rather than risk a false accept.</span></li>
-            <li><span><b>The learned matcher carries a cross-dataset gap.</b> CorrNet trained on Poseidon3D drops 0.87 → 0.42 on a different real dataset (Teeth3DS+) — above chance and above rigid GICP, but not full transfer.</span></li>
-            <li><span><b>Change is detector-limited.</b> End-to-end recall caps near 0.91 on DenPAR label noise, short of the 0.98 measurement ceiling.</span></li>
-            <li><span><b>Not a cleared medical device.</b> Findings are advisory and expert-confirmed; the conformal guarantee holds only on the calibrated distribution.</span></li>
-          </ul>
-        </div>
+      <div class="head">
+        <p class="eyebrow">What the numbers do not claim</p>
+        <h2 class="h2">The honest limits</h2>
+        <p class="lede">A research tool earns trust by stating where it stops. None of these is hidden — each is in the paper, the README, and the committed result JSONs.</p>
+      </div>
+      <div class="limits reveal">
+        <ul>
+          <li><span><b>The binding gate — real cross-session data.</b> Every identity number rests on synthetic re-scans of single-timepoint public data. No code closes this; it needs a real same-patient longitudinal dataset.</span></li>
+          <li><span><b>Open-set rejection collapses under heavy tooth loss.</b> A half-arch fits many gallery arches, so beyond 50% loss the certified decision <em>abstains</em> rather than risk a false accept.</span></li>
+          <li><span><b>The learned matcher carries a cross-dataset gap.</b> CorrNet trained on Poseidon3D drops 0.87 → 0.42 on a different real dataset (Teeth3DS+) — above chance and above rigid GICP, but not full transfer.</span></li>
+          <li><span><b>Change is detector-limited.</b> End-to-end recall caps near 0.91 on DenPAR label noise, short of the 0.98 measurement ceiling.</span></li>
+          <li><span><b>Not a cleared medical device.</b> Findings are advisory and expert-confirmed; the conformal guarantee holds only on the calibrated distribution.</span></li>
+        </ul>
       </div>
     </section>
 
     <!-- PIPELINE -->
     <section id="pipeline">
-      <div class="wrap">
-        <div class="head">
-          <p class="eyebrow">One signal, one stack</p>
-          <h2 class="h2">How it works</h2>
-          <p class="lede">A real sequence: detect the dental geometry, register it, then certify — identity, change, or surface, or abstain.</p>
-        </div>
-        <div class="pipe">
-          <div class="pstep"><span class="pk">in</span><p>Intraoral scan, periapical radiograph, CBCT mesh, or patient video.</p></div>
-          <div class="pstep"><span class="pk">detect</span><p>Teeth + landmarks (YOLO26-pose) or an arch point cloud.</p></div>
-          <div class="pstep"><span class="pk">register</span><p>Rigid best-fit (Generalized-ICP), learned point correspondence, or sub-pixel template matching.</p></div>
-          <div class="pstep"><span class="pk">certify</span><p>Conformal interval → identity · change · surface, or abstain.</p></div>
-        </div>
+      <div class="head">
+        <p class="eyebrow">One signal, one stack</p>
+        <h2 class="h2">How it works</h2>
+        <p class="lede">A real sequence: detect the dental geometry, register it, then certify — identity, change, or surface, or abstain.</p>
+      </div>
+      <div class="pipe">
+        <div class="pstep"><span class="pk">in</span><p>Intraoral scan, periapical radiograph, CBCT mesh, or patient video.</p></div>
+        <div class="pstep"><span class="pk">detect</span><p>Teeth + landmarks (YOLO26-pose) or an arch point cloud.</p></div>
+        <div class="pstep"><span class="pk">register</span><p>Rigid best-fit (Generalized-ICP), learned point correspondence, or sub-pixel template matching.</p></div>
+        <div class="pstep"><span class="pk">certify</span><p>Conformal interval → identity · change · surface, or abstain.</p></div>
       </div>
     </section>
   </main>
