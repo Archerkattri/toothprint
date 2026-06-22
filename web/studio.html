@@ -57,6 +57,15 @@
   .record td.v{font-family:var(--mono);font-size:13px;color:var(--ink)}
   .err{font-family:var(--sans);font-size:12.5px;color:var(--alert);margin-top:10px;display:none}
 
+  /* patient-input preview: plays videos (native play/pause/seek), previews stills */
+  .preview{margin-top:18px;display:none;flex-direction:column;gap:14px}
+  .preview.show{display:flex}
+  .pv{margin:0;border:1px solid var(--rule);background:#0c1116}
+  .pv-video{width:100%;display:block;max-height:320px;background:#000;accent-color:var(--teal)}
+  .pv-img{width:100%;display:block;background:#fbfcfc}
+  .pv-cap{font-family:var(--mono);font-size:11.5px;color:var(--slate);padding:7px 9px;background:#fbfcfc;border-top:1px solid var(--rule);display:flex;justify-content:space-between;gap:10px}
+  .pv-cap .nm{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
   .analysis{border-bottom:1px solid var(--rule);padding:16px 0}
   .analysis:first-of-type{padding-top:0}
   .analysis h3{font-family:var(--sans);font-size:15px;margin:0 0 4px;font-weight:600;display:flex;align-items:baseline;gap:10px}
@@ -136,12 +145,13 @@
       <div class="specimen" id="drop">
         <div>
           <div class="lead">Submit a scan or radiograph</div>
-          <div class="sub">DICOM · STL · PLY · OBJ · 3MF · NIfTI · PNG / JPG / TIFF.<br>Read by content, parsed under a safety gate. Click to select.</div>
+          <div class="sub">DICOM · STL · PLY · OBJ · 3MF · NIfTI · PNG / JPG / TIFF · MP4 / WEBM / MOV video.<br>Read by content, parsed under a safety gate. Drop several at once. Click to select.</div>
         </div>
       </div>
       <div class="record" id="record"><table id="recordtbl"></table></div>
+      <div class="preview" id="preview"></div>
       <div class="err" id="ingesterr"></div>
-      <input type="file" id="file">
+      <input type="file" id="file" multiple>
     </div>
 
     <div class="col">
@@ -254,15 +264,46 @@ function record(label, section, text, mono){
 }
 $("#report").addEventListener("click", () => window.print());
 
-// specimen ingest
+// specimen ingest — videos play in-place (native play / pause / seek / volume / fullscreen),
+// stills preview, everything else is inspected by the backend. One file or many.
 const drop = $("#drop");
 ["dragenter","dragover"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add("over"); }));
 ["dragleave","drop"].forEach(e => drop.addEventListener(e, () => drop.classList.remove("over")));
-drop.addEventListener("drop", e => { e.preventDefault(); if(e.dataTransfer.files[0]) ingest(e.dataTransfer.files[0]); });
+drop.addEventListener("drop", e => { e.preventDefault(); if(e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
 drop.addEventListener("click", () => $("#file").click());
-$("#file").addEventListener("change", e => { if(e.target.files[0]) ingest(e.target.files[0]); });
+$("#file").addEventListener("change", e => { if(e.target.files.length) handleFiles(e.target.files); });
 
-async function ingest(f){
+const isVideo = f => (f.type || "").startsWith("video/") || /\.(mp4|webm|mov|m4v|ogv|avi|mkv)$/i.test(f.name);
+const isImage = f => (f.type || "").startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp)$/i.test(f.name);
+
+async function handleFiles(files){
+  for(const f of files){
+    if(isVideo(f)) addVideo(f);
+    else if(isImage(f)){ addImage(f); inspect(f); }
+    else await inspect(f);
+  }
+}
+function addVideo(f){
+  const fig = document.createElement("figure"); fig.className = "pv";
+  const v = document.createElement("video");
+  v.className = "pv-video"; v.controls = true; v.preload = "metadata"; v.playsInline = true; v.src = URL.createObjectURL(f);
+  const cap = document.createElement("figcaption"); cap.className = "pv-cap";
+  cap.innerHTML = `<span class="nm">▶ ${f.name}</span><span class="meta">video specimen</span>`;
+  v.addEventListener("loadedmetadata", () => {
+    const m = Math.floor(v.duration / 60), s = String(Math.floor(v.duration % 60)).padStart(2, "0");
+    cap.querySelector(".meta").textContent = `${v.videoWidth}×${v.videoHeight} · ${m}:${s}`;
+  });
+  fig.append(v, cap); $("#preview").append(fig); $("#preview").classList.add("show");
+}
+function addImage(f){
+  const fig = document.createElement("figure"); fig.className = "pv";
+  const img = document.createElement("img"); img.className = "pv-img"; img.src = URL.createObjectURL(f);
+  const cap = document.createElement("figcaption"); cap.className = "pv-cap";
+  cap.innerHTML = `<span class="nm">${f.name}</span><span class="meta">still specimen</span>`;
+  fig.append(img, cap); $("#preview").append(fig); $("#preview").classList.add("show");
+}
+
+async function inspect(f){
   $("#ingesterr").style.display = "none";
   const fd = new FormData(); fd.append("file", f);
   try{

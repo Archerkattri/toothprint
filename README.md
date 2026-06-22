@@ -172,7 +172,7 @@ No scanner? **2D Gaussian Splatting (oriented surfels) + multi-view TSDF fusion*
 
 ## The desktop app
 
-**ToothPrint Studio** (Linux · Windows · macOS) presents the three certificates as a forensic *Certificate of Dental Analysis*: drop in any scan or radiograph, run an examination, and the seal stamps only when the conformal interval clears the threshold. Files never leave the machine.
+**ToothPrint Studio** (Linux · Windows · macOS) presents the three certificates as a forensic *Certificate of Dental Analysis*: drop in any scan, radiograph, or **patient video** — videos play in-place with full play / pause / seek — run an examination, and every finding is logged with its conformal interval. Export the whole case as a self-contained **PDF report** (inputs, findings, method, provenance, and an explicit limitations statement). Files never leave the machine.
 
 <div align="center">
 <img src="docs/studio.png" width="49%"> <img src="docs/studio_certificate.png" width="49%">
