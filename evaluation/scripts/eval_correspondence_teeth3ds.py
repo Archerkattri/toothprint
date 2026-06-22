@@ -20,12 +20,13 @@ import open3d as o3d
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths
 from eval_correspondence import WEIGHTS, crop_query, descs, rank1_auc, residual
 from train_correspondence import M
 
 from toothprint.identity.embedding import CorrNet
 
-DATA = Path.home() / "personal-projects/toothprint-data/teeth3ds/extracted/upper"
+DATA = paths.TEETH3DS
 OUT = Path(__file__).resolve().parents[1] / "results" / "correspondence_teeth3ds.json"
 N_MAX, REPS = 80, 3
 

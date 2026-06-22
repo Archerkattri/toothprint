@@ -15,9 +15,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths
 from eval_id3d import KEEP, NOISE, NPTS, ROT_AMP, VX, build_matrix, metrics
 
-DATA = Path.home() / "personal-projects/toothprint-data/teeth3ds/extracted/upper"
+DATA = paths.TEETH3DS
 OUT = Path(__file__).resolve().parents[1] / "results" / "teeth3ds_identity.json"
 N_MAX = 120
 

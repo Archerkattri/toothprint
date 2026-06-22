@@ -19,7 +19,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-D = Path.home() / "personal-projects/dental-change-certificate/data/denpar/extracted/Dataset"
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths
+
+D = paths.DENPAR
 OUT = Path(__file__).resolve().parents[1] / "results" / "dentalwork_2d.json"
 MIN_REST = 3
 

@@ -14,6 +14,10 @@ outputs/
 !toothprint/bench/data/
 !toothprint/bench/data/**
 
+# ...and evaluation/fixtures are tiny SYNTHETIC arches for the reproducibility smoke test — keep them
+!evaluation/fixtures/
+!evaluation/fixtures/**
+
 # Python
 __pycache__/
 *.py[cod]

@@ -100,8 +100,17 @@ def main():
             res["results"][f"{mode}_keep{keep}"] = {"corrnet_rank1": round(float(np.mean(r1s)), 3),
                                                     "std": round(float(np.std(r1s)), 3), "auc": round(float(np.mean(aucs)), 3)}
             print(f"  {mode:6s} keep {keep}: CorrNet Rank-1 {np.mean(r1s):.3f}±{np.std(r1s):.3f}  AUC {np.mean(aucs):.3f}", flush=True)
-    res["baselines_planar_reference"] = {"keep0.5": {"crop_hardened": 0.635, "rigid_gicp": 0.23},
-                                         "keep0.3": {"crop_hardened": 0.26, "rigid_gicp": 0.10}}
+    def _ref(name, getter, default):                                          # read baselines from committed artifacts, not pasted constants
+        try:
+            return round(float(getter(json.loads((OUT.parent / name).read_text()))), 3)
+        except Exception:
+            return default
+    res["baselines_planar_reference"] = {
+        "source": "embedding_partial.json (crop-hardened embedding), id3d.json (rigid GICP) — read at runtime",
+        "keep0.5": {"crop_hardened": _ref("embedding_partial.json", lambda d: d["keep_ablation"]["0.5"]["crop_hardened_rank1"], 0.635),
+                    "rigid_gicp": _ref("id3d.json", lambda d: d["ablations"]["keep_0.5"]["rank1"], 0.23)},
+        "keep0.3": {"crop_hardened": _ref("embedding_partial.json", lambda d: d["keep_ablation"]["0.3"]["crop_hardened_rank1"], 0.26),
+                    "rigid_gicp": _ref("id3d.json", lambda d: d["ablations"]["keep_0.3"]["rank1"], 0.10)}}
 
     torch.manual_seed(0)                                                       # untrained control: isolates pipeline vs learning
     rnet = CorrNet(ck["desc"]).to(dev).eval()

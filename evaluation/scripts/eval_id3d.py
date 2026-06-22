@@ -25,7 +25,11 @@ import open3d as o3d
 
 from toothprint.identity import align_rigid
 
-DATA = "data/poseidon3d/extracted/data"
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths
+
+DATA = str(paths.POSEIDON3D)
 OUT = Path(__file__).resolve().parents[1] / "results" / "id3d.json"
 # Core augmentation: a genuine re-scan is the arch repositioned + sensor noise, full
 # coverage. Matches the parameters behind the headline N=200 result.

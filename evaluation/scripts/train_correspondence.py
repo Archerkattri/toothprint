@@ -22,7 +22,11 @@ import torch.nn.functional as F
 
 from toothprint.identity.embedding import CorrNet
 
-DATA = os.environ.get("TP_DATA", "data/poseidon3d/extracted/data")
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths
+
+DATA = os.environ.get("TP_DATA", str(paths.POSEIDON3D))
 WEIGHTS = Path(os.environ.get("TP_CORR_WEIGHTS", "/tmp/toothprint_embedding/corrnet.pt"))
 M, DESC, N_TRAIN, EPOCHS, BATCH = 1024, 64, 150, 70, 6
 

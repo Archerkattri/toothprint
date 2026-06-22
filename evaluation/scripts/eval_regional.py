@@ -19,11 +19,12 @@ import numpy as np
 import open3d as o3d
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths
 from eval_id3d import NPTS, VX, sample
 
 from toothprint.identity import align_rigid
 
-DATA = "data/poseidon3d/extracted/data"
+DATA = str(paths.POSEIDON3D)
 OUT = Path(__file__).resolve().parents[1] / "results" / "regional_identity.json"
 K, BEST_K, N = 12, 8, 45
 

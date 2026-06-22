@@ -22,7 +22,11 @@ from torch.utils.data import DataLoader, Dataset
 
 from toothprint.identity.embedding import DGCNN, SubCenterArcFace
 
-DATA = os.environ.get("TP_DATA", "data/poseidon3d/extracted/data")
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths
+
+DATA = os.environ.get("TP_DATA", str(paths.POSEIDON3D))
 WEIGHTS = Path(os.environ.get("TP_WEIGHTS", "/tmp/toothprint_embedding/encoder.pt"))
 N_PTS, EMB, N_TRAIN, BATCH = 1024, 256, 150, 32
 EPOCHS = int(os.environ.get("TP_EPOCHS", "80"))

@@ -21,13 +21,14 @@ import open3d as o3d
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths
 from eval_id3d import NPTS, VX, sample
 from train_embedding import N_PTS
 
 from toothprint.identity import align_rigid
 from toothprint.identity.embedding import DGCNN
 
-DATA = str(Path.home() / "personal-projects/dental-map-cert/data/poseidon3d/extracted/data")
+DATA = str(paths.POSEIDON3D)
 HARD = Path("/tmp/toothprint_embedding/encoder_partial.pt")
 OUT = Path(__file__).resolve().parents[1] / "results" / "openset_hybrid.json"
 N, KEEP, TOPK, HELD_OUT, TRIALS = 50, 0.5, 5, 15, 60

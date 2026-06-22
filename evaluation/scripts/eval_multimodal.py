@@ -19,7 +19,11 @@ import open3d as o3d
 
 from toothprint.identity import align_rigid
 
-DATA = Path.home() / "personal-projects/toothprint-data/cbct_ios_multimodal/extracted"
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths
+
+DATA = paths.CBCT_IOS
 OUT = Path(__file__).resolve().parents[1] / "results" / "multimodal_identity.json"
 N = 2500
 
