@@ -1,0 +1,14 @@
+{
+ "n_heldout": 50,
+ "keep": 0.5,
+ "topk": 5,
+ "prior_full_coverage": {
+  "embedding_fnir": 0.69,
+  "gicp_fnir": 0.03
+ },
+ "partial_open_set_fnir_at_fpir1pct": {
+  "embedding_only": 0.872,
+  "gicp_only": 0.779,
+  "hybrid": 0.789
+ }
+}
