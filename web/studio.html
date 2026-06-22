@@ -247,18 +247,24 @@ function vkind(label){
   return "certified";
 }
 const STAT = { certified:"Certified", uncertain:"Review", alert:"Flagged" };
+function node(tag, cls, text){
+  const el = document.createElement(tag);
+  if(cls) el.className = cls;
+  if(text !== undefined && text !== null) el.textContent = String(text);
+  return el;
+}
 
 // record a finding into the running log + enable the report
 function record(label, section, text, mono){
   const k = vkind(label), time = new Date().toTimeString().slice(0, 8);
   findings.push({ k, section, text, mono, time });
   const log = $("#flog");
-  if(findings.length === 1) log.innerHTML = "";
+  if(findings.length === 1) log.replaceChildren();
   const row = document.createElement("div");
   row.className = "frow v-" + k;
-  row.innerHTML = `<span class="fstat">${STAT[k]}</span>`
-    + `<span class="ftext">${text}<span class="m">${mono}</span></span>`
-    + `<span class="ftime">${time}</span>`;
+  const body = node("span", "ftext", text);
+  body.appendChild(node("span", "m", mono));
+  row.append(node("span", "fstat", STAT[k]), body, node("span", "ftime", time));
   log.appendChild(row);
   $("#report").disabled = false;
 }
@@ -288,7 +294,7 @@ function addVideo(f){
   const v = document.createElement("video");
   v.className = "pv-video"; v.controls = true; v.preload = "metadata"; v.playsInline = true; v.src = URL.createObjectURL(f);
   const cap = document.createElement("figcaption"); cap.className = "pv-cap";
-  cap.innerHTML = `<span class="nm">▶ ${f.name}</span><span class="meta">video specimen</span>`;
+  cap.append(node("span", "nm", "▶ " + f.name), node("span", "meta", "video specimen"));
   v.addEventListener("loadedmetadata", () => {
     const m = Math.floor(v.duration / 60), s = String(Math.floor(v.duration % 60)).padStart(2, "0");
     cap.querySelector(".meta").textContent = `${v.videoWidth}×${v.videoHeight} · ${m}:${s}`;
@@ -299,7 +305,7 @@ function addImage(f){
   const fig = document.createElement("figure"); fig.className = "pv";
   const img = document.createElement("img"); img.className = "pv-img"; img.src = URL.createObjectURL(f);
   const cap = document.createElement("figcaption"); cap.className = "pv-cap";
-  cap.innerHTML = `<span class="nm">${f.name}</span><span class="meta">still specimen</span>`;
+  cap.append(node("span", "nm", f.name), node("span", "meta", "still specimen"));
   fig.append(img, cap); $("#preview").append(fig); $("#preview").classList.add("show");
 }
 
@@ -314,7 +320,12 @@ async function inspect(f){
     if(j.kind === "radiograph"){ rows.push(["Dimensions", j.shape.join(" × ") + " px"], ["Pixel spacing", (j.pixel_spacing_mm ?? "—") + " mm"], ["Modality", j.modality ?? "—"], ["Bit depth", j.bit_depth ?? "—"]); }
     if(j.kind === "scan"){ rows.push(["Vertices", j.n_vertices.toLocaleString()], ["Faces", j.n_faces.toLocaleString()], ["Extent", (j.extent_mm || []).join(" × ") + " mm"]); }
     if(j.kind === "volume"){ rows.push(["Voxels", j.shape.join(" × ")], ["Spacing", (j.spacing_mm || []).map(x => (+x).toFixed(2)).join(" ") + " mm"]); }
-    $("#recordtbl").innerHTML = rows.map(([k, v]) => `<tr><td class="k">${k}</td><td class="v">${v}</td></tr>`).join("");
+    const table = $("#recordtbl");
+    table.replaceChildren(...rows.map(([k, v]) => {
+      const tr = document.createElement("tr");
+      tr.append(node("td", "k", k), node("td", "v", v));
+      return tr;
+    }));
     $("#record").classList.add("show");
   }catch(e){ $("#ingesterr").textContent = "Rejected: " + (e.message || e); $("#ingesterr").style.display = "block"; }
 }
@@ -335,12 +346,17 @@ $("#idrun").addEventListener("click", async () => {
     if(j.detail) throw new Error(j.detail);
     const k = vkind(j.verdict), match = j.match.split(/[\\/]/).pop();
     $("#idv").className = "finding show v-" + k;
-    $("#idv").innerHTML = `<span class="verdict">${j.verdict} — ${match}</span>`
-      + `<div class="detail">closest surface ${j.distance_mm} mm · ` + j.ranking.map(x => `${x.label.split(/[\\/]/).pop()} ${x.distance_mm}`).join(" · ") + `</div>`;
+    $("#idv").replaceChildren(
+      node("span", "verdict", `${j.verdict} — ${match}`),
+      node("div", "detail", `closest surface ${j.distance_mm} mm · ` + j.ranking.map(x => `${x.label.split(/[\\/]/).pop()} ${x.distance_mm}`).join(" · "))
+    );
     record(j.verdict, "§1 Identity",
-      `<b>§ 1 Identity</b> — ${j.verdict}: reference <b>${match}</b>.`,
+      `§ 1 Identity — ${j.verdict}: reference ${match}.`,
       `closest surface ${j.distance_mm} mm · ranking ${j.ranking.map(x => x.label.split(/[\\/]/).pop() + " " + x.distance_mm).join(" · ")}`);
-  }catch(e){ $("#idv").className = "finding show v-alert"; $("#idv").innerHTML = `<span class="verdict">Examination failed</span><div class="detail">${e.message || e}</div>`; }
+  }catch(e){
+    $("#idv").className = "finding show v-alert";
+    $("#idv").replaceChildren(node("span", "verdict", "Examination failed"), node("div", "detail", e.message || e));
+  }
   $("#idrun").disabled = false; $("#idrun").textContent = "Examine";
 });
 
@@ -352,12 +368,17 @@ async function certify(path, payload, box, name){
     const k = vkind(j.label), iv = j.interval_px || j.interval_mm, unit = j.interval_px ? "px" : "mm";
     const measured = j.measured_px ?? j.measured_mm, ivt = iv.map(x => (+x).toFixed(2)).join(", ");
     $(box).className = "finding show v-" + k;
-    $(box).innerHTML = `<span class="verdict">Finding: ${j.label}</span>`
-      + `<div class="detail">measured ${measured} ${unit} · interval [${ivt}] ${unit}</div>`;
+    $(box).replaceChildren(
+      node("span", "verdict", `Finding: ${j.label}`),
+      node("div", "detail", `measured ${measured} ${unit} · interval [${ivt}] ${unit}`)
+    );
     const params = Object.entries(payload).map(([a, b]) => `${a} ${b}`).join(" · ");
-    record(j.label, name, `<b>${name}</b> — finding: <b>${j.label}</b>.`,
+    record(j.label, name, `${name} — finding: ${j.label}.`,
       `measured ${measured} ${unit} · conformal interval [${ivt}] ${unit} · ${params}`);
-  }catch(e){ $(box).className = "finding show v-alert"; $(box).innerHTML = `<span class="verdict">Rejected</span><div class="detail">${e.message || e}</div>`; }
+  }catch(e){
+    $(box).className = "finding show v-alert";
+    $(box).replaceChildren(node("span", "verdict", "Rejected"), node("div", "detail", e.message || e));
+  }
 }
 $("#crun").addEventListener("click", () => certify("/api/certify/change", {
   measured_px: +$("#c_m").value, q_lo: +$("#c_lo").value, q_hi: +$("#c_hi").value, tau: +$("#c_tau").value, alpha: +$("#c_a").value }, "#cv", "§ 2 Bone-level change"));

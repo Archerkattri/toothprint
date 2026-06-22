@@ -167,6 +167,17 @@ def test_request_body_size_cap(monkeypatch):
     assert r.status_code == 413
 
 
+def test_scan_upload_uses_upload_cap_not_json_body_cap(tmp_path, monkeypatch):
+    monkeypatch.setattr("api.main.MAX_REQUEST_BYTES", 5)
+    monkeypatch.setattr("api.main.MAX_UPLOAD_BYTES", 1024)
+    q = tmp_path / "q.stl"; q.write_bytes(b"not a mesh but larger than json cap")
+    g = tmp_path / "g.stl"; g.write_bytes(b"not a mesh but larger than json cap")
+    r = client.post("/api/identify/scan", files=[
+        ("files", ("q.stl", open(q, "rb"), "application/octet-stream")),
+        ("files", ("g.stl", open(g, "rb"), "application/octet-stream"))])
+    assert r.status_code == 422
+
+
 def test_upload_size_cap(tmp_path, monkeypatch):
     pytest.importorskip("trimesh")
     import trimesh

@@ -8,7 +8,7 @@
 [![Methods paper](https://img.shields.io/badge/paper-PDF-1f2a37.svg)](paper/paper.pdf)
 [![Reproduce](https://img.shields.io/badge/reproduce-smoke%20test-0d9488.svg)](REPRODUCE.md)
 [![Conformal](https://img.shields.io/badge/guarantee-FMR%20%E2%89%A4%20%CE%B1-d97706.svg)](#the-certificate)
-[![Tests](https://img.shields.io/badge/coverage-100%25-16a34a.svg)](#tests)
+[![Tests](https://img.shields.io/badge/tests-passing-16a34a.svg)](#tests)
 
 </div>
 
@@ -217,7 +217,7 @@ person = labels[int(np.argmin(distances))]
 verdict = certify_surface_change(measured_mm=1.2, certifier=certifier)   # -> "changed"
 ```
 
-A FastAPI service exposes the same logic plus safe file ingest (`uvicorn api.main:app`): `/api/inspect`, `/api/identify/scan`, `/api/identify/radiograph`, `/api/certify/change`, `/api/certify/surface`.
+A FastAPI service exposes the same logic plus safe file ingest (`pip install -e ".[api]"`, then `uvicorn api.main:app`): `/api/inspect`, `/api/identify/scan`, `/api/identify/radiograph`, `/api/certify/change`, `/api/certify/surface`.
 
 ---
 
@@ -251,7 +251,7 @@ ToothPrint is in the *registration / conformal* family; its defensible edge is *
 | Finite-sample false-alarm guarantee, verified ≤ α across ablations | ✅ |
 | No fallbacks — failures raise, not degrade | ✅ |
 | First-class abstention + input quality gates | ✅ |
-| Site recalibration + provenance hashing + audit trail · 100% test coverage | ✅ |
+| Site recalibration + provenance hashing + audit trail · covered core test suite | ✅ |
 | Reproducible from committed fixtures (no off-machine data) | ✅ |
 | Real **multi-session / longitudinal** data; cross-device, cross-operator | ⬜ |
 | Expert ground truth; prospective pre-registered study; demographic diversity | ⬜ |
@@ -331,13 +331,13 @@ Every result JSON maps to a committed script; reference baselines are read from 
 
 ```bash
 pip install -e ".[dev,io,api]"
-pytest --cov=toothprint --cov=api      # 100%
+pytest --cov=toothprint --cov=api      # core package/API coverage gate
 ```
 
 ## Layout
 
 ```
-toothprint/   the library — identity · change · surface · io · clinical (100% covered)
+toothprint/   the library — identity · change · surface · io · clinical
 api/          FastAPI service (hardened; safe file ingest)
 desktop/      ToothPrint Studio cross-platform app + PyInstaller spec
 evaluation/   eval scripts · result JSONs · synthetic fixtures · smoke test
