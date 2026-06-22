@@ -6,21 +6,23 @@ optionally `google-chrome` — already present here.
 
 ## What's built and ready
 
-**`make_showcase.py`** — a narrated reel from the committed result figures. Runs with no GUI and no
-API key:
+**`make_showcase.py`** — a fast-paced, **silent** social reel that shows *how* ToothPrint works and
+*how well*, from the real dental visuals plus animated charts. No GUI, no API key, no narration (you
+add your own caption when posting to LinkedIn / X):
 
 ```bash
-pip install edge-tts            # free TTS, no key (uses Microsoft Edge's backend)
-python video/make_showcase.py   # -> docs/toothprint_showcase.mp4 (1080p, ~84s, +faststart)
+python video/make_showcase.py   # -> docs/toothprint_showcase.mp4 (1080p, ~32s, silent, +faststart)
 ```
 
-It renders title/end cards in the project palette, narrates each section with `edge-tts`
-(`en-US-GuyNeural`), holds each figure for exactly its narration length, and muxes to a
-social-ready H.264 MP4. Edit the `segments` list to change the script or figures.
+It speeds up and captions the committed dental GIFs — the rotating intraoral scan, the
+genuine-vs-impostor registration, the alignment sweep, the bone-level change certificate, and
+photo-to-mesh reconstruction — and interleaves **animated** result charts (the partial-overlap bars
+grow; the headline numbers count up), with quick fades between segments to stay punchy but readable.
+Edit the `segs` list in `main()` to change the order, clips, or captions.
 
-*Fully offline / commercial-safe swap:* replace `edge-tts` with **Kokoro-82M** (Apache-2.0, local
-CPU TTS: `sudo apt install espeak-ng && pip install "kokoro>=0.9.4" soundfile`). Avoid Coqui/XTSS —
-non-commercial license.
+*Want narration instead of on-post captions?* `pip install edge-tts` (free, no key) and generate a
+voiceover (`edge-tts --voice en-US-GuyNeural --text "..." --write-media n.mp3`), or **Kokoro-82M**
+for fully-offline / commercial-safe TTS — then mux it over the reel with ffmpeg.
 
 ## Extending it (CLI demo + app capture)
 
