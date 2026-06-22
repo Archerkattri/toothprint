@@ -1,0 +1,22 @@
+{
+ "n_heldout": 50,
+ "reps": 3,
+ "score": "all-query-points residual after mutual-match Procrustes",
+ "keep_ablation": {
+  "0.5": {
+   "corrnet_rank1": 0.933,
+   "corrnet_rank1_std": 0.038,
+   "corrnet_auc": 0.991,
+   "crop_hardened_rank1": 0.635,
+   "rigid_gicp_rank1": 0.23
+  },
+  "0.3": {
+   "corrnet_rank1": 0.78,
+   "corrnet_rank1_std": 0.033,
+   "corrnet_auc": 0.977,
+   "crop_hardened_rank1": 0.26,
+   "rigid_gicp_rank1": 0.1
+  }
+ },
+ "untrained_control_keep0.5_rank1": 0.7
+}

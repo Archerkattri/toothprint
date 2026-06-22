@@ -59,6 +59,37 @@ class DGCNN(nn.Module):
         return F.normalize(self.head(g), dim=1)
 
 
+class CorrNet(nn.Module):
+    """DGCNN-backbone per-point descriptors for learned partial->whole correspondence.
+
+    The global embedding (DGCNN) collapses a whole arch to one vector; that is robust but
+    discards the point structure a *partial* query needs to register. CorrNet instead emits a
+    unit descriptor per point so a half-arch query can be matched point-to-point against a full
+    gallery arch (mutual-NN -> Procrustes), the GeoTransformer-class fix for the rigid PCA-init
+    that collapses under tooth loss. Trained with a correspondence (InfoNCE) loss on crop pairs,
+    whose point indices give ground-truth matches for free.
+    """
+
+    def __init__(self, desc_dim: int = 64, k: int = 20):
+        super().__init__()
+        self.k = k
+
+        def conv(cin, cout):
+            return nn.Sequential(nn.Conv2d(cin, cout, 1, bias=False),
+                                 nn.BatchNorm2d(cout), nn.LeakyReLU(0.2))
+        self.e1, self.e2, self.e3 = conv(6, 64), conv(64 * 2, 64), conv(64 * 2, 128)
+        self.fuse = nn.Sequential(nn.Conv1d(256, 512, 1, bias=False), nn.BatchNorm1d(512), nn.LeakyReLU(0.2))
+        self.desc = nn.Conv1d(512, desc_dim, 1)
+
+    def forward(self, pts: torch.Tensor) -> torch.Tensor:
+        x = pts.transpose(2, 1)                                  # (B, 3, N)
+        x1 = self.e1(edge_feature(x, self.k)).max(dim=-1)[0]
+        x2 = self.e2(edge_feature(x1, self.k)).max(dim=-1)[0]
+        x3 = self.e3(edge_feature(x2, self.k)).max(dim=-1)[0]
+        g = self.fuse(torch.cat([x1, x2, x3], dim=1))           # (B, 512, N)
+        return F.normalize(self.desc(g), dim=1)                 # (B, desc_dim, N) unit per-point descriptors
+
+
 class SubCenterArcFace(nn.Module):
     """Sub-centre ArcFace head — K centres per class absorb intra-arch variation."""
 
