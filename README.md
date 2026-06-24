@@ -7,7 +7,6 @@
 [![engrXiv preprint](https://img.shields.io/badge/preprint-engrXiv-b31b1b.svg)](https://engrxiv.org/preprint/view/7403)
 [![DOI](https://img.shields.io/badge/DOI-10.31224%2F7403-1f6feb.svg)](https://doi.org/10.31224/7403)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-0d9488.svg)](LICENSE)
-[![Methods paper](https://img.shields.io/badge/paper-PDF-1f2a37.svg)](paper/paper.pdf)
 [![Reproduce](https://img.shields.io/badge/reproduce-smoke%20test-0d9488.svg)](REPRODUCE.md)
 [![Conformal](https://img.shields.io/badge/guarantee-FMR%20%E2%89%A4%20%CE%B1-d97706.svg)](#the-certificate)
 [![Tests](https://img.shields.io/badge/tests-passing-16a34a.svg)](#tests)
@@ -18,7 +17,7 @@
 
 > **A face can be lost; the teeth remain.** ToothPrint turns dental scans, radiographs, and visit-to-visit records into evidence that can be checked: a match, a change finding, or a surface map, each with an explicit uncertainty certificate.
 
-📄 **[Methods paper (PDF)](paper/paper.pdf)** · 🔁 **[Reproduce](REPRODUCE.md)** · 🔬 **[Full write-up](PAPER.md)** · ▶ **[30-second reel](docs/toothprint_showcase.mp4)** · 🖥️ **[Desktop app](#toothprint-studio)**
+🔖 **[Preprint + DOI](https://doi.org/10.31224/7403)** · 🔁 **[Reproduce](REPRODUCE.md)** · 🔬 **[Full write-up](PAPER.md)** · ▶ **[30-second reel](docs/toothprint_showcase.mp4)** · 🖥️ **[Desktop app](#toothprint-studio)**
 
 ## Start here
 
