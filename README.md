@@ -4,6 +4,8 @@
 
 **`identity`** · **`change`** · **`surface`** — three reads of one durable signal, each returning a *certificate* instead of a guess.
 
+[![engrXiv preprint](https://img.shields.io/badge/preprint-engrXiv-b31b1b.svg)](https://engrxiv.org/preprint/view/7403)
+[![DOI](https://img.shields.io/badge/DOI-10.31224%2F7403-1f6feb.svg)](https://doi.org/10.31224/7403)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-0d9488.svg)](LICENSE)
 [![Methods paper](https://img.shields.io/badge/paper-PDF-1f2a37.svg)](paper/paper.pdf)
 [![Reproduce](https://img.shields.io/badge/reproduce-smoke%20test-0d9488.svg)](REPRODUCE.md)
@@ -453,6 +455,26 @@ docs/         result figures
 *Writing on your own behalf rather than forwarding? Just swap the opening for "I'm Krishi Attri, …" — either way, replies come to `krishiattriwork@gmail.com`.*
 
 </details>
+
+## Citation
+
+ToothPrint is described in the preprint **"Certified Dental Biometric Verification
+Under Partial Overlap"** (Krishi Attri, Seoul National University), posted to
+**engrXiv**, 2026.
+
+- 📄 Preprint: <https://engrxiv.org/preprint/view/7403>
+- 🔖 DOI: [`10.31224/7403`](https://doi.org/10.31224/7403)
+
+```bibtex
+@article{attri2026toothprint,
+  title   = {Certified Dental Biometric Verification Under Partial Overlap},
+  author  = {Attri, Krishi},
+  journal = {engrXiv preprint},
+  year    = {2026},
+  doi     = {10.31224/7403},
+  url     = {https://doi.org/10.31224/7403}
+}
+```
 
 ## License
 
