@@ -47,6 +47,8 @@ agreement; they cannot be auto-downloaded.
    1,060 pre/post **3D intraoral** model pairs from 435 patients → real longitudinal change
    on our exact modality. Request access on the Zenodo record; download once granted.
    `https://zenodo.org/records/11392406`
+   → **concrete DUA application checklist + gate status in `evaluation/DATA_GATE.md`** (this is the
+   primary #7 lead; nothing published in 2025–26 closes the gate).
 
 Once either is in `data/`, the existing identity (GICP + embedding) and surface/change
 certificates run on **real re-scans / real timepoints** instead of synthetic perturbations —

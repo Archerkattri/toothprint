@@ -35,6 +35,7 @@ desktop = [
 ]
 dev = ["pytest>=8", "pytest-cov"]
 plots = ["matplotlib>=3.7"]
+detect = ["ultralytics>=8.3"]  # evaluation/scripts YOLO26-pose tooth/landmark detector
 
 [tool.setuptools.packages.find]
 include = ["toothprint*"]
