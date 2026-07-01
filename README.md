@@ -398,6 +398,15 @@ Not covered (deployment responsibilities): authn/authz, rate limiting, TLS, HIPA
 
 </details>
 
+## 2026-07-01 upgrades
+
+Groundwork from a SOTA review — committed but **not yet run**, so there are no new numbers: the real-data gate ([below](#help-wanted--real-longitudinal-data)) is still the binding constraint on this machine.
+
+- **Foundation-model embedding option.** `backbone="sonata"` adds a **PTv3 + Sonata SSL** encoder (via [Pointcept](https://github.com/Pointcept/Pointcept)) alongside the from-scratch DGCNN, behind the *same* ArcFace head and descriptor contract. To our knowledge the **first application of a point-cloud foundation model to dental identification** — stated as a direction, not a result: training needs a GPU + Pointcept install and has not been run here for want of real dental data. Train with `evaluation/scripts/train_sonata_embedding.py` (commands + VRAM in [`evaluation/scripts/RUN.md`](evaluation/scripts/RUN.md)).
+- **BUFFER-X zero-shot baseline.** `evaluation/scripts/eval_bufferx_baseline.py` runs [BUFFER-X](https://github.com/MIT-SPARK/BUFFER-X) (ICCV 2025) on the *identical* partial-overlap protocol as CorrNet for a head-to-head table (CorrNet targets 0.87 / 0.57 recorded in the header).
+- **Docs.** [`docs/RECON_UPGRADES_2026.md`](docs/RECON_UPGRADES_2026.md) (reconstruction-leg candidates) and [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md), the gate-#7 tracker (Zenodo 11392406 DUA checklist).
+- **Tests: 102 passing** (was 93).
+
 ## Reproduce
 
 Datasets are large, license-gated, and gitignored — so reproducibility is built in, not "trust the JSON":
