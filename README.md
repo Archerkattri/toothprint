@@ -419,7 +419,7 @@ TOOTHPRINT_FIXTURES=1 PYTHONPATH=. python evaluation/scripts/smoke_test.py   # -
 TP_POSEIDON3D=/data/poseidon3d PYTHONPATH=. python evaluation/scripts/eval_correspondence.py
 ```
 
-Every result JSON maps to a committed script; reference baselines are read from committed artifacts, not pasted constants. Full guide: **[REPRODUCE.md](REPRODUCE.md)**.
+Every result JSON maps to a committed script; reference baselines are read from committed artifacts, not pasted constants. Full guide: **[REPRODUCE.md](REPRODUCE.md)**. The Teeth3DS+ cross-dataset identity result was re-run (2026-07-02) on **freshly re-downloaded, md5-verified ungated OSF data** (smoke-scale, single-timepoint — still not the real-longitudinal gate); acquisition + numbers in [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md).
 
 ## Tests
 

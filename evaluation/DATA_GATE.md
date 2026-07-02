@@ -83,3 +83,41 @@ the second. Both require *your* application — neither auto-downloads. See also
   **cross-sectional** — same-visit multimodal, no second timepoint — so it feeds #4, not #7.
 - No new public **longitudinal intraoral** corpus appeared in 2025–26. Zenodo 11392406 remains the
   only real lead; the gate stays **DUA-blocked, not code-blocked**.
+
+---
+
+## Ungated real-data acquisition (2026-07-02) — smoke-scale, does NOT close gate #7
+
+An attempt to obtain **ungated** dental data (per `EXTERNAL_DATA.md`) succeeded for the repo's
+primary eval family, Teeth3DS+. This yields a **smoke-scale real-arch** identity run — real
+intraoral arches instead of synthetic fixtures — but it is **single-timepoint** data with
+*synthetic* genuine re-scans, so it is **NOT** the gate-#7 longitudinal validation (that still
+needs same-patient two-timepoint scans; see leads above).
+
+### Attempt log (stop at first success)
+
+| # | source | result |
+| --- | --- | --- |
+| a | **Teeth3DS+** (OSF `xctdy`, CC BY-NC-ND 4.0) | **SUCCESS (ungated).** `Teeth3DS_sample` component (`e53qr/teeth3ds_sample.zip`, 4.2 MB, 1 arch) + `data_part_1` (`5cmg3/data_part_1.zip`, 1.52 GB, md5 `77c924235c4f1ca05a4727633c590801` — matched OSF-reported md5). 150 upper `.obj` arches extracted to `TP_TEETH3DS` (`~/personal-projects/toothprint-data/teeth3ds/extracted/upper`). The OSF storage backend ignores HTTP Range (returns full 200), so remote partial-zip extraction is impossible; the full 1.52 GB part (< 2 GB) was downloaded. |
+| b | **Figshare 26965903** (CBCT+IOS, CC BY 4.0) | Not needed — stopped at first success. API reachable; per-file direct URLs confirmed (`teeth_data1.zip` … `teeth_data15.zip`). Every individual file is a ~4 GB zip (smallest single file > 2 GB), so no `< 2 GB` individually-downloadable subset exists. |
+| c | others in `EXTERNAL_DATA.md` | Not attempted (Teeth3DS+ succeeded). PhysioNet + Zenodo 11392406 remain credentialed/DUA-gated as documented above. |
+
+### Smoke-scale result (repo pipeline, real arches)
+
+Ran the repo's own identity pipeline (`eval_id3d.build_matrix` + `metrics`: PCA-init +
+multi-scale GICP, scored by post-alignment surface distance) on **N=40** real Teeth3DS+ upper
+arches at reduced N. Genuine queries are synthetic re-scans (reposition + sensor noise + partial
+coverage), the same protocol as the headline numbers.
+
+- **Rank-1 1.000 · Rank-5 1.000 · EER 0.000 · AUC 1.000 · d′ 6.07** (N=40; genuine mean 0.095,
+  impostor min 1.094). Saved to `evaluation/results/teeth3ds_identity_smoke_n40.json`.
+- Reproduces the committed `teeth3ds_identity.json` (Rank-1 1.0, N=120) on **freshly
+  re-downloaded, md5-verified** data — the geometric identity generalises to real arches; the
+  learned-descriptor cross-dataset gap (0.87→0.42) documented in the README is unchanged.
+- Reproduce: `TP_TEETH3DS=.../teeth3ds/extracted/upper OMP_NUM_THREADS=1 python
+  evaluation/scripts/eval_teeth3ds.py` (full N=120). NB: `open3d` GICP is internally
+  multi-threaded — set `OMP_NUM_THREADS=1` so the process pool does not oversubscribe cores.
+
+**Caveat (unchanged):** every number here is a single-timepoint optimistic ceiling. Real
+same-patient two-timepoint data (gate #7) is still the binding constraint; this acquisition does
+not change that status.

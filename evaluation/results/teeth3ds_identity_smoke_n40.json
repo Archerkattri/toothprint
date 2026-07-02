@@ -1,0 +1,13 @@
+{
+ "dataset": "Teeth3DS+ upper (real intraoral arches, OSF data_part_1, md5-verified)",
+ "note": "SMOKE-SCALE real-arch identity: repo PCA-init+GICP pipeline, synthetic genuine re-scans (single timepoint). NOT gate-#7 longitudinal (needs same-patient two-timepoint).",
+ "n": 40,
+ "rank1": 1.0,
+ "rank5": 1.0,
+ "eer": 0.0,
+ "auc": 1.0,
+ "dprime": 6.0740077942923865,
+ "genuine_mean": 0.09537351563007157,
+ "impostor_min": 1.0937285228009772,
+ "seconds": 145.8
+}
