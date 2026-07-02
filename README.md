@@ -7,6 +7,7 @@
 [![engrXiv preprint](https://img.shields.io/badge/preprint-engrXiv-b31b1b.svg)](https://engrxiv.org/preprint/view/7403)
 [![DOI](https://img.shields.io/badge/DOI-10.31224%2F7403-1f6feb.svg)](https://doi.org/10.31224/7403)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-0d9488.svg)](LICENSE)
+[![Changelog](https://img.shields.io/badge/changelog-v1.0.0-0d9488.svg)](CHANGELOG.md)
 [![Reproduce](https://img.shields.io/badge/reproduce-smoke%20test-0d9488.svg)](REPRODUCE.md)
 [![Conformal](https://img.shields.io/badge/guarantee-FMR%20%E2%89%A4%20%CE%B1-d97706.svg)](#the-certificate)
 [![Tests](https://img.shields.io/badge/tests-passing-16a34a.svg)](#tests)
@@ -405,7 +406,7 @@ Groundwork from a SOTA review — committed but **not yet run**, so there are no
 - **Foundation-model embedding option.** `backbone="sonata"` adds a **PTv3 + Sonata SSL** encoder (via [Pointcept](https://github.com/Pointcept/Pointcept)) alongside the from-scratch DGCNN, behind the *same* ArcFace head and descriptor contract. To our knowledge the **first application of a point-cloud foundation model to dental identification** — stated as a direction, not a result: training needs a GPU + Pointcept install and has not been run here for want of real dental data. Train with `evaluation/scripts/train_sonata_embedding.py` (commands + VRAM in [`evaluation/scripts/RUN.md`](evaluation/scripts/RUN.md)).
 - **BUFFER-X zero-shot baseline.** `evaluation/scripts/eval_bufferx_baseline.py` runs [BUFFER-X](https://github.com/MIT-SPARK/BUFFER-X) (ICCV 2025) on the *identical* partial-overlap protocol as CorrNet for a head-to-head table (CorrNet targets 0.87 / 0.57 recorded in the header).
 - **Docs.** [`docs/RECON_UPGRADES_2026.md`](docs/RECON_UPGRADES_2026.md) (reconstruction-leg candidates) and [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md), the gate-#7 tracker (Zenodo 11392406 DUA checklist).
-- **Tests: 102 passing** (was 93).
+- **Tests: 183 passing** (was 102). Release history: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Reproduce
 
@@ -435,8 +436,7 @@ toothprint/   the library — identity · change · surface · io · clinical
 api/          FastAPI service (hardened; safe file ingest)
 desktop/      ToothPrint Studio cross-platform app + PyInstaller spec
 evaluation/   eval scripts · result JSONs · synthetic fixtures · smoke test
-paper/        paper.tex + compiled paper.pdf
-docs/         result figures
+docs/         result figures (the write-up lives in PAPER.md + the engrXiv preprint)
 ```
 
 ## Help wanted — real longitudinal data

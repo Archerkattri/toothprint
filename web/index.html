@@ -25,8 +25,9 @@
       <a href="#identity">Identity</a>
       <a href="#change">Change</a>
       <a href="#surface">Surface</a>
-      <a href="#certificate">The certificate</a>
+      <a href="#certificate">Certificate</a>
       <a href="#limits">Limits</a>
+      <a href="#run">Run it</a>
     </nav>
     <a class="ghost" href="https://github.com/Archerkattri/toothprint">GitHub ↗</a>
   </header>
@@ -40,13 +41,18 @@
         <p class="lede">ToothPrint reads a dental arch three ways — <strong>who</strong> it belongs to, <strong>whether</strong> it changed, and <strong>where</strong> its surface moved — and returns a <strong>certificate</strong>, not a guess. Every verdict carries a finite-sample false-alarm bound, and identity holds even when half the teeth are gone.</p>
         <div class="hero-cta">
           <a class="btn btn-solid" href="#evidence">See the evidence</a>
-          <a class="btn btn-line" href="https://github.com/Archerkattri/toothprint/blob/main/paper/paper.pdf">Read the paper (PDF) ↗</a>
+          <a class="btn btn-line" href="https://engrxiv.org/preprint/view/7403">Read the preprint ↗</a>
         </div>
         <dl class="stats">
           <div><dt>Rank-1 · 200 3D scans</dt><dd>0.995</dd></div>
           <div><dt>Rank-1 · 50% tooth loss</dt><dd>0.87</dd></div>
           <div><dt>Conformal false-match</dt><dd>≤ α</dd></div>
         </dl>
+        <p class="badges">
+          <a href="https://doi.org/10.31224/7403">preprint · DOI 10.31224/7403</a>
+          <a href="https://github.com/Archerkattri/toothprint/blob/main/CHANGELOG.md">v1.0.0 · changelog</a>
+          <a href="https://github.com/Archerkattri/toothprint/blob/main/LICENSE">PolyForm Noncommercial — free incl. hospitals</a>
+        </p>
       </div>
       <div class="mwrap hero-media">
         <figure class="exhibit reveal">
@@ -265,6 +271,9 @@
           <figcaption><span>Studio — exported PDF report: inputs · findings · method · limits</span><b>provenance</b></figcaption>
         </figure>
       </div>
+      <p class="how" style="max-width:var(--maxw);margin:1.5rem auto 0;padding-inline:var(--gut)">
+        <b>Open the shell →</b> <a class="ilink" href="studio.html">studio.html</a> renders the case-file interface in your browser; running examinations needs the local ToothPrint service (<code>uvicorn api.main:app</code>), so specimens never leave the machine.
+      </p>
     </section>
 
     <!-- LIMITS -->
@@ -285,6 +294,22 @@
       </div>
     </section>
 
+    <!-- DATA GATE / HELP WANTED -->
+    <section id="gate">
+      <div class="head">
+        <p class="eyebrow">The binding gate · open progress</p>
+        <h2 class="h2">Help wanted — real longitudinal data</h2>
+        <p class="lede">Every identity number here is measured on <em>single-timepoint</em> public data with synthetic re-scans, so read them as ceilings. The one missing ingredient — real same-patient scans across <em>two</em> timepoints — sits behind academic data-use agreements. That gap is the whole distance between ToothPrint and a field-validated claim, and it is <strong>open</strong>: I'm looking for help.</p>
+      </div>
+      <div class="gate">
+        <ul>
+          <li><span class="gk">Zenodo 11392406</span><span class="gt">1,060 real pre/post-orthodontic 3D intraoral pairs from 435 patients — <b>our exact modality</b>. Restricted record; access granted per-request under a Data Use Agreement.</span><a class="gl" href="https://zenodo.org/records/11392406">record ↗</a></li>
+          <li><span class="gk">PhysioNet Multimodal</span><span class="gt">169 patients with multi-visit timestamps + CBCT + 16k periapical radiographs. Credentialed access (CITI training + PhysioNet license).</span><a class="gl" href="https://physionet.org/content/multimodal-dental-dataset/">record ↗</a></li>
+        </ul>
+        <p class="gate-foot">Can access either dataset, or know the maintainers? An introduction is worth as much as the data. Reach me at <a href="mailto:krishiattriwork@gmail.com">krishiattriwork@gmail.com</a> — the DUA checklist lives in <a href="https://github.com/Archerkattri/toothprint/blob/main/evaluation/DATA_GATE.md">evaluation/DATA_GATE.md</a>. Any contribution gratefully credited.</p>
+      </div>
+    </section>
+
     <!-- PIPELINE -->
     <section id="pipeline">
       <div class="head">
@@ -297,6 +322,39 @@
         <div class="pstep"><span class="pk">detect</span><p>Teeth + landmarks (YOLO26-pose) or an arch point cloud.</p></div>
         <div class="pstep"><span class="pk">register</span><p>Rigid best-fit (Generalized-ICP), learned point correspondence, or sub-pixel template matching.</p></div>
         <div class="pstep"><span class="pk">certify</span><p>Conformal interval → identity · change · surface, or abstain.</p></div>
+      </div>
+    </section>
+
+    <!-- RUN IT -->
+    <section id="run">
+      <div class="head">
+        <p class="eyebrow">Runs anywhere · no GPU for the certificates</p>
+        <h2 class="h2">Run it on your machine</h2>
+        <p class="lede">The certification core depends only on <em>numpy, scipy, opencv, open3d</em>; the learned front-ends are optional. Reproducible from committed fixtures — no off-machine data.</p>
+      </div>
+      <div class="run-grid">
+        <pre class="code" aria-label="install and run"><span class="c"># install — dev tools · file I/O · API · desktop Studio</span>
+pip install -e ".[dev,io,api,desktop]"
+
+<span class="c"># the full test suite — 183 passing</span>
+python -m pytest -q
+
+<span class="c"># end-to-end identity on committed fixtures, no off-machine data</span>
+TOOTHPRINT_FIXTURES=1 PYTHONPATH=. python evaluation/scripts/smoke_test.py
+<span class="o"># -> Rank-1 1.000, SMOKE OK</span>
+
+<span class="c"># ToothPrint Studio — native window, falls back to the browser if headless</span>
+python -m desktop.app</pre>
+        <aside class="upgrades">
+          <h3>2026-07-01 upgrades</h3>
+          <p>Committed groundwork from a SOTA review — <b>not yet run at scale, so no new numbers</b>; the data gate above is still the binding constraint.</p>
+          <ul>
+            <li><b>PTv3 + Sonata</b> foundation-model embedding option (<code>backbone="sonata"</code>) — a first for dental identity, stated as a direction.</li>
+            <li><b>BUFFER-X</b> zero-shot baseline harness on CorrNet's exact partial-overlap protocol.</li>
+            <li><b>Real-data gate tracker</b> + reconstruction-upgrade notes (MeshSplat / SurfelSplat).</li>
+          </ul>
+          <p class="up-foot">Full detail in the <a href="https://github.com/Archerkattri/toothprint/blob/main/CHANGELOG.md">changelog</a>.</p>
+        </aside>
       </div>
     </section>
   </main>
@@ -315,8 +373,10 @@
       </div>
       <div class="foot-links">
         <a href="https://github.com/Archerkattri/toothprint">Repository &amp; code ↗</a>
-        <a href="https://github.com/Archerkattri/toothprint/blob/main/paper/paper.pdf">Methods paper (PDF) ↗</a>
+        <a href="https://engrxiv.org/preprint/view/7403">Preprint · engrXiv ↗</a>
+        <a href="https://doi.org/10.31224/7403">DOI 10.31224/7403 ↗</a>
         <a href="https://github.com/Archerkattri/toothprint/blob/main/REPRODUCE.md">Reproduce ↗</a>
+        <a href="https://github.com/Archerkattri/toothprint/blob/main/CHANGELOG.md">Changelog ↗</a>
         <a href="mailto:krishiattriwork@gmail.com">krishiattriwork@gmail.com</a>
       </div>
     </div>
