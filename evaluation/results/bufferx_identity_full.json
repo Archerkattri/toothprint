@@ -1,0 +1,24 @@
+{
+ "dataset": "Teeth3DS+ upper (real intraoral arches, OSF data_part_1, md5-verified)",
+ "note": "FULL-COVERAGE real-arch identity with BUFFER-X (zero-shot, pretrained 3DMatch) as the registration/scoring backend \u2014 the complete column beside the PCA-init+GICP smoke (teeth3ds_identity_smoke_n40.json). Same 40 subjects, identical eval_id3d.metrics definitions; genuine = full-arch re-pose (keep=1.0). Single-timepoint, synthetic genuine re-scans \u2192 NOT gate-#7 longitudinal.",
+ "matcher": "BUFFER-X (arXiv 2503.07940, ICCV 2025) \u2014 zero-shot, pretrained 3DMatch, no dental retraining",
+ "protocol": "full-coverage self-registration (keep=1.0), Rank-1/Rank-5/EER/AUC gallery ID",
+ "n": 40,
+ "rank1": 1.0,
+ "rank5": 1.0,
+ "eer": 0.0,
+ "auc": 1.0,
+ "dprime": 1.2429918065253156,
+ "genuine_mean": 0.014993719873946479,
+ "impostor_min": 0.022293221973556238,
+ "n_points": 8000,
+ "crop_mode_at_keep1": "teeth",
+ "gicp_smoke_reference": {
+  "source": "teeth3ds_identity_smoke_n40.json (PCA-init+GICP backend)",
+  "rank1": 1.0,
+  "rank5": 1.0,
+  "eer": 0.0,
+  "auc": 1.0
+ },
+ "seconds": 383.9
+}

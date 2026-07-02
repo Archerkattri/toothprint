@@ -111,25 +111,46 @@ export BUFFERX_REPO=/abs/path/to/BUFFER-X
 ### Run
 
 ```bash
-# real Teeth3DS+ upper arches; N arches (gallery == probe set), dense point budget for BUFFER-X.
+# partial-overlap stability: real Teeth3DS+ upper arches, 3 crop-seed reps for error bars.
 TP_TEETH3DS=$TP_TEETH3DS BUFFERX_REPO=$BUFFERX_REPO TP_BUFFERX_N=40 TP_BUFFERX_NP=8000 \
-  python evaluation/scripts/eval_bufferx_baseline.py
+  TP_BUFFERX_REPS=3 TP_BUFFERX_MODES=teeth,planar TP_BUFFERX_KEEPS=0.5,0.3 \
+  python evaluation/scripts/eval_bufferx_baseline.py        # -> bufferx_baseline.json
+
+# full-coverage identity (keep=1.0): same protocol/metrics as the PCA-init+GICP smoke, BUFFER-X backend:
+TP_TEETH3DS=$TP_TEETH3DS BUFFERX_REPO=$BUFFERX_REPO TP_BUFFERX_N=40 TP_BUFFERX_NP=8000 \
+  python evaluation/scripts/eval_bufferx_identity_full.py   # -> bufferx_identity_full.json
 ```
 
 Env knobs: `TP_BUFFERX_N` (arch subset), `TP_BUFFERX_NP` (points/arch — keep-0.3 crops must stay
-above ~2000 for BUFFER-X's FPS), `TP_BUFFERX_REPS`, `TP_BUFFERX_MODES`, `TP_BUFFERX_KEEPS`. Writes
-`evaluation/results/bufferx_baseline.json`. If the tree / weights / CUDA extensions are missing the
-script prints the setup and exits non-zero (no fake numbers).
+above ~2000 for BUFFER-X's FPS), `TP_BUFFERX_REPS` (crop-seed reps → error bars),
+`TP_BUFFERX_MODES`, `TP_BUFFERX_KEEPS`. `bufferx_baseline.json` now records per-rep Rank-1 + AUC
+min/max alongside the mean. If the tree / weights / CUDA extensions are missing the scripts print
+the setup and exit non-zero (no fake numbers).
 
-**Measured (2026-07-02, N=40 real Teeth3DS+, NP=8000):** BUFFER-X zero-shot Rank-1 **1.00 / 0.95**
-at keep-0.5 / keep-0.3 (realistic dropout; planar 1.00 / 1.00) — zero-shot registration transfers
-to teeth (~22 min on one RTX 5090). See the README for the head-to-head table and caveats.
+**Measured (2026-07-02, N=40 real Teeth3DS+, NP=8000, 3 crop-seed reps):** BUFFER-X zero-shot
+Rank-1 **1.00 @ keep-0.5** (all 3 reps) and **0.95 @ keep-0.3** (min–max 0.90–0.98; realistic
+dropout; planar 1.00 / 1.00). Full-coverage identity with the same backend: **Rank-1 1.000 ·
+Rank-5 1.000 · EER 0.000 · AUC 1.000** (`bufferx_identity_full.json`), matching the GICP smoke on
+every identity metric. Zero-shot registration transfers to teeth. See the README for the
+head-to-head table and caveats.
+
+### Using BUFFER-X as the partial-overlap registrar (option — defaults unchanged)
+
+BUFFER-X is the **recommended optional registrar for the partial-overlap regime** (missing-teeth
+queries), enabled purely through the eval scripts above via `BUFFERX_REPO` + the `TP_BUFFERX_*`
+env knobs — there is no library-level switch and **the certified pipeline's defaults do not
+change**: `toothprint.identity.align_rigid` (PCA-init + multi-scale Generalized-ICP) stays the
+default registrar, `CorrNet` stays the learned partial-overlap descriptor, and the conformal
+accept/abstain layer is untouched. Prefer BUFFER-X when you have a built zero-shot registrar tree
+available and want the strongest partial-overlap Rank-1 on real arches; fall back to the built-in
+GICP + CorrNet path (no third-party tree, GPU-optional certification) otherwise.
 
 ### Expected GPU / memory
 
 BUFFER-X inference only (no training): a few hundred MB–GB VRAM, ~0.2–0.9 s per registration at
 NP≈6k–8k on an RTX 5090. The gallery matrix is `n×n` registrations per (mode, keep, rep); N=40 with
-two modes × two keeps × 1 rep ≈ 6.4k registrations, ~22 min.
+two modes × two keeps × 1 rep ≈ 6.4k registrations, ~22 min — so the 3-rep stability run above is
+~65 min, and the single full-coverage matrix (`eval_bufferx_identity_full.py`) is ~6 min.
 
 ### API integration note
 

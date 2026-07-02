@@ -16,13 +16,23 @@ longitudinal validation).
 
 ### Added
 
-- **BUFFER-X zero-shot registration — measured on real arches.** Ran `eval_bufferx_baseline.py`
-  (rewired to load the pretrained BUFFER-X 3DMatch model from the built third-party tree and to
-  run on real Teeth3DS+ arches at the CorrNet crop protocol). BUFFER-X, an indoor-scan generalist
-  with **no dental training**, reaches Rank-1 **1.00 / 0.95** at keep-0.5 / keep-0.3 (realistic
-  whole-tooth dropout; planar 1.00 / 1.00), on N=40 arches. Zero-shot registration transfers to
-  dental micro-geometry. Result in `evaluation/results/bufferx_baseline.json`; table + honest
-  cross-dataset caveats in the README.
+- **BUFFER-X zero-shot registration — measured on real arches, now with error bars and a
+  complete identity column.** Ran `eval_bufferx_baseline.py` (rewired to load the pretrained
+  BUFFER-X 3DMatch model from the built third-party tree and to run on real Teeth3DS+ arches at
+  the CorrNet crop protocol). BUFFER-X, an indoor-scan generalist with **no dental training**,
+  reaches Rank-1 **1.00 / 0.95** at keep-0.5 / keep-0.3 (realistic whole-tooth dropout; planar
+  1.00 / 1.00), on N=40 arches over **3 crop-seed reps**: keep-0.5 held 1.00 in all 3 reps,
+  keep-0.3 was 0.95 ± 0.04 (min–max 0.90–0.98) — the single-rep headline holds, now with error
+  bars. Added `eval_bufferx_identity_full.py`, which runs the **full-coverage** identity protocol
+  (the one the PCA-init+GICP smoke uses) with BUFFER-X as the registration/scoring backend and the
+  identical `eval_id3d.metrics` definitions: **Rank-1 1.000 · Rank-5 1.000 · EER 0.000 · AUC
+  1.000** (N=40, `evaluation/results/bufferx_identity_full.json`), matching the GICP smoke on every
+  identity metric. Zero-shot registration transfers to dental micro-geometry. BUFFER-X is an
+  **optional** partial-overlap registrar — the certified pipeline's defaults (PCA-init + GICP +
+  CorrNet, conformal accept/abstain) are unchanged. Results in
+  `evaluation/results/bufferx_baseline.json` (+ per-rep values, AUC ranges) and
+  `bufferx_identity_full.json`; whiskered chart `docs/partial_overlap_results.png`; table + honest
+  cross-dataset caveats in the README; option pointer in `evaluation/scripts/RUN.md`.
 - **Sonata/PTv3 foundation-model embedding — installed, run, honest negative.** The Pointcept
   stack (spconv-cu126, torch-scatter built from source, `sonata`) installs and runs on the RTX
   5090 (CUDA 12.8 / sm_120); Flash-Attention is optional and off by default. Trained a **frozen**

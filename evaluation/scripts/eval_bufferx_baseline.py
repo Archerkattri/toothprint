@@ -218,9 +218,15 @@ def main():
             res["results"][f"{mode}_keep{keep}"] = {
                 "bufferx_rank1": round(float(np.mean(r1s)), 3),
                 "std": round(float(np.std(r1s)), 3),
-                "auc": round(float(np.mean(aucs)), 3)}
-            print(f"  {mode:6s} keep {keep}: BUFFER-X Rank-1 {np.mean(r1s):.3f}±{np.std(r1s):.3f}  "
-                  f"AUC {np.mean(aucs):.3f}  ({time.time()-t_start:.0f}s)", flush=True)
+                "min": round(float(np.min(r1s)), 3),
+                "max": round(float(np.max(r1s)), 3),
+                "per_rep_rank1": [round(float(x), 3) for x in r1s],
+                "auc": round(float(np.mean(aucs)), 3),
+                "auc_min": round(float(np.min(aucs)), 3),
+                "auc_max": round(float(np.max(aucs)), 3)}
+            print(f"  {mode:6s} keep {keep}: BUFFER-X Rank-1 {np.mean(r1s):.3f}±{np.std(r1s):.3f} "
+                  f"[{np.min(r1s):.3f}–{np.max(r1s):.3f}]  AUC {np.mean(aucs):.3f}  "
+                  f"({time.time()-t_start:.0f}s)", flush=True)
     res["seconds"] = round(time.time() - t_start, 1)
     OUT.write_text(json.dumps(res, indent=1) + "\n")
     print(f"saved {OUT}", flush=True)
