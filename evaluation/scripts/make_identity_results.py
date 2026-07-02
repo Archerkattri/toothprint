@@ -57,7 +57,7 @@ def main():
         a.text(i, v + 0.02, f"{v:.2f}", ha="center", fontsize=9, fontweight="bold")
     a.axhline(max(vals[:3]), ls="--", lw=1, color=ROSE, alpha=0.7)
     a.set_xticks(range(5)); a.set_xticklabels(names); a.set_ylim(0, 1.08); a.set_ylabel("Rank-1 (hard regime, N=30)")
-    a.set_title("Multimodal fusion: complementary, gains with the right estimator", fontweight="bold", color=INK)
+    a.set_title("Multimodal fusion: gains with the right estimator", fontweight="bold", color=INK)
 
     # (1,0) dental-work biometric across modalities + robustness
     dw = J("dentalwork_2d.json")["robustness_ablation"]; mm = J("multimodal_full.json")

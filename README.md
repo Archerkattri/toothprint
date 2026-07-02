@@ -7,7 +7,7 @@
 [![engrXiv preprint](https://img.shields.io/badge/preprint-engrXiv-b31b1b.svg)](https://engrxiv.org/preprint/view/7403)
 [![DOI](https://img.shields.io/badge/DOI-10.31224%2F7403-1f6feb.svg)](https://doi.org/10.31224/7403)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-0d9488.svg)](LICENSE)
-[![Changelog](https://img.shields.io/badge/changelog-v1.0.0-0d9488.svg)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/changelog-v1.1.0-0d9488.svg)](CHANGELOG.md)
 [![Reproduce](https://img.shields.io/badge/reproduce-smoke%20test-0d9488.svg)](REPRODUCE.md)
 [![Conformal](https://img.shields.io/badge/guarantee-FMR%20%E2%89%A4%20%CE%B1-d97706.svg)](#the-certificate)
 [![Tests](https://img.shields.io/badge/tests-passing-16a34a.svg)](#tests)
@@ -112,7 +112,7 @@ uvicorn api.main:app
 python -m desktop.app           # native Studio window; falls back to browser if headless
 ```
 
-> **Contents** — [Start here](#start-here) · [Status](#current-status) · [Readers](#for-different-readers) · [Visual tour](#visual-tour) · [Results](#results) · [Identity](#-identity--recognise-a-person-by-their-teeth) · [Change](#-change--certify-a-bone-level-shift) · [Surface](#-surface--certify-3d-change) · [Reconstruction](#-reconstruction--photos-to-a-dentist-usable-mesh) · [Studio](#toothprint-studio) · [Formats](#reads-every-format-a-dentist-has) · [How it works](#how-it-works) · [Clinical readiness](#clinical-readiness) · [Security](#security) · [Reproduce](#reproduce) · [Help wanted](#help-wanted--real-longitudinal-data)
+> **Contents** — [Start here](#start-here) · [Status](#current-status) · [Readers](#for-different-readers) · [Visual tour](#visual-tour) · [Results](#results) · [Identity](#-identity--recognise-a-person-by-their-teeth) · [Change](#-change--certify-a-bone-level-shift) · [Surface](#-surface--certify-3d-change) · [Reconstruction](#-reconstruction--photos-to-a-dentist-usable-mesh) · [Studio](#toothprint-studio) · [Formats](#reads-every-format-a-dentist-has) · [How it works](#how-it-works) · [Clinical readiness](#clinical-readiness) · [Security](#security) · [Real-data gate](#the-real-data-gate-gate-7) · [Reproduce](#reproduce)
 
 ## Results
 
@@ -120,7 +120,7 @@ python -m desktop.app           # native Studio window; falls back to browser if
 
 | Capability | What "good" requires | Result | |
 |---|---|---|:--:|
-| **Identity — 3D scans** | a stranger never outranks you | **Rank-1 0.995** (N=200, EER 0.005, AUC 0.997), conformal **FMR ≤ α**, open-set FNIR **0.030**, fidelity **0.05 mm** | ✅ |
+| **Identity — 3D scans** | a stranger never outranks you | **Rank-1 0.995** (N=200, EER 0.005, AUC 0.997), conformal **FMR ≤ α**, open-set FNIR **0.032**, fidelity **0.05 mm** | ✅ |
 | **Identity — partial overlap** | survive missing teeth | **Rank-1 0.87 at 50% tooth loss** (learned correspondence; ~3.8× rigid GICP's 0.23) | ✅ |
 | **Identity — 2D radiographs** | pick the right person out of hundreds | **Rank-1 1.000** (N=400, EER 0), robust to jitter & magnification | ✅ |
 | **Identity — certified decision** | one accept/abstain verdict, bounded FMR | unified **FNIR@FMR=1% 0.00** full-coverage; abstains under heavy tooth loss | ✅ |
@@ -132,7 +132,7 @@ python -m desktop.app           # native Studio window; falls back to browser if
 | **Reconstruction** | sharp enough for certificate experiments (≈0.5 mm target) | **~0.3 mm** median 2DGS mesh, 38% better than 3DGS (n=5) | ✅ |
 | **Cross-dataset generalization** | works on a second real dataset | Teeth3DS Rank-1 1.0 (registration); learned descriptors carry an honest domain gap (0.87→0.42) | 🔄 |
 
-Specificity is the design target: the conformal false-positive rate is bounded by α in finite samples, and held a true **0** in most tests. *All identity numbers are measured on public single-timepoint scans with synthetic re-scans/crops, so read them as in-simulation ceilings — the one binding gate is [real cross-session data](#help-wanted--real-longitudinal-data).*
+Specificity is the design target: the conformal false-positive rate is bounded by α in finite samples, and held a true **0** in most tests. *All identity numbers are measured on public single-timepoint scans with synthetic re-scans/crops, so read them as in-simulation ceilings — the one binding gate is [real cross-session data](#the-real-data-gate-gate-7).*
 
 ---
 
@@ -162,7 +162,7 @@ The discrimination holds across people (genuine ≤ 0.05 mm vs impostor ≥ 1.6 
 
 ### <a name="the-certificate"></a>The certificate — bounded false-match rate, hardened against look-alikes
 
-Two results go beyond the usual table. The decision is **conformal** — empirical false-match rate tracks the target α; no learned dental-ID method reports a finite-sample FMR bound — and it works **open-set** (a non-enrolled query is rejected, FNIR 0.030 at 1% false-positive identification). The bound even **survives hard negatives**: re-calibrated against each subject's *nearest* impostor (the ~0.8 mm look-alike, not a random arch), empirical FMR still tracks α (0.016 at α=0.01) for a 1–4% genuine-accept cost. A literature FMR on random arches is easy; holding it against look-alikes is the honest test.
+Two results go beyond the usual table. The decision is **conformal** — empirical false-match rate tracks the target α; no learned dental-ID method reports a finite-sample FMR bound — and it works **open-set** (a non-enrolled query is rejected, FNIR 0.032 at 1% false-positive identification). The bound even **survives hard negatives**: re-calibrated against each subject's *nearest* impostor (the ~0.8 mm look-alike, not a random arch), empirical FMR still tracks α (0.016 at α=0.01) for a 1–4% genuine-accept cost. A literature FMR on random arches is easy; holding it against look-alikes is the honest test.
 
 ### The partial-overlap breakthrough — learned point correspondence
 
@@ -180,25 +180,37 @@ Under **realistic discrete whole-tooth dropout** (random, non-contiguous teeth r
 | crop-hardened embedding | 0.64 | 0.26 |
 | **CorrNet (learned correspondence)** | **0.87** (AUC 0.98) | **0.57** (AUC 0.94) |
 
-**The honesty checks that shaped these numbers** — both kept, both moved numbers down: a clean *planar* half-cut is easier (0.91 / 0.80), so the extreme figure was partly riding on crop geometry — the realistic dropout above is what we report. And an *untrained* CorrNet already scores **0.70** at keep-0.5, so the win is ~half the correspondence-plus-rigid-verification **architecture** (the right inductive bias) and ~half the **learned** descriptors.
+**The honesty checks that shaped these numbers** — both kept, both moved numbers down: a clean *planar* half-cut is easier (0.91 / 0.80), so the extreme figure was partly riding on crop geometry — the realistic dropout above is what we report. And an *untrained* CorrNet already scores **0.72** at keep-0.5, so the win is ~half the correspondence-plus-rigid-verification **architecture** (the right inductive bias) and ~half the **learned** descriptors.
 
 **Cross-dataset honesty.** The learned descriptors are partly dataset-specific: CorrNet trained only on Poseidon3D, run on **Teeth3DS+** (a different real dataset, all unseen), drops keep-0.5 **0.87 → 0.42** — still 34× chance and still above GICP, but a real domain gap that needs multi-dataset training to close. Recorded, not hidden.
 
-**Zero-shot registration transfers to teeth (BUFFER-X, measured 2026-07-02).** We ran **BUFFER-X** (Kim et al., ICCV 2025) — a *generalist* point-cloud registrar pretrained on indoor RGB-D scans, with **no dental training** — on **real Teeth3DS+ upper arches** (N=40) at the identical crop protocol. It registers dental micro-geometry cleanly: realistic whole-tooth-dropout Rank-1 **1.00 @ keep-0.5** and **0.95 @ keep-0.3** (clean planar cut 1.00 / 1.00). So the answer to "does zero-shot registration transfer to teeth?" is **yes**.
+### The partial-overlap picture on real arches — one chart
 
-| method (dataset) | teeth keep-0.5 | teeth keep-0.3 |
-|---|:--:|:--:|
-| rigid GICP (Poseidon3D, recorded) | 0.23 | 0.10 |
-| CorrNet (Poseidon3D, recorded) | 0.87 | 0.57 |
-| **BUFFER-X zero-shot (Teeth3DS+, measured today)** | **1.00** | **0.95** |
+Beyond the bespoke Poseidon3D pipeline, two off-the-shelf point-cloud methods are part of the evaluation toolkit and were run on **real Teeth3DS+ upper arches** (N=40, single rep) at the identical whole-tooth-dropout crop protocol — one a decisive positive, one an honest negative:
 
-*Read honestly:* these are **different real datasets** (BUFFER-X on Teeth3DS+; the others recorded on Poseidon3D, which is not on this machine), BUFFER-X gets a denser point budget as an indoor-scan method, N=40 at a single rep, and the genuine query is a crop of the same arch. The takeaway is that **rigid + zero-shot registration is already strong on real dental arches** — the repo's own GICP also hits Rank-1 1.0 full-coverage on Teeth3DS+ — so CorrNet's contribution is on the harder Poseidon3D distribution and as a *certifiable, retrieve-then-verify* component, not a claim that no generalist can register teeth. (`eval_bufferx_baseline.py` → `bufferx_baseline.json`)
+![Partial-overlap identity on real dental arches: BUFFER-X zero-shot registration transfers (1.00 / 1.00 / 0.95 at keep 1.0 / 0.5 / 0.3) while a frozen Sonata foundation-model head does not (0.28 / 0.13 / 0.03), against recorded CorrNet, rigid-GICP and DGCNN-embedding references](docs/partial_overlap_results.png)
+
+| method (dataset · provenance) | keep-1.0 | keep-0.5 | keep-0.3 |
+|---|:--:|:--:|:--:|
+| rigid GICP (Poseidon3D · recorded) | — | 0.23 | 0.10 |
+| DGCNN embedding (Poseidon3D · recorded) | 0.96 | — | — |
+| CorrNet (Poseidon3D · recorded) | — | **0.87** | **0.57** |
+| **BUFFER-X zero-shot** (Teeth3DS+ · measured) | **1.00** | **1.00** | **0.95** |
+| Sonata frozen head (Teeth3DS+ · measured) | 0.28 | 0.13 | 0.03 |
+
+*Cross-dataset by construction:* BUFFER-X and Sonata are measured on **Teeth3DS+**; the recorded CorrNet / GICP / DGCNN rows are on **Poseidon3D** (not on this machine). N=40 at a single rep, and the data is **single-timepoint** with synthetic genuine re-scans — still short of the longitudinal [gate #7](#the-real-data-gate-gate-7). Blank cells are honestly missing, not zero.
+
+**Zero-shot registration transfers to teeth — the positive.** [**BUFFER-X**](https://github.com/MIT-SPARK/BUFFER-X) (Kim et al., ICCV 2025) is a *generalist* point-cloud registrar pretrained on indoor RGB-D scans with **no dental training**. On the real arches it registers dental micro-geometry cleanly: realistic whole-tooth-dropout Rank-1 **1.00 @ keep-0.5** and **0.95 @ keep-0.3** (clean planar cut 1.00 / 1.00). *Read honestly:* BUFFER-X gets a denser point budget as an indoor-scan method, and the genuine query is a crop of the same arch; the repo's own rigid GICP also reaches full-coverage Rank-1 1.0 on Teeth3DS+. So **rigid + zero-shot registration is already strong on real dental arches** — CorrNet's contribution is on the harder Poseidon3D distribution and as a *certifiable, retrieve-then-verify* component, not a claim that no generalist can register teeth. (`eval_bufferx_baseline.py` → `bufferx_baseline.json`)
 
 ![Live registration demo on a real Teeth3DS+ arch: a keep-0.5 whole-tooth-dropout crop handed to rigid GICP (drops into the wrong basin, RRE 110°) and to BUFFER-X (locks on zero-shot, RRE 0.6°)](docs/bufferx_arch_registration.gif)
 
-*What you are watching* — one real arch (`014996KX`), 50% of its teeth dropped, both registrars run **live** on this pair. Rigid GICP's PCA-init flips the missing-teeth half-arch into the **wrong basin** (RRE 110°, residual 5.2× the genuine-match floor); **BUFFER-X locks on** with no dental training (RRE 0.6°, at the floor). Honesty: GICP is *not* uniformly bad on Teeth3DS+ — it succeeds on most arches here, so this is one real failure case — the aggregate numbers (GICP keep-0.5 Rank-1 0.23 on Poseidon3D vs BUFFER-X 1.00) carry the story. Seeded generator + measured RRE/RTE/residual: `evaluation/viz/bufferx_arch_registration.py` → `registration_demo_numbers.json`.
+*What you are watching* — one real arch (`014996KX`), 50% of its teeth dropped, both registrars run **live** on this pair. Rigid GICP's PCA-init flips the missing-teeth half-arch into the **wrong basin** (RRE 110°, residual 5.2× the genuine-match floor); **BUFFER-X locks on** with no dental training (RRE 0.6°, at the floor). Honesty: GICP is *not* uniformly bad on Teeth3DS+ — it succeeds on most arches here, so this is one real failure case; the aggregate numbers (GICP keep-0.5 Rank-1 0.23 on Poseidon3D vs BUFFER-X 1.00) carry the story. Seeded generator + measured RRE/RTE/residual: `evaluation/viz/bufferx_arch_registration.py` → `registration_demo_numbers.json`.
 
-*Reproduce:* `train_correspondence.py` → `eval_correspondence.py` → `correspondence_identity.json`; cross-dataset in `eval_correspondence_teeth3ds.py`.
+**A frozen foundation-model head does not (yet) transfer — the honest negative.** The identity embedding ships a `backbone="sonata"` option: a PTv3 + [Sonata](https://github.com/Pointcept/Pointcept) self-supervised encoder behind the same ArcFace head and descriptor contract as the from-scratch DGCNN — to our knowledge the **first application of a point-cloud foundation model to dental identity**. The first measured result is a negative: a *frozen* Sonata encoder + ArcFace head, trained on 110 real arches, reaches only Rank-1 **0.28 / 0.13 / 0.03** at keep 1.0 / 0.5 / 0.3 on 40 unseen subjects — well below the from-scratch DGCNN embedding (0.96 full-coverage) and the rigid pipeline (1.0 on Teeth3DS+). Frozen indoor-SSL features don't transfer to dental identity in this low-data, **head-only** recipe; the full fine-tune (`TP_FREEZE=0`) is untested and is the open next step. (`sonata_identity.json`; install + run recipe in [`evaluation/scripts/RUN.md`](evaluation/scripts/RUN.md).)
+
+**The registration identity pipeline reproduces on real arches, too.** Run on real Teeth3DS+ upper arches, the PCA-init + multi-scale Generalized-ICP pipeline scores **Rank-1 1.000 · EER 0.000 · AUC 1.000 · d′ 6.07** (N=40, freshly re-downloaded md5-verified OSF data; `teeth3ds_identity_smoke_n40.json`) — real arches, but **single-timepoint** with synthetic genuine re-scans, so still not the longitudinal [gate #7](#the-real-data-gate-gate-7).
+
+*Reproduce:* `train_correspondence.py` → `eval_correspondence.py` → `correspondence_identity.json`; cross-dataset in `eval_correspondence_teeth3ds.py`; the real-arch baselines in `eval_bufferx_baseline.py` and `train_sonata_embedding.py`.
 
 ### Two more modalities, and a forensic signal
 
@@ -265,6 +277,8 @@ No scanner? **2D Gaussian Splatting (oriented surfels) + multi-view TSDF fusion*
 ![Five reconstructions: ground-truth scan, 2DGS mesh, error heatmap](docs/recon_gallery.png)
 
 ![Photos to a high-detail mesh, with error heatmap — animated](docs/recon_turntable.gif)
+
+Candidate front-ends to push past the current ~0.264 mm median (MeshSplat, SurfelSplat, Gaussian-Voxel Duet) — and why the dental-splatting systems that report no mm-level ground-truth accuracy and do not certify aren't a fit — are catalogued in [`docs/RECON_UPGRADES_2026.md`](docs/RECON_UPGRADES_2026.md).
 
 ---
 
@@ -413,54 +427,9 @@ Not covered (deployment responsibilities): authn/authz, rate limiting, TLS, HIPA
 
 </details>
 
-## 2026-07-01 upgrades — run on real data (2026-07-02)
+## The real-data gate (gate #7)
 
-The 2026-07-01 SOTA-review groundwork has now been **executed on real Teeth3DS+ data acquired 2026-07-02** (150 ungated, md5-verified OSF upper arches; see [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md)). This data is **single-timepoint** with synthetic re-scans, so it still does **not** close the gate-#7 longitudinal need ([below](#help-wanted--real-longitudinal-data)) — but it turns the "committed, not yet run" scaffolding into measured numbers.
-
-![Partial-overlap identity on real dental arches: BUFFER-X zero-shot 1.00/1.00/0.95 and Sonata frozen-head 0.28/0.13/0.03 at keep 1.0/0.5/0.3, with CorrNet, rigid GICP and DGCNN reference bars](docs/partial_overlap_results.png)
-
-Both 2026-07-02 measured results on one honest axis — the **positive** (BUFFER-X zero-shot registration transfers to teeth) and the **negative** (a frozen foundation-model head does not), against the recorded CorrNet / GICP / DGCNN references. Cross-dataset comparison (BUFFER-X + Sonata on Teeth3DS+; CorrNet / GICP / DGCNN recorded on Poseidon3D), N=40 single rep, single-timepoint. Generator: `evaluation/viz/partial_overlap_results.py`.
-
-- **Real-arch identity reproduced.** The registration identity pipeline (PCA-init + multi-scale Generalized-ICP) hits **Rank-1 1.000 / EER 0.000 / AUC 1.000** on real Teeth3DS+ arches (N=40; `teeth3ds_identity_smoke_n40.json`), reproducing the committed N=120 result on freshly re-downloaded data.
-- **BUFFER-X zero-shot baseline — run.** On real Teeth3DS+ arches at the CorrNet crop protocol, [BUFFER-X](https://github.com/MIT-SPARK/BUFFER-X) (ICCV 2025, no dental training) reaches Rank-1 **1.00 / 0.95** at keep-0.5 / keep-0.3 (realistic whole-tooth dropout). **Zero-shot registration transfers to teeth** — table and caveats in [The partial-overlap breakthrough](#the-partial-overlap-breakthrough--learned-point-correspondence). (`eval_bufferx_baseline.py` → `bufferx_baseline.json`)
-- **Sonata/PTv3 foundation-model embedding — run, honest negative.** The [Pointcept](https://github.com/Pointcept/Pointcept) stack (spconv, torch-scatter, **Sonata** PTv3) now installs and runs on the RTX 5090 (CUDA 12.8 / sm_120; Flash-Attention optional, off by default). To our knowledge the **first application of a point-cloud foundation model to dental identity** — and the first measured result is a **negative**: a *frozen* Sonata encoder + ArcFace head trained on 110 real arches reaches only Rank-1 **0.28 / 0.13 / 0.03** at keep 1.0 / 0.5 / 0.3 on 40 unseen subjects (`sonata_identity.json`), far below the from-scratch DGCNN (Rank-1 0.995 full-coverage, recorded on Poseidon3D) and the rigid pipeline's 1.0 on Teeth3DS+. Frozen indoor-SSL features don't transfer to dental identity in this low-data, head-only recipe; a full fine-tune (`TP_FREEZE=0`) is the open next step. Install + run recipe in [`evaluation/scripts/RUN.md`](evaluation/scripts/RUN.md).
-- **Docs.** [`docs/RECON_UPGRADES_2026.md`](docs/RECON_UPGRADES_2026.md) (reconstruction-leg candidates) and [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md), the gate-#7 tracker (Zenodo 11392406 DUA checklist).
-- **Tests: 183 passing** (was 102). Release history: **[CHANGELOG.md](CHANGELOG.md)**.
-
-## Reproduce
-
-Datasets are large, license-gated, and gitignored — so reproducibility is built in, not "trust the JSON":
-
-```bash
-# runs the 3D identity pipeline end-to-end on committed synthetic fixtures, NO off-machine data:
-TOOTHPRINT_FIXTURES=1 PYTHONPATH=. python evaluation/scripts/smoke_test.py   # -> Rank-1 1.000, SMOKE OK
-
-# point at your own data via env vars (TP_POSEIDON3D, TP_TEETH3DS, TP_CBCT_IOS, TP_DENPAR):
-TP_POSEIDON3D=/data/poseidon3d PYTHONPATH=. python evaluation/scripts/eval_correspondence.py
-```
-
-Every result JSON maps to a committed script; reference baselines are read from committed artifacts, not pasted constants. Full guide: **[REPRODUCE.md](REPRODUCE.md)**. The Teeth3DS+ cross-dataset identity result was re-run (2026-07-02) on **freshly re-downloaded, md5-verified ungated OSF data** (smoke-scale, single-timepoint — still not the real-longitudinal gate); acquisition + numbers in [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md).
-
-## Tests
-
-```bash
-pip install -e ".[dev,io,api]"
-pytest --cov=toothprint --cov=api      # core package/API coverage gate
-```
-
-## Layout
-
-```
-toothprint/   the library — identity · change · surface · io · clinical
-api/          FastAPI service (hardened; safe file ingest)
-desktop/      ToothPrint Studio cross-platform app + PyInstaller spec
-evaluation/   eval scripts · result JSONs · synthetic fixtures · smoke test
-docs/         result figures (the write-up lives in PAPER.md + the engrXiv preprint)
-```
-
-## Help wanted — real longitudinal data
-
-**(the one thing I can't do alone)** — every headline here is an *optimistic ceiling* because it's measured on **single-timepoint** public data with synthetic re-scans. The one missing ingredient — **real same-patient data across two timepoints** — is locked behind academic data-use agreements I can't sign for a personal project. This is the binding constraint between ToothPrint and a real-world-validated claim, and it's **open progress: I'm looking for help.**
+**Every headline here is an *optimistic ceiling*** — all of it is measured on **single-timepoint** public data with synthetic re-scans and crops. The one binding constraint between ToothPrint and a real-world-validated claim is **real same-patient data across two timepoints**, locked behind academic data-use agreements I can't sign for a personal project. It is tracked openly as **gate #7** in [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md) — a Zenodo 11392406 DUA application checklist plus the credentialed PhysioNet path — and it is **open progress: I'm looking for help.**
 
 - **Multimodal Dental Dataset (PhysioNet)** — 169 patients, multi-visit timestamps + CBCT + 16k periapical radiographs. Credentialed. <https://physionet.org/content/multimodal-dental-dataset/>
 - **3D pre/post-orthodontic models (Zenodo 11392406)** — 1,060 real pre/post 3D intraoral pairs from 435 patients, *our exact modality*. Maintained by **Prof. Liu Yongjin, Tsinghua University — `liuyongjin@tsinghua.edu.cn`**. <https://zenodo.org/records/11392406>
@@ -482,6 +451,39 @@ docs/         result figures (the write-up lives in PAPER.md + the engrXiv prepr
 *Writing on your own behalf rather than forwarding? Just swap the opening for "I'm Krishi Attri, …" — either way, replies come to `krishiattriwork@gmail.com`.*
 
 </details>
+
+## Reproduce
+
+Datasets are large, license-gated, and gitignored — so reproducibility is built in, not "trust the JSON":
+
+```bash
+# runs the 3D identity pipeline end-to-end on committed synthetic fixtures, NO off-machine data:
+TOOTHPRINT_FIXTURES=1 PYTHONPATH=. python evaluation/scripts/smoke_test.py   # -> Rank-1 1.000, SMOKE OK
+
+# point at your own data via env vars (TP_POSEIDON3D, TP_TEETH3DS, TP_CBCT_IOS, TP_DENPAR):
+TP_POSEIDON3D=/data/poseidon3d PYTHONPATH=. python evaluation/scripts/eval_correspondence.py
+```
+
+Every result JSON maps to a committed script; reference baselines are read from committed artifacts, not pasted constants. Full guide: **[REPRODUCE.md](REPRODUCE.md)**. The Teeth3DS+ cross-dataset identity result runs on **freshly re-downloaded, md5-verified ungated OSF data** (smoke-scale, single-timepoint — still not the real-longitudinal gate); acquisition + numbers in [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md).
+
+## Tests
+
+`python -m pytest -q` → **183 passed** across identity, change, surface, io, api, clinical, geometry, and embedding suites. Release history: **[CHANGELOG.md](CHANGELOG.md)**.
+
+```bash
+pip install -e ".[dev,io,api]"
+pytest --cov=toothprint --cov=api      # core package/API coverage gate
+```
+
+## Layout
+
+```
+toothprint/   the library — identity · change · surface · io · clinical
+api/          FastAPI service (hardened; safe file ingest)
+desktop/      ToothPrint Studio cross-platform app + PyInstaller spec
+evaluation/   eval scripts · result JSONs · synthetic fixtures · smoke test
+docs/         result figures (the write-up lives in PAPER.md + the engrXiv preprint)
+```
 
 ## Citation
 

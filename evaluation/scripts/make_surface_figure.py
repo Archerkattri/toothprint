@@ -36,6 +36,7 @@ def curve(block):
 
 def main():
     d = json.loads((R / "surface.json").read_text())
+    recon_med = json.loads((R / "reconstruction.json").read_text())["summary"]["median_of_medians_2dgs_mm"]
     noises = [0.03, 0.05, 0.10, 0.20, 0.40, 0.84]
     loc = d["localized"]
 
@@ -46,12 +47,12 @@ def main():
     deb = [rec1(d["ablations"][f"noise_{n}"]) for n in noises]
     axA.plot(noises, deb, "-o", color="#2ca02c", lw=2.4, ms=6, label="de-biased")
     axA.plot(noises, raw, "-s", color="#d62728", lw=2.0, ms=5, label="raw mean-norm")
-    axA.axvline(0.42, color="#2ca02c", ls="--", lw=1.6)
-    axA.annotate("high-detail mesh\nrecon (0.42 mm med.)", xy=(0.42, 0.5), xytext=(0.45, 0.62),
+    axA.axvline(recon_med, color="#2ca02c", ls="--", lw=1.6)
+    axA.annotate(f"high-detail mesh\nrecon ({recon_med:.2f} mm med.)", xy=(recon_med, 0.5), xytext=(0.33, 0.62),
                  fontsize=8, color="#1a7f4b", arrowprops=dict(arrowstyle="->", color="#2ca02c"))
     axA.axvline(0.84, color="#e6a93f", ls=":", lw=1.0, alpha=0.7)
     axA.annotate("old point cloud (0.84)", xy=(0.84, 0.12), fontsize=7, color="#b07d12")
-    axA.axvspan(0, 0.42, color="#2ca02c", alpha=0.07)            # good zone: still usable
+    axA.axvspan(0, 0.40, color="#2ca02c", alpha=0.07)            # good zone: still usable (recall 1.0 to 0.4 mm)
     axA.text(0.04, 0.10, "✔ usable\n(recall 1.0)", fontsize=8, color="#1a7f4b")
     axA.set_title("A · We stay perfect to 0.4 mm scan noise\n(de-biased, global change)", fontsize=10.5)
     axA.set_xlabel("reconstruction noise σ (mm)"); axA.set_ylabel("recall @ 1 mm")
@@ -83,7 +84,7 @@ def main():
     fig.suptitle("3D surface change: we catch a real lesion the whole-arch average misses — "
                  "and never report a false change (rate = 0 in every panel)", fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.94])
-    for out in [R.parents[1] / "web" / "assets" / "surface_certificate.png",
+    for out in [R.parents[1] / "web" / "assets" / "surface_certificate_v2.png",
                 R.parents[1] / "docs" / "surface_certificate_v2.png"]:
         out.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(out, dpi=130)

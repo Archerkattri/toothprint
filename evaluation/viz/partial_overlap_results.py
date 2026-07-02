@@ -8,7 +8,8 @@ Grouped bars, Rank-1 identity at whole-tooth retention keep-1.0 / 0.5 / 0.3, fiv
     ceiling (the repo's own rigid GICP also hits 1.00 full-coverage on Teeth3DS+).
   * **CorrNet** (Poseidon3D, RECORDED) — 0.87 / 0.57 realistic whole-tooth dropout.
   * **rigid GICP** (RECORDED) — 0.23 / 0.10, the family failure mode under 50–70% tooth loss.
-  * **DGCNN embedding** (RECORDED) — 0.995 full-coverage only.
+  * **DGCNN embedding** (RECORDED) — 0.96 full-coverage (held-out) only; the from-scratch learned
+    descriptor, the like-for-like reference for the frozen Sonata head.
   * **Sonata frozen head** (Teeth3DS+, MEASURED 2026-07-02) — the honest NEGATIVE, read live
     from ``results/sonata_identity.json``; a frozen indoor-SSL encoder + ArcFace head does not
     transfer to dental identity in this low-data, head-only recipe.
@@ -42,6 +43,7 @@ INK, SEC, MUTED, GRID = "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
 def main():
     bx = json.loads((RES / "bufferx_baseline.json").read_text())["results"]
     so = json.loads((RES / "sonata_identity.json").read_text())["keep_ablation_rank1"]
+    dgcnn_full = json.loads((RES / "embedding_identity.json").read_text())["main"]["rank1"]  # 0.96 held-out
 
     bx_05 = bx["teeth_keep0.5"]["bufferx_rank1"]     # 1.00 (measured)
     bx_03 = bx["teeth_keep0.3"]["bufferx_rank1"]     # 0.95 (measured)
@@ -54,7 +56,7 @@ def main():
         ("BUFFER-X zero-shot",   [1.00, bx_05, bx_03],      AQUA,   "Teeth3DS+ · measured"),
         ("CorrNet",              [NA,   0.87,  0.57],        BLUE,   "Poseidon3D · recorded"),
         ("rigid GICP",           [NA,   0.23,  0.10],        RED,    "recorded"),
-        ("DGCNN embedding",      [0.995, NA,   NA],          ORANGE, "recorded · full-coverage"),
+        ("DGCNN embedding",      [dgcnn_full, NA, NA],       ORANGE, "recorded · full-coverage"),
         ("Sonata frozen head",   [so_10, so_05, so_03],      VIOLET, "Teeth3DS+ · measured · NEGATIVE"),
     ]
     legend_tag = {"BUFFER-X zero-shot": "measured", "CorrNet": "recorded", "rigid GICP": "recorded",
