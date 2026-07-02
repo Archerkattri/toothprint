@@ -117,6 +117,11 @@ coverage), the same protocol as the headline numbers.
 - Reproduce: `TP_TEETH3DS=.../teeth3ds/extracted/upper OMP_NUM_THREADS=1 python
   evaluation/scripts/eval_teeth3ds.py` (full N=120). NB: `open3d` GICP is internally
   multi-threaded — set `OMP_NUM_THREADS=1` so the process pool does not oversubscribe cores.
+- The two partial-overlap runs on this same real data — **BUFFER-X zero-shot (positive)** and
+  **Sonata frozen head (negative)** — are in `results/{bufferx_baseline,sonata_identity}.json`;
+  visuals in `docs/bufferx_arch_registration.gif` (live GICP-vs-BUFFER-X registration demo) and
+  `docs/partial_overlap_results.png` (both results, one honest chart), generators under
+  `evaluation/viz/`.
 
 **Caveat (unchanged):** every number here is a single-timepoint optimistic ceiling. Real
 same-patient two-timepoint data (gate #7) is still the binding constraint; this acquisition does

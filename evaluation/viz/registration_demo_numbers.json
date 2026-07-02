@@ -1,0 +1,20 @@
+{
+ "subject": "014996KX",
+ "arch_index": 1,
+ "seed": 301,
+ "keep": 0.5,
+ "n_points": 8000,
+ "search_window_K": 16,
+ "note": "arrival pose is illustrative; both registrars are global so the result is pose-independent. GICP fails on this arch, not on all Teeth3DS+ arches.",
+ "genuine_match_residual_floor": 0.0159,
+ "gicp": {
+  "rre_deg": 110.3,
+  "rte_norm": 0.153,
+  "residual_norm": 0.0824
+ },
+ "bufferx": {
+  "rre_deg": 0.57,
+  "rte_norm": 0.007,
+  "residual_norm": 0.0158
+ }
+}

@@ -194,6 +194,10 @@ Under **realistic discrete whole-tooth dropout** (random, non-contiguous teeth r
 
 *Read honestly:* these are **different real datasets** (BUFFER-X on Teeth3DS+; the others recorded on Poseidon3D, which is not on this machine), BUFFER-X gets a denser point budget as an indoor-scan method, N=40 at a single rep, and the genuine query is a crop of the same arch. The takeaway is that **rigid + zero-shot registration is already strong on real dental arches** — the repo's own GICP also hits Rank-1 1.0 full-coverage on Teeth3DS+ — so CorrNet's contribution is on the harder Poseidon3D distribution and as a *certifiable, retrieve-then-verify* component, not a claim that no generalist can register teeth. (`eval_bufferx_baseline.py` → `bufferx_baseline.json`)
 
+![Live registration demo on a real Teeth3DS+ arch: a keep-0.5 whole-tooth-dropout crop handed to rigid GICP (drops into the wrong basin, RRE 110°) and to BUFFER-X (locks on zero-shot, RRE 0.6°)](docs/bufferx_arch_registration.gif)
+
+*What you are watching* — one real arch (`014996KX`), 50% of its teeth dropped, both registrars run **live** on this pair. Rigid GICP's PCA-init flips the missing-teeth half-arch into the **wrong basin** (RRE 110°, residual 5.2× the genuine-match floor); **BUFFER-X locks on** with no dental training (RRE 0.6°, at the floor). Honesty: GICP is *not* uniformly bad on Teeth3DS+ — it succeeds on most arches here, so this is one real failure case — the aggregate numbers (GICP keep-0.5 Rank-1 0.23 on Poseidon3D vs BUFFER-X 1.00) carry the story. Seeded generator + measured RRE/RTE/residual: `evaluation/viz/bufferx_arch_registration.py` → `registration_demo_numbers.json`.
+
 *Reproduce:* `train_correspondence.py` → `eval_correspondence.py` → `correspondence_identity.json`; cross-dataset in `eval_correspondence_teeth3ds.py`.
 
 ### Two more modalities, and a forensic signal
@@ -412,6 +416,10 @@ Not covered (deployment responsibilities): authn/authz, rate limiting, TLS, HIPA
 ## 2026-07-01 upgrades — run on real data (2026-07-02)
 
 The 2026-07-01 SOTA-review groundwork has now been **executed on real Teeth3DS+ data acquired 2026-07-02** (150 ungated, md5-verified OSF upper arches; see [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md)). This data is **single-timepoint** with synthetic re-scans, so it still does **not** close the gate-#7 longitudinal need ([below](#help-wanted--real-longitudinal-data)) — but it turns the "committed, not yet run" scaffolding into measured numbers.
+
+![Partial-overlap identity on real dental arches: BUFFER-X zero-shot 1.00/1.00/0.95 and Sonata frozen-head 0.28/0.13/0.03 at keep 1.0/0.5/0.3, with CorrNet, rigid GICP and DGCNN reference bars](docs/partial_overlap_results.png)
+
+Both 2026-07-02 measured results on one honest axis — the **positive** (BUFFER-X zero-shot registration transfers to teeth) and the **negative** (a frozen foundation-model head does not), against the recorded CorrNet / GICP / DGCNN references. Cross-dataset comparison (BUFFER-X + Sonata on Teeth3DS+; CorrNet / GICP / DGCNN recorded on Poseidon3D), N=40 single rep, single-timepoint. Generator: `evaluation/viz/partial_overlap_results.py`.
 
 - **Real-arch identity reproduced.** The registration identity pipeline (PCA-init + multi-scale Generalized-ICP) hits **Rank-1 1.000 / EER 0.000 / AUC 1.000** on real Teeth3DS+ arches (N=40; `teeth3ds_identity_smoke_n40.json`), reproducing the committed N=120 result on freshly re-downloaded data.
 - **BUFFER-X zero-shot baseline — run.** On real Teeth3DS+ arches at the CorrNet crop protocol, [BUFFER-X](https://github.com/MIT-SPARK/BUFFER-X) (ICCV 2025, no dental training) reaches Rank-1 **1.00 / 0.95** at keep-0.5 / keep-0.3 (realistic whole-tooth dropout). **Zero-shot registration transfers to teeth** — table and caveats in [The partial-overlap breakthrough](#the-partial-overlap-breakthrough--learned-point-correspondence). (`eval_bufferx_baseline.py` → `bufferx_baseline.json`)
