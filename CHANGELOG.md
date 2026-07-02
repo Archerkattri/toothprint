@@ -10,6 +10,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+The 2026-07-01 SOTA-upgrade scaffolding was **run on the real Teeth3DS+ data acquired 2026-07-02**
+(150 ungated, md5-verified OSF upper arches — single-timepoint, so still not the gate-#7
+longitudinal validation).
+
+### Added
+
+- **BUFFER-X zero-shot registration — measured on real arches.** Ran `eval_bufferx_baseline.py`
+  (rewired to load the pretrained BUFFER-X 3DMatch model from the built third-party tree and to
+  run on real Teeth3DS+ arches at the CorrNet crop protocol). BUFFER-X, an indoor-scan generalist
+  with **no dental training**, reaches Rank-1 **1.00 / 0.95** at keep-0.5 / keep-0.3 (realistic
+  whole-tooth dropout; planar 1.00 / 1.00), on N=40 arches. Zero-shot registration transfers to
+  dental micro-geometry. Result in `evaluation/results/bufferx_baseline.json`; table + honest
+  cross-dataset caveats in the README.
+- **Sonata/PTv3 foundation-model embedding — installed, run, honest negative.** The Pointcept
+  stack (spconv-cu126, torch-scatter built from source, `sonata`) installs and runs on the RTX
+  5090 (CUDA 12.8 / sm_120); Flash-Attention is optional and off by default. Trained a **frozen**
+  Sonata encoder + ArcFace head on 110 real arches: held-out Rank-1 **0.275 / 0.125 / 0.025** at
+  keep 1.0 / 0.5 / 0.3 on 40 unseen subjects (`evaluation/results/sonata_identity.json`) — well
+  below the from-scratch DGCNN (0.995 full-coverage, Poseidon3D) and the rigid pipeline (1.0 on
+  Teeth3DS+). Frozen indoor-SSL features do not transfer to dental identity in this low-data,
+  head-only recipe; full fine-tune (`TP_FREEZE=0`) is the open next step.
+
+### Fixed
+
+- **`SonataEmbedding` backbone made runnable.** The speculative wrapper could not load the
+  pretrained weights or forward: (1) it did not disable Flash-Attention (added `enable_flash_attn`,
+  default off, passed as `custom_config` to `sonata.load`); (2) it fed 3 input channels where the
+  pretrained PTv3 stem expects 9 (`coord + colour + normal`) — now emits zero colour and
+  per-point PCA-estimated normals (autocast-safe, float32 `eigh`); (3) the lazily-built backbone
+  stranded on CPU when `.load()` followed `.to(device)` — now follows the head's device.
+- **Sonata training script generalised to Teeth3DS+** — `train_sonata_embedding.py` now globs
+  `.obj` as well as `.stl`, takes a configurable train/held-out split (`TP_NTRAIN`), and runs a
+  held-out Rank-1 identity eval (keep 1.0 / 0.5 / 0.3), writing `sonata_identity.json`.
+
 ## [1.1.0] - 2026-07-02
 
 Groundwork from a 2026-07-01 SOTA review — code and data-access scaffolding, committed but

@@ -1,0 +1,16 @@
+{
+ "dataset": "upper",
+ "backbone": "sonata (PTv3, facebook/sonata SSL)",
+ "n_train": 110,
+ "n_heldout": 40,
+ "emb_dim": 256,
+ "freeze_backbone": true,
+ "epochs": 80,
+ "grid_size": 0.02,
+ "keep_ablation_rank1": {
+  "1.0": 0.275,
+  "0.5": 0.125,
+  "0.3": 0.025
+ },
+ "note": "held-out = subjects unseen in training; genuine = repositioned+jittered+cropped re-scan"
+}

@@ -127,8 +127,14 @@ class SonataEmbedding(nn.Module):
         model_name: str = "sonata",
         grid_size: float = 0.02,
         freeze_backbone: bool = True,
+        enable_flash_attn: bool = False,
     ):
         super().__init__()
+        # Sonata's released config enables Flash-Attention; it is an optional accelerator, not a
+        # requirement. Default OFF so the pretrained weights load on a stock CUDA box without the
+        # (hard-to-build) flash-attn wheel — the standard serialized-attention path is numerically
+        # equivalent. Set True only if flash-attn is installed.
+        self.enable_flash_attn = enable_flash_attn
         self.emb_dim = emb_dim
         self.feat_dim = feat_dim
         self.repo_id = repo_id
@@ -155,7 +161,10 @@ class SonataEmbedding(nn.Module):
             import sonata  # type: ignore
         except ImportError as e:  # pragma: no cover - exercised only without the dep
             raise ImportError(self._INSTALL_HINT) from e
-        model = sonata.load(self.model_name, repo_id=self.repo_id)
+        # custom_config overrides the checkpoint's config: disable Flash-Attention unless the user
+        # has it (see __init__). The pretrained encoder ingests 9 input channels (coord+color+normal).
+        model = sonata.load(self.model_name, repo_id=self.repo_id,
+                            custom_config={"enable_flash": self.enable_flash_attn})
         if self.freeze_backbone:
             for p in model.parameters():
                 p.requires_grad_(False)
@@ -167,18 +176,50 @@ class SonataEmbedding(nn.Module):
         if isinstance(enc_dim, int) and enc_dim != self.feat_dim:
             self.feat_dim = enc_dim
             self.head[0] = nn.Linear(enc_dim, 512, bias=False)
+        # The backbone is built here (lazily), possibly after the module was already moved with
+        # ``.to(device)`` — so follow the head's device rather than stranding it on CPU.
+        try:
+            dev = next(self.head.parameters()).device
+            model = model.to(dev)
+        except StopIteration:
+            pass
         self.backbone = model
         return self
 
+    @staticmethod
+    def _estimate_normals(coord: torch.Tensor, k: int = 16) -> torch.Tensor:
+        """Per-point unit normals via local-neighbourhood PCA (smallest-eigenvector), on device.
+        A bare intraoral arch has no colour/normal channels, so we compute normals to fill Sonata's
+        expected ``normal`` feature slot. ``coord`` is a single ``(N, 3)`` cloud."""
+        out_dtype = coord.dtype
+        n = coord.shape[0]
+        k = min(k, n - 1) if n > 1 else 1
+        # eigh has no CUDA half kernel, so compute in float32 with autocast off, then cast back.
+        with torch.autocast(device_type=coord.device.type, enabled=False):
+            c = coord.float()
+            d = torch.cdist(c, c)                                       # (N, N)
+            idx = d.topk(k + 1, largest=False).indices[:, 1:]         # (N, k) nearest (excl self)
+            nb = c[idx]                                                # (N, k, 3)
+            cen = nb - nb.mean(1, keepdim=True)
+            cov = cen.transpose(1, 2) @ cen / max(k, 1)               # (N, 3, 3)
+            _evals, evecs = torch.linalg.eigh(cov)
+            normals = torch.nn.functional.normalize(evecs[:, :, 0], dim=1)   # smallest-eigenvalue dir
+        return normals.to(out_dtype)
+
     def _to_point_dict(self, pts: torch.Tensor):
         """Turn a batched ``(B, N, 3)`` cloud into Pointcept's Point dict (coord/feat/batch/grid).
-        Coordinates double as features (no colour on a bare arch); documented in RUN.md."""
+        Sonata's pretrained PTv3 stem expects **9 input channels** ``[coord(3), colour(3),
+        normal(3)]`` (its ``feat_keys``); a bare arch has no colour, so colour is zeros and normals
+        are estimated per point (see :meth:`_estimate_normals`). Documented in RUN.md."""
         B, N, _ = pts.shape
         coord = pts.reshape(B * N, 3)
         batch = torch.arange(B, device=pts.device).repeat_interleave(N)
+        normals = torch.cat([self._estimate_normals(pts[b]) for b in range(B)], dim=0)
+        colour = torch.zeros_like(coord)
+        feat = torch.cat([coord, colour, normals], dim=1)              # (B*N, 9)
         return {
             "coord": coord,
-            "feat": coord,
+            "feat": feat,
             "batch": batch,
             "grid_size": self.grid_size,
         }

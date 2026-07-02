@@ -1,0 +1,48 @@
+{
+ "dataset": "Teeth3DS+ (real intraoral upper arches)",
+ "n_arches": 40,
+ "reps": 1,
+ "n_points": 8000,
+ "matcher": "BUFFER-X (arXiv 2503.07940, ICCV 2025) \u2014 zero-shot, pretrained 3DMatch, no dental retraining",
+ "protocol": "eval_correspondence.py crop geometry (planar / realistic whole-tooth dropout), Rank-1 gallery ID",
+ "corrnet_reference": {
+  "note": "authoritative values in correspondence_identity.json",
+  "planar_keep0.5": 0.913,
+  "planar_keep0.3": 0.8,
+  "teeth_keep0.5": 0.867,
+  "teeth_keep0.3": 0.567
+ },
+ "results": {
+  "teeth_keep0.5": {
+   "bufferx_rank1": 1.0,
+   "std": 0.0,
+   "auc": 1.0
+  },
+  "teeth_keep0.3": {
+   "bufferx_rank1": 0.95,
+   "std": 0.0,
+   "auc": 0.982
+  },
+  "planar_keep0.5": {
+   "bufferx_rank1": 1.0,
+   "std": 0.0,
+   "auc": 1.0
+  },
+  "planar_keep0.3": {
+   "bufferx_rank1": 1.0,
+   "std": 0.0,
+   "auc": 1.0
+  }
+ },
+ "gicp_reference": {
+  "keep0.5": {
+   "crop_hardened": 0.635,
+   "rigid_gicp": 0.23
+  },
+  "keep0.3": {
+   "crop_hardened": 0.26,
+   "rigid_gicp": 0.1
+  }
+ },
+ "seconds": 1323.6
+}

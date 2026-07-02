@@ -38,21 +38,57 @@ from train_embedding import ArchDS, augment, load_norm, rand_rot  # noqa: E402,F
 
 DATA = os.environ.get("TP_DATA", str(paths.POSEIDON3D))
 WEIGHTS = Path(os.environ.get("TP_SONATA_WEIGHTS", "/tmp/toothprint_embedding/sonata_encoder.pt"))
-N_PTS, EMB, N_TRAIN, BATCH = 1024, 256, 150, 16      # smaller batch: PTv3 is heavier than DGCNN
+import json  # noqa: E402
+OUT = Path(__file__).resolve().parents[1] / "results" / "sonata_identity.json"
+N_PTS, EMB, BATCH = 1024, 256, 16                    # smaller batch: PTv3 is heavier than DGCNN
+N_TRAIN = int(os.environ.get("TP_NTRAIN", "150"))    # train subjects; the rest are held out (unseen)
 EPOCHS = int(os.environ.get("TP_EPOCHS", "80"))
 FREEZE = os.environ.get("TP_FREEZE", "1") != "0"
 GRID = float(os.environ.get("TP_GRID", "0.02"))
 REPO_ID = os.environ.get("TP_SONATA_REPO", "facebook/sonata")
 
 
+def _meshes(data):
+    """All arch meshes under DATA — Poseidon3D uses .stl, Teeth3DS+ uses .obj."""
+    p = Path(data)
+    return sorted(list(p.glob("*/*.stl")) + list(p.glob("*/*.obj")))
+
+
+@torch.no_grad()
+def _embed(enc, clouds, dev):
+    enc.eval()
+    out = []
+    for i in range(0, len(clouds), BATCH):
+        x = torch.from_numpy(np.stack(clouds[i:i + BATCH])).to(dev)
+        out.append(enc(x).cpu().numpy())
+    return np.concatenate(out)
+
+
+def _heldout_eval(enc, held, dev):
+    """Rank-1 identification on UNSEEN held-out subjects at keep 1.0 / 0.5 / 0.3, same protocol as
+    eval_embedding.py (repositioned + jittered + cropped genuine re-scans vs a full-arch gallery)."""
+    from eval_embedding import reposition  # same query synthesis as the DGCNN eval
+    n = len(held); rng = np.random.default_rng(0)
+    gallery = _embed(enc, [c[rng.choice(len(c), N_PTS, replace=False)] for c in held], dev)
+    res = {}
+    for keep in (1.0, 0.5, 0.3):
+        q = [reposition(c, np.random.default_rng(1000 + i), keep) for i, c in enumerate(held)]
+        M = 1.0 - _embed(enc, q, dev) @ gallery.T                        # cosine distance
+        r1 = float(np.mean([np.argmin(M[i]) == i for i in range(n)]))
+        res[str(keep)] = round(r1, 3)
+        print(f"  held-out keep {keep}: Sonata Rank-1 {r1:.3f}  (n={n})", flush=True)
+    return res
+
+
 def main():
     dev = "cuda"
-    meshes = sorted(Path(DATA).glob("*/*.stl"))
+    meshes = _meshes(DATA)
     print(f"loading {len(meshes)} arches ...", flush=True)
     base = [load_norm(m, N_PTS * 3) for m in meshes]
-    clouds = [c for c in base if c is not None][:N_TRAIN]
-    print(f"training on {len(clouds)} subjects (held-out: "
-          f"{len([c for c in base if c is not None]) - len(clouds)})", flush=True)
+    valid = [c for c in base if c is not None]
+    clouds = valid[:N_TRAIN]
+    held = valid[N_TRAIN:]
+    print(f"training on {len(clouds)} subjects (held-out: {len(held)})", flush=True)
 
     enc = build_embedding_backbone("sonata", emb_dim=EMB, grid_size=GRID, repo_id=REPO_ID,
                                    freeze_backbone=FREEZE).to(dev)
@@ -90,6 +126,16 @@ def main():
     torch.save({"enc": enc.state_dict(), "backbone": "sonata", "emb_dim": EMB, "n_pts": N_PTS,
                 "n_train": len(clouds), "grid_size": GRID, "freeze_backbone": FREEZE}, WEIGHTS)
     print(f"saved {WEIGHTS}  ({time.time()-t0:.0f}s)", flush=True)
+
+    if held:
+        ka = _heldout_eval(enc, held, dev)
+        out = {"dataset": Path(DATA).name, "backbone": "sonata (PTv3, facebook/sonata SSL)",
+               "n_train": len(clouds), "n_heldout": len(held), "emb_dim": EMB,
+               "freeze_backbone": FREEZE, "epochs": EPOCHS, "grid_size": GRID,
+               "keep_ablation_rank1": ka,
+               "note": "held-out = subjects unseen in training; genuine = repositioned+jittered+cropped re-scan"}
+        OUT.write_text(json.dumps(out, indent=1) + "\n")
+        print(f"saved {OUT}", flush=True)
 
 
 if __name__ == "__main__":

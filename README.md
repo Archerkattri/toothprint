@@ -184,6 +184,16 @@ Under **realistic discrete whole-tooth dropout** (random, non-contiguous teeth r
 
 **Cross-dataset honesty.** The learned descriptors are partly dataset-specific: CorrNet trained only on Poseidon3D, run on **Teeth3DS+** (a different real dataset, all unseen), drops keep-0.5 **0.87 → 0.42** — still 34× chance and still above GICP, but a real domain gap that needs multi-dataset training to close. Recorded, not hidden.
 
+**Zero-shot registration transfers to teeth (BUFFER-X, measured 2026-07-02).** We ran **BUFFER-X** (Kim et al., ICCV 2025) — a *generalist* point-cloud registrar pretrained on indoor RGB-D scans, with **no dental training** — on **real Teeth3DS+ upper arches** (N=40) at the identical crop protocol. It registers dental micro-geometry cleanly: realistic whole-tooth-dropout Rank-1 **1.00 @ keep-0.5** and **0.95 @ keep-0.3** (clean planar cut 1.00 / 1.00). So the answer to "does zero-shot registration transfer to teeth?" is **yes**.
+
+| method (dataset) | teeth keep-0.5 | teeth keep-0.3 |
+|---|:--:|:--:|
+| rigid GICP (Poseidon3D, recorded) | 0.23 | 0.10 |
+| CorrNet (Poseidon3D, recorded) | 0.87 | 0.57 |
+| **BUFFER-X zero-shot (Teeth3DS+, measured today)** | **1.00** | **0.95** |
+
+*Read honestly:* these are **different real datasets** (BUFFER-X on Teeth3DS+; the others recorded on Poseidon3D, which is not on this machine), BUFFER-X gets a denser point budget as an indoor-scan method, N=40 at a single rep, and the genuine query is a crop of the same arch. The takeaway is that **rigid + zero-shot registration is already strong on real dental arches** — the repo's own GICP also hits Rank-1 1.0 full-coverage on Teeth3DS+ — so CorrNet's contribution is on the harder Poseidon3D distribution and as a *certifiable, retrieve-then-verify* component, not a claim that no generalist can register teeth. (`eval_bufferx_baseline.py` → `bufferx_baseline.json`)
+
 *Reproduce:* `train_correspondence.py` → `eval_correspondence.py` → `correspondence_identity.json`; cross-dataset in `eval_correspondence_teeth3ds.py`.
 
 ### Two more modalities, and a forensic signal
@@ -399,12 +409,13 @@ Not covered (deployment responsibilities): authn/authz, rate limiting, TLS, HIPA
 
 </details>
 
-## 2026-07-01 upgrades
+## 2026-07-01 upgrades — run on real data (2026-07-02)
 
-Groundwork from a SOTA review — committed but **not yet run**, so there are no new numbers: the real-data gate ([below](#help-wanted--real-longitudinal-data)) is still the binding constraint on this machine.
+The 2026-07-01 SOTA-review groundwork has now been **executed on real Teeth3DS+ data acquired 2026-07-02** (150 ungated, md5-verified OSF upper arches; see [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md)). This data is **single-timepoint** with synthetic re-scans, so it still does **not** close the gate-#7 longitudinal need ([below](#help-wanted--real-longitudinal-data)) — but it turns the "committed, not yet run" scaffolding into measured numbers.
 
-- **Foundation-model embedding option.** `backbone="sonata"` adds a **PTv3 + Sonata SSL** encoder (via [Pointcept](https://github.com/Pointcept/Pointcept)) alongside the from-scratch DGCNN, behind the *same* ArcFace head and descriptor contract. To our knowledge the **first application of a point-cloud foundation model to dental identification** — stated as a direction, not a result: training needs a GPU + Pointcept install and has not been run here for want of real dental data. Train with `evaluation/scripts/train_sonata_embedding.py` (commands + VRAM in [`evaluation/scripts/RUN.md`](evaluation/scripts/RUN.md)).
-- **BUFFER-X zero-shot baseline.** `evaluation/scripts/eval_bufferx_baseline.py` runs [BUFFER-X](https://github.com/MIT-SPARK/BUFFER-X) (ICCV 2025) on the *identical* partial-overlap protocol as CorrNet for a head-to-head table (CorrNet targets 0.87 / 0.57 recorded in the header).
+- **Real-arch identity reproduced.** The registration identity pipeline (PCA-init + multi-scale Generalized-ICP) hits **Rank-1 1.000 / EER 0.000 / AUC 1.000** on real Teeth3DS+ arches (N=40; `teeth3ds_identity_smoke_n40.json`), reproducing the committed N=120 result on freshly re-downloaded data.
+- **BUFFER-X zero-shot baseline — run.** On real Teeth3DS+ arches at the CorrNet crop protocol, [BUFFER-X](https://github.com/MIT-SPARK/BUFFER-X) (ICCV 2025, no dental training) reaches Rank-1 **1.00 / 0.95** at keep-0.5 / keep-0.3 (realistic whole-tooth dropout). **Zero-shot registration transfers to teeth** — table and caveats in [The partial-overlap breakthrough](#the-partial-overlap-breakthrough--learned-point-correspondence). (`eval_bufferx_baseline.py` → `bufferx_baseline.json`)
+- **Sonata/PTv3 foundation-model embedding — run, honest negative.** The [Pointcept](https://github.com/Pointcept/Pointcept) stack (spconv, torch-scatter, **Sonata** PTv3) now installs and runs on the RTX 5090 (CUDA 12.8 / sm_120; Flash-Attention optional, off by default). To our knowledge the **first application of a point-cloud foundation model to dental identity** — and the first measured result is a **negative**: a *frozen* Sonata encoder + ArcFace head trained on 110 real arches reaches only Rank-1 **0.28 / 0.13 / 0.03** at keep 1.0 / 0.5 / 0.3 on 40 unseen subjects (`sonata_identity.json`), far below the from-scratch DGCNN (Rank-1 0.995 full-coverage, recorded on Poseidon3D) and the rigid pipeline's 1.0 on Teeth3DS+. Frozen indoor-SSL features don't transfer to dental identity in this low-data, head-only recipe; a full fine-tune (`TP_FREEZE=0`) is the open next step. Install + run recipe in [`evaluation/scripts/RUN.md`](evaluation/scripts/RUN.md).
 - **Docs.** [`docs/RECON_UPGRADES_2026.md`](docs/RECON_UPGRADES_2026.md) (reconstruction-leg candidates) and [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md), the gate-#7 tracker (Zenodo 11392406 DUA checklist).
 - **Tests: 183 passing** (was 102). Release history: **[CHANGELOG.md](CHANGELOG.md)**.
 
