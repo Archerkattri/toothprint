@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-02
+
 Groundwork from a 2026-07-01 SOTA review — code and data-access scaffolding, committed but
 **not yet run at scale on this machine, so there are no new headline numbers.** The binding
 constraint stays the same: real longitudinal / cross-session data (gate #7), still open.
