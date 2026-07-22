@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "toothprint"
-version = "1.1.0"
+version = "1.1.1"
 description = "Certified dental-imaging intelligence: identification, change, and surface certificates from teeth."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }   # PolyForm Noncommercial 1.0.0 — free for any non-commercial use, no resale
-authors = [{ name = "Archerkattri", email = "krishiattriwork@gmail.com" }]
+authors = [{ name = "Krishi Attri", email = "krishiattriwork@gmail.com" }]
 dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",

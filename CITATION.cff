@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use ToothPrint, please cite it as below."
+title: "ToothPrint: Certified Dental Identity, Change, and Surface Analysis"
+type: software
+authors:
+  - family-names: Attri
+    given-names: Krishi
+    email: krishiattriwork@gmail.com
+    orcid: "https://orcid.org/0009-0005-4695-6467"
+version: 1.1.1
+date-released: 2026-07-23
+repository-code: "https://github.com/Archerkattri/toothprint"
+license: PolyForm-Noncommercial-1.0.0
+identifiers:
+  - type: doi
+    value: 10.31224/7403
+    description: "engrXiv preprint"
+keywords:
+  - dental biometrics
+  - identity verification
+  - certified analysis
+  - conformal prediction
+  - 3d surface analysis
