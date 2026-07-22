@@ -7,10 +7,9 @@
 [![engrXiv preprint](https://img.shields.io/badge/preprint-engrXiv-b31b1b.svg)](https://engrxiv.org/preprint/view/7403)
 [![DOI](https://img.shields.io/badge/DOI-10.31224%2F7403-1f6feb.svg)](https://doi.org/10.31224/7403)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-0d9488.svg)](LICENSE)
-[![Changelog](https://img.shields.io/badge/changelog-v1.1.0-0d9488.svg)](CHANGELOG.md)
-[![Reproduce](https://img.shields.io/badge/reproduce-smoke%20test-0d9488.svg)](REPRODUCE.md)
+[![Changelog](https://img.shields.io/badge/changelog-v1.1.1-0d9488.svg)](CHANGELOG.md)
+[![Zenodo](https://img.shields.io/badge/Zenodo-10.5281%2Fzenodo.21500733-0d9488.svg)](https://doi.org/10.5281/zenodo.21500733)
 [![Conformal](https://img.shields.io/badge/guarantee-FMR%20%E2%89%A4%20%CE%B1-d97706.svg)](#the-certificate)
-[![Tests](https://img.shields.io/badge/tests-passing-16a34a.svg)](#tests)
 
 </div>
 

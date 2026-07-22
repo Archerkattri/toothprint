@@ -15,6 +15,9 @@ identifiers:
   - type: doi
     value: 10.31224/7403
     description: "engrXiv preprint"
+  - type: doi
+    value: 10.5281/zenodo.21500733
+    description: "Zenodo software archive (v1.1.1)"
 keywords:
   - dental biometrics
   - identity verification
