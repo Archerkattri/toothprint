@@ -11,4 +11,4 @@ numpy / scipy / opencv / open3d. Learned front-ends (tooth detection,
 photogrammetric reconstruction) are pluggable and optional.
 """
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
