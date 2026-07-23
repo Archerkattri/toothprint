@@ -4,6 +4,8 @@
 
 **`identity`** · **`change`** · **`surface`** — three reads of one durable signal, each returning a *certificate* instead of a guess.
 
+[![PyPI](https://img.shields.io/pypi/v/toothprint?color=1f6feb)](https://pypi.org/project/toothprint/)
+[![Downloads](https://static.pepy.tech/badge/toothprint)](https://pepy.tech/project/toothprint)
 [![engrXiv preprint](https://img.shields.io/badge/preprint-engrXiv-b31b1b.svg)](https://engrxiv.org/preprint/view/7403)
 [![DOI](https://img.shields.io/badge/DOI-10.31224%2F7403-1f6feb.svg)](https://doi.org/10.31224/7403)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-0d9488.svg)](LICENSE)
