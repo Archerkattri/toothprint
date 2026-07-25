@@ -471,11 +471,16 @@ Every result JSON maps to a committed script; reference baselines are read from 
 
 ## Tests
 
-`python -m pytest -q` → **183 passed** across identity, change, surface, io, api, clinical, geometry, and embedding suites. Release history: **[CHANGELOG.md](CHANGELOG.md)**.
+The test contract is split by dependency tier so optional modules cannot
+silently disappear from collection. `-rs` prints every intentional
+provider-dependent skip. Release history: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ```bash
-pip install -e ".[dev,io,api]"
-pytest --cov=toothprint --cov=api      # core package/API coverage gate
+pip install -e ".[test]"
+python -m pytest -q -rs                # core, API, IO, geometry, and Open3D
+
+pip install -e ".[test,test-torch]"
+python -m pytest -q -rs                # complete CPU suite, including embeddings
 ```
 
 ## Layout
