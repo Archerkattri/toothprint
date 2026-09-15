@@ -88,6 +88,17 @@ the second. Both require *your* application — neither auto-downloads. See also
 
 ## Ungated real-data acquisition (2026-07-02) — smoke-scale, does NOT close gate #7
 
+### Current execution note (2026-09-15)
+
+The prior `data_part_1` acquisition described below is not present in the
+current materialized workspace paths. A fresh bounded public sample was
+downloaded outside the repository at
+`C:/Users/krishi/Documents/research/datasets/teeth3ds/sample/teeth3ds_sample`.
+Its single `01F4JV8X_upper.obj` arch passes the guarded `toothprint.io.load_scan`
+path (120,522 vertices, 240,900 faces, all finite). This validates real OBJ
+ingestion only; it does not reopen gate #7 or support identity metrics because
+there is one subject and no longitudinal re-scan.
+
 An attempt to obtain **ungated** dental data (per `EXTERNAL_DATA.md`) succeeded for the repo's
 primary eval family, Teeth3DS+. This yields a **smoke-scale real-arch** identity run — real
 intraoral arches instead of synthetic fixtures — but it is **single-timepoint** data with

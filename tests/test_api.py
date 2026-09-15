@@ -278,8 +278,40 @@ def test_identify_scan_matches_same_arch(tmp_path):
     r = client.post("/api/identify/scan", files=files)
     assert r.status_code == 200
     body = r.json()
-    assert body["match"] == "g.stl" and body["verdict"] == "same person"
+    assert body["match"] == "g.stl"
+    assert body["verdict"] == "heuristic_match"
+    assert body["decision_mode"] == "heuristic_demo"
+    assert body["certified"] is False
+    assert body["calibration_id"] is None
     assert len(body["ranking"]) == 2
+
+
+def test_identity_decision_requires_calibration_for_certified_mode():
+    from api.main import _identity_decision
+
+    heuristic = _identity_decision(0.2)
+    assert heuristic["decision_mode"] == "heuristic_demo"
+    assert heuristic["certified"] is False
+    assert heuristic["verdict"] != "same person"
+
+    class FixtureCertifier:
+        def decide(self, distance_mm):
+            assert distance_mm == 0.2
+            return {
+                "verdict": "accept",
+                "certified": True,
+                "calibration_id": "site-A:fixture-v1",
+                "limitations": ["fixture only"],
+            }
+
+    calibrated = _identity_decision(0.2, FixtureCertifier())
+    assert calibrated == {
+        "decision_mode": "calibrated",
+        "certified": True,
+        "calibration_id": "site-A:fixture-v1",
+        "verdict": "accept",
+        "limitations": ["fixture only"],
+    }
 
 
 def test_identify_scan_needs_two(tmp_path):

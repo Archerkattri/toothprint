@@ -40,6 +40,44 @@ app = FastAPI(
     description="Certified dental identity, change, and surface — with safe medical-file ingest.",
 )
 
+HEURISTIC_IDENTITY_LIMITATIONS = [
+    "research/demo heuristic; no identity calibration was supplied",
+    "not a clinical or forensic identity decision",
+    "requires site calibration and prospective validation before deployment",
+]
+
+
+def _identity_decision(distance_mm: float, certifier=None) -> dict:
+    """Return an explicit heuristic result or an injected calibrated result.
+
+    The API has no built-in identity certifier. Deployments may inject a
+    versioned certifier through ``app.state.identity_certifier``; it must expose
+    ``decide(distance_mm)`` and return a certified decision plus a calibration
+    identifier. A missing certifier is deliberately a heuristic/demo path.
+    """
+    distance_mm = float(distance_mm)
+    if certifier is None:
+        return {
+            "decision_mode": "heuristic_demo",
+            "certified": False,
+            "calibration_id": None,
+            "verdict": "heuristic_match" if distance_mm < 1.0 else "heuristic_no_confident_match",
+            "limitations": HEURISTIC_IDENTITY_LIMITATIONS,
+        }
+    try:
+        result = certifier.decide(distance_mm)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail="identity certifier unavailable or invalid") from exc
+    if not isinstance(result, dict) or not result.get("certified") or not result.get("calibration_id"):
+        raise HTTPException(status_code=503, detail="identity certifier did not provide a certified decision")
+    return {
+        "decision_mode": "calibrated",
+        "certified": True,
+        "calibration_id": str(result["calibration_id"]),
+        "verdict": str(result.get("verdict", "abstain")),
+        "limitations": list(result.get("limitations", [])),
+    }
+
 
 @app.exception_handler(RequestValidationError)
 async def _validation_error(request: Request, exc: RequestValidationError):
@@ -234,13 +272,21 @@ async def _stream_to_tmp(file: UploadFile) -> str:
     suffix = "".join(Path(file.filename or "upload").suffixes[-2:])
     fd, tmp = tempfile.mkstemp(suffix=suffix)
     total = 0
-    with os.fdopen(fd, "wb") as out:
-        while chunk := await file.read(1 << 20):
-            total += len(chunk)
-            if total > MAX_UPLOAD_BYTES:
-                os.unlink(tmp)
-                raise HTTPException(status_code=413, detail="upload too large")
-            out.write(chunk)
+    try:
+        with os.fdopen(fd, "wb") as out:
+            while chunk := await file.read(1 << 20):
+                total += len(chunk)
+                if total > MAX_UPLOAD_BYTES:
+                    raise HTTPException(status_code=413, detail="upload too large")
+                out.write(chunk)
+    except BaseException:
+        # Close the handle before unlinking: Windows rejects unlinking an open
+        # temporary file, which otherwise masks the intended 413 response.
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
     return tmp
 
 
@@ -277,13 +323,14 @@ async def identify_scan(files: list[UploadFile] = File(...)) -> dict:
             for j in order
         ]
         best = ranking[0]
+        decision = _identity_decision(
+            best["distance_mm"], getattr(app.state, "identity_certifier", None)
+        )
         return {
             "match": best["label"],
             "distance_mm": best["distance_mm"],
-            "verdict": "same person"
-            if best["distance_mm"] < 1.0
-            else "no confident match",
             "ranking": ranking,
+            **decision,
         }
     finally:
         for t in tmps:

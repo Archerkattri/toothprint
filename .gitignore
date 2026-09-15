@@ -24,6 +24,7 @@ video/_reel/
 video/cli_demo.mp4
 
 # Python
+build/
 __pycache__/
 *.py[cod]
 *.egg-info/

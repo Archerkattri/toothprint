@@ -200,7 +200,7 @@ def _reconstruct_dust3r(
         )
         pts = np.asarray(result.point_cloud.vertices, dtype=np.float64)
         # Use real per-point confidence if available from mini-dust3r output;
-        # otherwise fall back to a uniform 0.8 placeholder.
+        # otherwise use the documented uniform confidence default.
         if hasattr(result, "conf") and result.conf is not None:
             conf = np.clip(np.asarray(result.conf, dtype=np.float64), 0.0, 1.0)
         else:

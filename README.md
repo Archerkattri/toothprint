@@ -25,7 +25,7 @@
 
 | Need | ToothPrint returns | Primary viewer |
 |---|---|---|
-| **Is this the same person?** | a ranked dental match plus accept / abstain certificate | forensic examiner, dentist, researcher |
+| **Is this the same person?** | a ranked dental match; calibrated accept / abstain only when a site certifier is supplied | forensic examiner, dentist, researcher |
 | **Did bone level change between visits?** | changed / stable / uncertain with a false-progression bound | dentist, periodontist, patient-facing report |
 | **Where did the 3D surface change?** | regional surface-change map with a false-change bound | clinician, lab, reconstruction researcher |
 | **Can I inspect files locally?** | safe ingest, local preview, API response, and PDF case report | hospital IT, engineer, reviewer |
@@ -229,6 +229,16 @@ BUFFER-X keep-0.5/keep-0.3 are the mean over 3 crop-seed reps: keep-0.5 held **1
 
 The full matcher assembles into a single accept/abstain certificate: **retrieve** by the embedding (recall, partial-robust) → **verify** the shortlist by CorrNet correspondence (precision) → **accept** only above a conformal threshold (FMR ≤ α), else **abstain**. At full coverage **FNIR@FMR=1% = 0.00** — every genuine accepted and correctly identified, impostors rejected at the bound. Under partial overlap it degrades to 0.74 — best of all methods, but open-set rejection is a near-full-coverage property, so the unified decision **abstains** under heavy tooth loss rather than risk a false accept. *One pipeline, one conformal verdict, honest about when to decline.* (`eval_unified.py`)
 
+### Gallery-level selection calibration
+
+The current identity release also exposes [`toothprint.identity.gallery`](docs/GALLERY_CALIBRATION.md), which closes a subtle validity gap in pairwise calibration. It calibrates the minimum distance after searching the **complete declared gallery** on non-enrolled queries, then accepts only a single identity below the finite-sample lower-tail threshold. Multiple identities that clear the threshold are returned as an explicit identity set and the decision abstains; gallery-size, selector and site changes require recalibration. A synthetic 40-way pilot shows why this matters: reusing a pairwise threshold produced a 0.892 held-out false-accept rate after gallery search, while the gallery-level calibration produced 0.046 at target α=0.05.
+
+```bash
+python evaluation/scripts/gallery_calibration_pilot.py
+```
+
+This is a selection-aware identity-safety mechanism, not clinical or forensic validation. The real-data boundary remains the restricted same-patient longitudinal gate in [`evaluation/DATA_GATE.md`](evaluation/DATA_GATE.md).
+
 <details><summary><b>Robustness ablations + the partial-overlap miss, shown not hidden</b></summary>
 
 Rank-1 holds at **1.0 through 0.4 mm sensor noise and 4× voxel coarsening**, every query already repositioned (rotation + translation). The one rigid-method degradation is tooth loss (keep 0.5 → 0.23 for plain GICP) — which the learned correspondence above recovers to 0.87.
@@ -334,7 +344,7 @@ person = labels[int(np.argmin(distances))]
 verdict = certify_surface_change(measured_mm=1.2, certifier=certifier)   # -> "changed"
 ```
 
-A FastAPI service exposes the same logic plus safe file ingest (`pip install -e ".[api]"`, then `uvicorn api.main:app`): `/api/inspect`, `/api/identify/scan`, `/api/identify/radiograph`, `/api/certify/change`, `/api/certify/surface`.
+A FastAPI service exposes the same logic plus safe file ingest (`pip install -e ".[api]"`, then `uvicorn api.main:app`): `/api/inspect`, `/api/identify/scan`, `/api/identify/radiograph`, `/api/certify/change`, `/api/certify/surface`. The scan endpoint returns `decision_mode: heuristic_demo` and `certified: false` unless a deployment injects a versioned identity certifier through application state; its heuristic result is not a clinical or forensic identity decision.
 
 ---
 
@@ -518,3 +528,11 @@ Under Partial Overlap"** (Krishi Attri, Seoul National University), posted to
 **[PolyForm Noncommercial License 1.0.0](LICENSE)** — free for *everyone* for any **non-commercial** purpose. That explicitly includes research, education, personal projects, and **non-profit / public health & safety organizations — hospitals, clinics, forensic labs — regardless of how they are funded** (the license's *Noncommercial Organizations* clause). Use it, modify it, share it, build on it.
 
 What is **not** permitted: selling the software, folding it into a paid product or service, or any use for commercial advantage — so no one can fork ToothPrint and resell it (to hospitals or anyone). Need a commercial license? Ask: **`krishiattriwork@gmail.com`**.
+
+## Current release status
+
+The current release adds gallery-aware calibration and conservative identity
+scoring, with a reproducible synthetic 40-way pilot. The test suite passes 84
+tests with 3 skips, and one public Teeth3DS+ OBJ passes real guarded mesh
+ingestion. One arch is not an identity benchmark: permitted multi-subject and
+longitudinal IOS data are still required before clinical or re-scan claims.

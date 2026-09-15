@@ -1,0 +1,52 @@
+{
+  "format": "TOOTHPRINT_GALLERY_CALIBRATION_PILOT",
+  "protocol": "synthetic_non_enrolled_complete_gallery_selection",
+  "seed": 23,
+  "gallery_size": 40,
+  "n_calibration": 240,
+  "n_evaluation": 240,
+  "source_digest": "e53da39b74d8f2434b49d0fb9b018e6d5ec70528ca21e57fb22ebb8aa6669224",
+  "gallery_level": {
+    "calibration": {
+      "method_version": "gallery-max-distance-v1",
+      "calibration_id": "synthetic-site:eefc5ed08c71391e:2026-09-14T00:00:00Z",
+      "threshold_distance": 0.18909201398436068,
+      "no_accept_threshold": false,
+      "alpha": 0.05,
+      "n_calibration": 240,
+      "gallery_size": 40,
+      "selector_id": "complete_gallery_argmin_distance",
+      "site_id": "synthetic-site",
+      "created_utc": "2026-09-14T00:00:00Z",
+      "calibration_sha256": "7998122f5774f989f266cd8498038895a85acc944c0cb22c32aedd38aa5d0414",
+      "rank": 12,
+      "empirical_false_accept_rate": 0.04583333333333333
+    },
+    "heldout": {
+      "format": "TOOTHPRINT_GALLERY_CALIBRATION_EVALUATION",
+      "calibration_id": "synthetic-site:eefc5ed08c71391e:2026-09-14T00:00:00Z",
+      "gallery_size": 40,
+      "target_alpha": 0.05,
+      "n_impostor": 240,
+      "false_accept_count": 11,
+      "false_accept_rate": 0.04583333333333333,
+      "impostor_ambiguous_rate": 0.004166666666666667,
+      "claim_boundary": [
+        "false-accept control is for the declared complete gallery and selector",
+        "genuine acceptance/identification is empirical and has no false-negative guarantee",
+        "gallery growth or matcher/site changes require recalibration",
+        "not a clinical or forensic deployment validation"
+      ]
+    }
+  },
+  "pairwise_reuse_control": {
+    "threshold_distance": 0.43236682775582536,
+    "heldout_false_accept_rate_after_gallery_search": 0.8916666666666667,
+    "claim_boundary": "control only; pairwise threshold is not a gallery-level certificate"
+  },
+  "claim_boundary": [
+    "synthetic CPU protocol only",
+    "no real patient/session data, clinical validation, forensic validation or external baseline",
+    "gallery-level false-accept control is conditional on the declared gallery, selector and population"
+  ]
+}

@@ -16,6 +16,13 @@ longitudinal validation).
 
 ### Added
 
+- **Gallery-level selection calibration** (`toothprint.identity.gallery`): calibrates
+  the complete-gallery minimum-distance event on non-enrolled queries, binds the
+  gallery size/selector/site/data fingerprint, returns explicit identity sets for
+  ambiguous matches, and requires accept/abstain rather than silently trusting a
+  pairwise threshold. The CPU pilot is synthetic and makes no clinical or forensic
+  claim.
+
 - **BUFFER-X zero-shot registration — measured on real arches, now with error bars and a
   complete identity column.** Ran `eval_bufferx_baseline.py` (rewired to load the pretrained
   BUFFER-X 3DMatch model from the built third-party tree and to run on real Teeth3DS+ arches at

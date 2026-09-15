@@ -45,6 +45,26 @@ def test_data_fingerprint_stable_and_sensitive():
     assert data_fingerprint([1, 2, 3]) != data_fingerprint([1, 2, 4])
 
 
+def test_calibration_id_binds_true_values_and_specification():
+    m, t = _stable()
+    a = SiteCalibration.fit(m, t, site_id="A", created_utc=TS, alpha=0.1)
+    b = SiteCalibration.fit(m, t + 0.25, site_id="A", created_utc=TS, alpha=0.1)
+    c = SiteCalibration.fit(m, t, site_id="A", created_utc=TS, alpha=0.2)
+    assert a.true_sha256 != b.true_sha256
+    assert a.calibration_id != b.calibration_id
+    assert a.calibration_id != c.calibration_id
+    assert "true_sha256" in a.to_dict()
+
+
+def test_calibration_spec_roundtrip_preserves_id():
+    m, t = _stable()
+    sc = SiteCalibration.fit(m, t, site_id="A", created_utc=TS, alpha=0.1,
+                             min_calibration=110)
+    restored = SiteCalibration.from_dict(sc.to_dict())
+    assert restored.to_dict() == sc.to_dict()
+    assert restored.calibration_id == sc.calibration_id
+
+
 # --- quality ---------------------------------------------------------------
 
 

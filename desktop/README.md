@@ -20,7 +20,8 @@ What it does:
   PNG·JPG·TIFF, detected by content) and the specimen panel shows kind, format,
   dimensions, pixel spacing or mesh extent.
 - **Identity** → drop a query arch + gallery arches; the query is best-rigid-fit to each
-  and the closest surface wins, with a same-person / no-match verdict.
+  and the closest surface wins. The source/demo path is explicitly heuristic; a
+  calibrated identity verdict requires an injected site certifier.
 - **Change / Surface** → enter the measurement + calibration; the conformal certificate
   returns changed / stable / uncertain with the interval, and the **seal stamps only
   when the interval clears the threshold** (the verdict carries an α-bounded false-alarm

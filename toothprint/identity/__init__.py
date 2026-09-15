@@ -4,6 +4,12 @@ from toothprint.identity.constellation import constellation, icp_residual
 from toothprint.identity.constellation import identify as identify_radiograph
 from toothprint.identity.mesh import align_rigid, identify_surface, score_to_surface
 from toothprint.identity.metrics import identification_metrics, rank1_match
+from toothprint.identity.gallery import (
+    GalleryCalibration,
+    GalleryDecision,
+    decide_gallery_identity,
+    evaluate_gallery_calibration,
+)
 
 __all__ = [
     "constellation",
@@ -14,4 +20,8 @@ __all__ = [
     "score_to_surface",
     "identification_metrics",
     "rank1_match",
+    "GalleryCalibration",
+    "GalleryDecision",
+    "decide_gallery_identity",
+    "evaluate_gallery_calibration",
 ]
