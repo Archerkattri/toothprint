@@ -22,11 +22,6 @@
 🔖 **[Preprint + DOI](https://doi.org/10.31224/7403)** · 🔁 **[Reproduce](REPRODUCE.md)** · 🔬 **[Full write-up](PAPER.md)** · ▶ **[30-second reel](docs/toothprint_showcase.mp4)** · 🖥️ **[Desktop app](#toothprint-studio)**
 
 ## Start here
-## Architecture at a glance
-
-![toothprint-current architecture](docs/readme_flow.svg)
-
-The three product paths share one evidence chain: canonicalize the dental surface, score the comparison, calibrate uncertainty, and return a match or change certificate.
 
 | Need | ToothPrint returns | Primary viewer |
 |---|---|---|
