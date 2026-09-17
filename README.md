@@ -532,7 +532,8 @@ What is **not** permitted: selling the software, folding it into a paid product 
 ## Current release status
 
 The current release adds gallery-aware calibration and conservative identity
-scoring, with a reproducible synthetic 40-way pilot. The test suite passes 84
-tests with 3 skips, and one public Teeth3DS+ OBJ passes real guarded mesh
+scoring, with a reproducible synthetic 40-way pilot. The test suite passes 192
+tests on the torch job (183 passed with the torch-gated embedding module
+skipped on the base job), and one public Teeth3DS+ OBJ passes real guarded mesh
 ingestion. One arch is not an identity benchmark: permitted multi-subject and
 longitudinal IOS data are still required before clinical or re-scan claims.
