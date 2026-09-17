@@ -74,7 +74,7 @@
           <caption>Certificate of analysis · per capability</caption>
           <thead><tr><th>Capability</th><th>Result</th><th>Status</th></tr></thead>
           <tbody>
-            <tr><td class="cap">Identity — 3D scans</td><td class="val">Rank-1 <b>0.995</b> · EER 0.005 · AUC 0.997 · open-set FNIR 0.030 · 0.05 mm fidelity</td><td><span class="chip pass">✓ pass</span></td></tr>
+            <tr><td class="cap">Identity — 3D scans</td><td class="val">Rank-1 <b>0.995</b> · EER 0.005 · AUC 0.997 · open-set FNIR 0.032 · 0.05 mm fidelity</td><td><span class="chip pass">✓ pass</span></td></tr>
             <tr><td class="cap">Identity — partial overlap</td><td class="val">Rank-1 <b>0.87</b> at 50% tooth loss — ≈3.8× rigid GICP's 0.23 (learned correspondence)</td><td><span class="chip pass">✓ pass</span></td></tr>
             <tr><td class="cap">Identity — 2D radiographs</td><td class="val">Rank-1 <b>1.000</b> (N=400, EER 0), robust to jitter &amp; magnification</td><td><span class="chip pass">✓ pass</span></td></tr>
             <tr><td class="cap">Identity — certified decision</td><td class="val">FNIR@FMR=1% <b>0.00</b> full coverage; abstains under heavy tooth loss</td><td><span class="chip pass">✓ pass</span></td></tr>
@@ -336,8 +336,9 @@
         <pre class="code" aria-label="install and run"><span class="c"># install — dev tools · file I/O · API · desktop Studio</span>
 pip install -e ".[dev,io,api,desktop]"
 
-<span class="c"># the full test suite — 183 passing</span>
+<span class="c"># the full test suite — 183 passing (192 with the torch tier)</span>
 python -m pytest -q
+pip install -e ".[test,test-torch]" && python -m pytest tests/test_embedding.py -q
 
 <span class="c"># end-to-end identity on committed fixtures, no off-machine data</span>
 TOOTHPRINT_FIXTURES=1 PYTHONPATH=. python evaluation/scripts/smoke_test.py
@@ -346,11 +347,11 @@ TOOTHPRINT_FIXTURES=1 PYTHONPATH=. python evaluation/scripts/smoke_test.py
 <span class="c"># ToothPrint Studio — native window, falls back to the browser if headless</span>
 python -m desktop.app</pre>
         <aside class="upgrades">
-          <h3>2026-07-01 upgrades</h3>
-          <p>Committed groundwork from a SOTA review — <b>not yet run at scale, so no new numbers</b>; the data gate above is still the binding constraint.</p>
+          <h3>Since the 2026-07-01 review</h3>
+          <p>Follow-ups from the SOTA review — the BUFFER-X numbers below are measured; the data gate above is still the binding constraint.</p>
           <ul>
-            <li><b>PTv3 + Sonata</b> foundation-model embedding option (<code>backbone="sonata"</code>) — a first for dental identity, stated as a direction.</li>
-            <li><b>BUFFER-X</b> zero-shot baseline harness on CorrNet's exact partial-overlap protocol.</li>
+            <li><b>PTv3 + Sonata</b> foundation-model embedding option (<code>backbone="sonata"</code>) — shipped in the torch tier (192 tests, committed fixtures).</li>
+            <li><b>BUFFER-X</b> zero-shot baseline, run on CorrNet's exact protocol: keep-0.5 Rank-1 1.00 (all 3 reps), keep-0.3 0.95 ± 0.04, full-coverage column complete.</li>
             <li><b>Real-data gate tracker</b> + reconstruction-upgrade notes (MeshSplat / SurfelSplat).</li>
           </ul>
           <p class="up-foot">Full detail in the <a href="https://github.com/Archerkattri/toothprint/blob/main/CHANGELOG.md">changelog</a>.</p>
