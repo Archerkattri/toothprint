@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > Full method, results, and honest limitations live in the **[README](README.md)**;
 > the peer-facing write-up is the engrXiv preprint [10.31224/7403](https://doi.org/10.31224/7403).
 
-## [Unreleased]
+## [1.2.0] - 2026-09-17
 
 The 2026-07-01 SOTA-upgrade scaffolding was **run on the real Teeth3DS+ data acquired 2026-07-02**
 (150 ungated, md5-verified OSF upper arches — single-timepoint, so still not the gate-#7
@@ -60,6 +60,9 @@ longitudinal validation).
 - **Sonata training script generalised to Teeth3DS+** — `train_sonata_embedding.py` now globs
   `.obj` as well as `.stl`, takes a configurable train/held-out split (`TP_NTRAIN`), and runs a
   held-out Rank-1 identity eval (keep 1.0 / 0.5 / 0.3), writing `sonata_identity.json`.
+
+- CI installs the Open3D system libraries (libegl1, libgl1,
+  libusb-1.0-0); suite at 192 passed (torch tier) / 183 (base).
 
 ## [1.1.0] - 2026-07-02
 
