@@ -296,7 +296,8 @@ async function handleFiles(files){
 function addVideo(f){
   const fig = document.createElement("figure"); fig.className = "pv";
   const v = document.createElement("video");
-  v.className = "pv-video"; v.controls = true; v.preload = "metadata"; v.playsInline = true; v.src = URL.createObjectURL(f);
+  // URL-encode at the src sink (no-op for blob: URLs).
+  v.className = "pv-video"; v.controls = true; v.preload = "metadata"; v.playsInline = true; v.src = encodeURI(URL.createObjectURL(f));
   const cap = document.createElement("figcaption"); cap.className = "pv-cap";
   cap.append(node("span", "nm", "▶ " + f.name), node("span", "meta", "video specimen"));
   v.addEventListener("loadedmetadata", () => {
@@ -307,7 +308,8 @@ function addVideo(f){
 }
 function addImage(f){
   const fig = document.createElement("figure"); fig.className = "pv";
-  const img = document.createElement("img"); img.className = "pv-img"; img.src = URL.createObjectURL(f);
+  // URL-encode at the src sink (no-op for blob: URLs).
+  const img = document.createElement("img"); img.className = "pv-img"; img.src = encodeURI(URL.createObjectURL(f));
   const cap = document.createElement("figcaption"); cap.className = "pv-cap";
   cap.append(node("span", "nm", f.name), node("span", "meta", "still specimen"));
   fig.append(img, cap); $("#preview").append(fig); $("#preview").classList.add("show");
