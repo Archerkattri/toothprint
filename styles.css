@@ -267,3 +267,28 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
   .eyebrow{font-size:.6rem;letter-spacing:.13em}
   .ledger{font-size:.84rem}.ledger th,.ledger td{padding:.7rem .6rem}
 }
+
+/* Dark clinical theme: manual toggle (data-theme) or OS preference. */
+:root[data-theme="dark"]{
+  --bg:#0e1415; --bg-2:#131b1d; --card:#17211f;
+  --ink:#e9f1f0; --ink-2:#c2cfce; --slate:#93a3a2; --faint:#67787a;
+  --verify:#2dd4bf; --verify-tint:rgba(45,212,191,.13);
+  --measure:#e8a33d; --measure-tint:rgba(232,163,61,.13);
+  --abstain:#f17067; --abstain-tint:rgba(241,112,103,.13);
+  --line:rgba(233,241,240,.14); --line-soft:rgba(233,241,240,.07);
+  --shadow:0 26px 60px -34px rgba(0,0,0,.7), 0 3px 8px rgba(0,0,0,.4);
+  --shadow-sm:0 12px 30px -22px rgba(0,0,0,.6);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1415; --bg-2:#131b1d; --card:#17211f;
+    --ink:#e9f1f0; --ink-2:#c2cfce; --slate:#93a3a2; --faint:#67787a;
+    --verify:#2dd4bf; --verify-tint:rgba(45,212,191,.13);
+    --measure:#e8a33d; --measure-tint:rgba(232,163,61,.13);
+    --abstain:#f17067; --abstain-tint:rgba(241,112,103,.13);
+    --line:rgba(233,241,240,.14); --line-soft:rgba(233,241,240,.07);
+    --shadow:0 26px 60px -34px rgba(0,0,0,.7), 0 3px 8px rgba(0,0,0,.4);
+    --shadow-sm:0 12px 30px -22px rgba(0,0,0,.6);
+  }
+}
+#theme-toggle{background:transparent;font:inherit;cursor:pointer;color:var(--ink)}

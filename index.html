@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <script>(function(){try{var s=localStorage.getItem("toothprint-theme");if(s==="dark"||s==="light")document.documentElement.setAttribute("data-theme",s);}catch(e){}})();</script>
 </head>
 <body id="top">
   <header class="nav">
@@ -30,6 +31,7 @@
       <a href="#run">Run it</a>
     </nav>
     <a class="ghost" href="https://github.com/Archerkattri/toothprint">GitHub ↗</a>
+    <button class="ghost" id="theme-toggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">◐</button>
   </header>
 
   <main>
@@ -384,5 +386,6 @@ python -m desktop.app</pre>
   </footer>
 
   <script src="app.js"></script>
+  <script>(function(){var d=document.documentElement;var b=document.getElementById("theme-toggle");if(!b)return;b.addEventListener("click",function(){var cur=d.getAttribute("data-theme");var dark=cur?cur==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;var next=dark?"light":"dark";d.setAttribute("data-theme",next);try{localStorage.setItem("toothprint-theme",next);}catch(e){}});})();</script>
 </body>
 </html>
