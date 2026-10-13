@@ -3,19 +3,27 @@
 Based on: Tibshirani et al. (2019) "Conformal Prediction Under Covariate Shift"
 https://arxiv.org/abs/1904.06019
 
-The key idea: assign weight w_i to each calibration residual based on how
-likely that calibration point is under the test distribution. The coverage
-guarantee becomes: P(Y in interval) >= 1-alpha, under the test distribution.
+The key idea: assign each calibration residual an importance weight for the
+test distribution. The stated coverage guarantee requires valid density-ratio
+weights, scaled relative to the test point, and the paper's covariate-shift
+assumptions.
 """
 
 from __future__ import annotations
-import numpy as np
+
 from dataclasses import dataclass
+from fractions import Fraction
+
+import numpy as np
 
 
 @dataclass(frozen=True)
 class WeightedConformalInterval:
-    """Weighted split conformal interval.
+    """Weighted split-conformal interval for a fixed test-point weight.
+
+    Calibration weights must be importance ratios normalized so the test point
+    has weight one. The finite-sample guarantee additionally requires valid
+    density ratios and the paper's covariate-shift assumptions.
 
     Attributes
     ----------
@@ -34,7 +42,7 @@ class WeightedConformalInterval:
         residuals: list[float],
         weights: list[float],
         alpha: float = 0.1,
-    ) -> "WeightedConformalInterval":
+    ) -> WeightedConformalInterval:
         """Fit weighted conformal interval.
 
         Parameters
@@ -42,8 +50,9 @@ class WeightedConformalInterval:
         residuals : list of float
             |predicted - observed| for each calibration point.
         weights : list of float
-            Importance weights w_i = p_test(x_i) / p_cal(x_i), unnormalized.
-            Higher weight = more like the test distribution.
+            Calibration importance ratios divided by the ratio at the test
+            point, so the implicit test-point weight is one. Must be finite and
+            non-negative.
         alpha : float
             Miscoverage level in (0, 1).
         """
@@ -60,49 +69,31 @@ class WeightedConformalInterval:
             raise ValueError("residuals must be finite")
         if not np.all(np.isfinite(w)):
             raise ValueError("weights must be finite")
-        w = np.maximum(w, 0.0)  # clip negatives
+        if np.any(w < 0.0):
+            raise ValueError("weights must be non-negative")
 
         # Add inf residual for the test point. Tibshirani et al. 2019 assign
         # the test pseudo-point an unnormalized weight of 1, matching the same
-        # scale as calibration importance weights (w_i ∝ p_test/p_cal, test ∝ 1).
-        # After normalization this gives p_{n+1} = 1/(sum_i w_i + 1), which for
-        # uniform weights recovers the standard 1/(n+1) per-point probability.
-        inf_weight = 1.0
-        res = np.append(res, np.inf)
-        w = np.append(w, inf_weight)
+        # The test pseudo-point has weight 1 under the covariate-shift method.
+        # Exact rational comparisons avoid an epsilon that could select a finite
+        # quantile before the required weighted mass has actually been reached.
+        exact_weights = [Fraction.from_float(float(value)) for value in w]
+        total_weight = sum(exact_weights, Fraction(1))
+        target_weight = (Fraction(1) - Fraction(str(alpha))) * total_weight
+        order = np.argsort(res, kind="mergesort")
+        cumulative_weight = Fraction(0)
+        quantile = float("inf")
+        for index in order:
+            cumulative_weight += exact_weights[int(index)]
+            if cumulative_weight >= target_weight:
+                quantile = float(res[index])
+                break
 
-        # Normalize
-        w_sum = w.sum()
-        if w_sum <= 0.0:  # pragma: no cover
-            w = np.ones(len(w)) / len(w)
-        else:
-            w = w / w_sum
-
-        # Sort by residual
-        order = np.argsort(res)
-        res_sorted = res[order]
-        w_sorted = w[order]
-        cumw = np.cumsum(w_sorted)
-
-        # Find smallest q where cumulative weight >= 1-alpha. Subtract a small
-        # tolerance to absorb floating-point undershoot in np.cumsum, which can
-        # otherwise push the index one past the true textbook order statistic
-        # and spuriously trip the inf-abstain branch for uniform weights.
-        idx = np.searchsorted(cumw, (1.0 - alpha) - 1e-9)
-        if idx >= len(res_sorted) or np.isinf(res_sorted[idx]):
-            # The (1-alpha) weighted quantile lands on the +inf test pseudo-point:
-            # the calibration weights cannot support the requested coverage, so the
-            # only valid interval is unbounded. Return inf (abstain) rather than
-            # substituting the max finite residual, which silently under-covers.
-            quantile = float("inf")
-        else:
-            quantile = float(res_sorted[idx])
-
-        return cls(quantile=round(quantile, 10), alpha=alpha)
+        return cls(quantile=quantile, alpha=alpha)
 
     def predict(self, predicted_score: float) -> tuple[float, float]:
-        lo = round(float(predicted_score) - self.quantile, 10)
-        hi = round(float(predicted_score) + self.quantile, 10)
+        lo = float(predicted_score) - self.quantile
+        hi = float(predicted_score) + self.quantile
         return (lo, hi)
 
     @property
@@ -115,11 +106,11 @@ def perturbation_shift_weights(
     test_noise_std: float,
     sigma: float | None = None,
 ) -> list[float]:
-    """Compute importance weights for perturbation-family shift.
+    """Estimate normalized perturbation-shift weights with kernel densities.
 
-    Models calibration and test noise as Gaussian(0, noise_std).
-    Weight = p_test(noise_std) / p_cal(noise_std), estimated via
-    Gaussian kernel density.
+    The returned values are KDE-based proxies normalized so the estimated
+    test-point ratio is one. Since these are estimated ratios, they support an
+    empirical shift comparison, not an exact finite-sample coverage guarantee.
 
     Parameters
     ----------
@@ -133,9 +124,17 @@ def perturbation_shift_weights(
     """
     cal = np.array([float(x) for x in cal_noise_stds])
     n = len(cal)
+    test_noise_std = float(test_noise_std)
+    if n == 0:
+        raise ValueError("cal_noise_stds must be non-empty")
+    if not np.all(np.isfinite(cal)) or not np.isfinite(test_noise_std):
+        raise ValueError("noise standard deviations must be finite")
     if sigma is None:
         s = np.std(cal) if n > 1 else 1.0
         sigma = 1.06 * s * (n ** (-0.2)) if s > 0 else 1.0
+    sigma = float(sigma)
+    if not np.isfinite(sigma) or sigma <= 0.0:
+        raise ValueError("sigma must be finite and positive")
 
     def kde(x_eval: float, data: np.ndarray) -> float:
         return float(
@@ -143,7 +142,17 @@ def perturbation_shift_weights(
             / (sigma * np.sqrt(2 * np.pi))
         )
 
-    weights = [kde(x, np.array([test_noise_std])) / (kde(x, cal) + 1e-10) for x in cal]
+    test_distribution = np.array([test_noise_std])
+
+    def raw_ratio(x_eval: float) -> float:
+        return kde(x_eval, test_distribution) / (kde(x_eval, cal) + 1e-10)
+
+    test_ratio = raw_ratio(test_noise_std)
+    if not np.isfinite(test_ratio) or test_ratio <= 0.0:
+        raise ValueError("test-point density ratio must be finite and positive")
+    weights = [raw_ratio(x) / test_ratio for x in cal]
+    if not np.all(np.isfinite(weights)):
+        raise ValueError("estimated importance weights must be finite")
     return weights
 
 
@@ -152,10 +161,12 @@ def cross_source_weights(
     test_source: str,
     downweight_ratio: float = 0.1,
 ) -> list[float]:
-    """Compute importance weights for cross-source shift.
+    """Return heuristic relative weights for cross-source sensitivity analysis.
 
     Calibration points from the same source as test get weight 1.0.
     Calibration points from different sources get weight `downweight_ratio`.
+    These hand-set values are not density-ratio estimates and do not by
+    themselves support the weighted conformal finite-sample guarantee.
 
     Parameters
     ----------
@@ -166,4 +177,7 @@ def cross_source_weights(
     downweight_ratio : float
         Weight assigned to out-of-source calibration points.
     """
+    downweight_ratio = float(downweight_ratio)
+    if not np.isfinite(downweight_ratio) or downweight_ratio < 0.0:
+        raise ValueError("downweight_ratio must be finite and non-negative")
     return [1.0 if src == test_source else downweight_ratio for src in cal_sources]

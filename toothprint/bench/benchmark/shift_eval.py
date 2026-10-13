@@ -1,25 +1,30 @@
-"""Evaluate conformal coverage under distribution shift.
+"""Measure empirical conformal coverage under distribution shift.
 
 Compares standard symmetric conformal vs weighted conformal under:
   - Perturbation-family shift (different acquisition noise std)
-  - Cross-source shift (different dataset)
+  - Cross-source shift (different dataset; heuristic weights only)
+
+Reported weighted coverage is an empirical result for estimated or heuristic
+weights; it is not a finite-sample guarantee.
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass
+
 import numpy as np
 
 from toothprint.bench.certificate.conformal import ConformalInterval
 from toothprint.bench.certificate.weighted_conformal import (
     WeightedConformalInterval,
-    perturbation_shift_weights,
     cross_source_weights,
+    perturbation_shift_weights,
 )
 
 
 @dataclass(frozen=True)
 class ShiftEvalResult:
-    """Coverage comparison under a specific shift."""
+    """Empirical coverage comparison under a specific shift."""
 
     shift_type: str
     standard_coverage: float  # empirical coverage with standard conformal

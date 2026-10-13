@@ -9,7 +9,7 @@
 [![engrXiv preprint](https://img.shields.io/badge/preprint-engrXiv-b31b1b.svg)](https://engrxiv.org/preprint/view/7403)
 [![DOI](https://img.shields.io/badge/DOI-10.31224%2F7403-1f6feb.svg)](https://doi.org/10.31224/7403)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-0d9488.svg)](LICENSE)
-[![Changelog](https://img.shields.io/badge/changelog-v1.1.1-0d9488.svg)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/changelog-v1.2.0-0d9488.svg)](CHANGELOG.md)
 [![Zenodo](https://img.shields.io/badge/Zenodo-10.5281%2Fzenodo.21500733-0d9488.svg)](https://doi.org/10.5281/zenodo.21500733)
 [![Conformal](https://img.shields.io/badge/guarantee-FMR%20%E2%89%A4%20%CE%B1-d97706.svg)](#the-certificate)
 
@@ -30,7 +30,7 @@
 | **Where did the 3D surface change?** | regional surface-change map with a false-change bound | clinician, lab, reconstruction researcher |
 | **Can I inspect files locally?** | safe ingest, local preview, API response, and PDF case report | hospital IT, engineer, reviewer |
 
-Every verdict is **conformal**: it fires only when the interval around the measurement lies entirely past the threshold, so the false-alarm rate is bounded by **α** in finite samples. The certification core depends only on `numpy`, `scipy`, `opencv`, and `open3d`; learned front-ends (tooth detection, point-correspondence, Gaussian-splatting reconstruction) are pluggable and optional, so the guarantees run without a GPU.
+Where its stated calibration assumptions hold, each conformal pathway targets marginal finite-sample miscoverage ≤ **α**: ordinary split-conformal methods require calibration/test exchangeability, while the covariate-shift method additionally requires valid importance weights. A requested level unsupported by the calibration sample produces an unbounded interval and abstention, not a fabricated finite bound. The certification core depends only on `numpy`, `scipy`, `opencv`, and `open3d`; learned front-ends (tooth detection, point-correspondence, Gaussian-splatting reconstruction) are pluggable and optional, so the guarantees run without a GPU.
 
 ## Current status
 
@@ -378,7 +378,7 @@ ToothPrint is in the *registration / conformal* family; its defensible edge is *
 | Finite-sample false-alarm guarantee, verified ≤ α across ablations | ✅ |
 | No fallbacks — failures raise, not degrade | ✅ |
 | First-class abstention + input quality gates | ✅ |
-| Site recalibration + provenance hashing + audit trail · covered core test suite | ✅ |
+| Site recalibration + provenance hashing + audit trail | ✅ |
 | Reproducible from committed fixtures (no off-machine data) | ✅ |
 | Real **multi-session / longitudinal** data; cross-device, cross-operator | ⬜ |
 | Expert ground truth; prospective pre-registered study; demographic diversity | ⬜ |
@@ -481,16 +481,16 @@ Every result JSON maps to a committed script; reference baselines are read from 
 
 ## Tests
 
-The test contract is split by dependency tier so optional modules cannot
-silently disappear from collection. `-rs` prints every intentional
-provider-dependent skip. Release history: **[CHANGELOG.md](CHANGELOG.md)**.
+The retained checks exercise real medical/mesh file loading and rejection paths
+(`tests/test_io.py`) plus FastAPI endpoint, upload, and request-validation
+integration (`tests/test_api.py`). Optional format dependencies are installed
+for the I/O checks. The former in-memory conformal and algorithm unit suite is
+not part of this WIP branch. `-rs` reports any provider-dependent skip.
+Release history: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ```bash
-pip install -e ".[test]"
-python -m pytest -q -rs                # core, API, IO, geometry, and Open3D
-
-pip install -e ".[test,test-torch]"
-python -m pytest -q -rs                # complete CPU suite, including embeddings
+pip install -e ".[test,io]"
+python -m pytest -q -rs tests/test_io.py tests/test_api.py
 ```
 
 ## Layout
@@ -532,8 +532,10 @@ What is **not** permitted: selling the software, folding it into a paid product 
 ## Current release status
 
 The current release adds gallery-aware calibration and conservative identity
-scoring, with a reproducible synthetic 40-way pilot. The test suite passes 192
-tests on the torch job (183 passed with the torch-gated embedding module
-skipped on the base job), and one public Teeth3DS+ OBJ passes real guarded mesh
-ingestion. One arch is not an identity benchmark: permitted multi-subject and
-longitudinal IOS data are still required before clinical or re-scan claims.
+scoring, with a reproducible synthetic 40-way pilot. Earlier revisions reported
+192 tests on the torch job (183 passed with the torch-gated embedding module
+skipped on the base job); those full-suite counts predate unit-test removal and
+do not describe current coverage. The retained I/O and API integration checks
+are listed above. One public Teeth3DS+ OBJ passes real guarded mesh ingestion.
+One arch is not an identity benchmark: permitted multi-subject and longitudinal
+IOS data are still required before clinical or re-scan claims.

@@ -19,11 +19,13 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 
+from toothprint._conformal import lower_order_rank
 
 METHOD_VERSION = "gallery-max-distance-v1"
 
@@ -58,11 +60,10 @@ def _stable_quantile_threshold(best: np.ndarray, alpha: float) -> tuple[float, i
     order-statistic budget.
     """
     n = int(best.size)
-    rank = int(math.floor((n + 1) * alpha))
+    rank = lower_order_rank(n, alpha)
     if rank < 1:
         return -math.inf, 0
     ordered = np.sort(best, kind="mergesort")
-    rank = min(rank, n)
     return float(ordered[rank - 1]), rank
 
 
@@ -112,7 +113,7 @@ class GalleryCalibration:
         created_utc: str,
         selector_id: str = "complete_gallery_argmin_distance",
         min_calibration: int = 100,
-    ) -> "GalleryCalibration":
+    ) -> GalleryCalibration:
         """Fit on non-enrolled queries scored against the complete gallery.
 
         ``impostor_distances`` has shape ``(n_non_enrolled_queries,
@@ -197,7 +198,7 @@ class GalleryCalibration:
         return payload
 
     @classmethod
-    def from_dict(cls, payload: dict[str, Any]) -> "GalleryCalibration":
+    def from_dict(cls, payload: dict[str, Any]) -> GalleryCalibration:
         if "calibration_best_distances" not in payload:
             raise ValueError("serialized gallery calibration needs calibration_best_distances")
         threshold = payload.get("threshold_distance")

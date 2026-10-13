@@ -1,10 +1,9 @@
-"""Split-conformal certification with a finite-sample coverage guarantee.
+"""Split-conformal certification under calibration/test exchangeability.
 
 A certificate only fires when the conformal interval around the measured change
 lies entirely on one side of the decision threshold. The interval is calibrated
-from held-out (measured, true) pairs, so the miscoverage — here the
-false-progression rate — is bounded by ``alpha`` in finite samples, with no
-distributional assumptions.
+from held-out (measured, true) pairs, so under exchangeability the marginal
+miscoverage is bounded by ``alpha`` in finite samples.
 """
 
 from __future__ import annotations
@@ -13,6 +12,8 @@ import math
 from dataclasses import dataclass
 
 import numpy as np
+
+from toothprint._conformal import upper_order_index
 
 STABLE = "stable"
 CHANGED = "changed"
@@ -28,7 +29,7 @@ class ConformalCertifier:
     alpha: float
 
     @classmethod
-    def fit(cls, predicted, observed, alpha: float = 0.1) -> "ConformalCertifier":
+    def fit(cls, predicted, observed, alpha: float = 0.1) -> ConformalCertifier:
         pred = np.asarray(predicted, dtype=float)
         obs = np.asarray(observed, dtype=float)
         if pred.shape != obs.shape:
@@ -37,13 +38,15 @@ class ConformalCertifier:
             raise ValueError("at least one calibration pair is required")
         if not 0.0 < alpha < 1.0:
             raise ValueError("alpha must be in (0, 1)")
+        if not np.all(np.isfinite(pred)) or not np.all(np.isfinite(obs)):
+            raise ValueError("predicted and observed scores must be finite")
         upper = np.sort(obs - pred)  # how much we under-predicted
         lower = np.sort(pred - obs)  # how much we over-predicted
         n = pred.size
         # Finite-sample order statistic for two-sided 1-alpha coverage. If it
         # exceeds n-1 the (n+1)-th statistic does not exist -> +inf (abstain),
         # rather than silently under-covering.
-        idx = math.ceil((n + 1) * (1.0 - alpha / 2.0)) - 1
+        idx = upper_order_index(n, alpha, tails=2)
         if idx > n - 1:
             return cls(q_lo=math.inf, q_hi=math.inf, alpha=alpha)
         return cls(q_lo=float(lower[idx]), q_hi=float(upper[idx]), alpha=alpha)
@@ -51,8 +54,8 @@ class ConformalCertifier:
     def interval(self, measured: float) -> tuple[float, float]:
         """Conformal interval covering the true change for a measured value."""
         return (
-            round(float(measured) - self.q_lo, 10),
-            round(float(measured) + self.q_hi, 10),
+            float(measured) - self.q_lo,
+            float(measured) + self.q_hi,
         )
 
     def classify(self, measured: float, tau: float) -> str:

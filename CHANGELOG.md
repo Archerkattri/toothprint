@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > Full method, results, and honest limitations live in the **[README](README.md)**;
 > the peer-facing write-up is the engrXiv preprint [10.31224/7403](https://doi.org/10.31224/7403).
 
+## [Unreleased]
+
+### Fixed
+
+- Conformal rank and calibration-budget calculations now use exact decimal order statistics at floating-point boundaries. Surface calibration returns an unbounded interval when the requested finite-sample coverage cannot be supported, rather than clamping to the largest observed residual. Weighted calibration uses an exact mass comparison, rejects negative importance weights, and leaves interval bounds unrounded so they cannot be narrowed by decimal formatting. Perturbation KDE weights are normalized to the test-point estimate; perturbation and cross-source helpers are empirical proxies, not exact coverage guarantees.
+- Raised the `python-multipart` minimum to `0.0.32` for API, desktop, and test installs; upload-route tests pass with that parser version.
+- Clarified that marginal conformal claims depend on their stated exchangeability or importance-weight assumptions and that insufficient calibration data leads to abstention.
+
 ## [1.2.0] - 2026-09-17
 
 The 2026-07-01 SOTA-upgrade scaffolding was **run on the real Teeth3DS+ data acquired 2026-07-02**
