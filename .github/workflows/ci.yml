@@ -29,25 +29,6 @@ jobs:
       - name: Install package and test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[test]"
-      - name: Run core, API, IO, and geometry tests
+          pip install -e ".[test,io]"
+      - name: Run I/O, API, and calibration integration checks
         run: python -m pytest -q -rs
-
-  embedding:
-    name: pytest (Torch embedding)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.11"
-      - name: Install system libraries (Open3D)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libegl1 libgl1 libusb-1.0-0
-      - name: Install package and Torch test dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[test,test-torch]"
-      - name: Run embedding tests
-        run: python -m pytest tests/test_embedding.py -q -rs

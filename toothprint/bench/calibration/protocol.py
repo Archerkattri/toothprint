@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-import math
 from dataclasses import asdict, dataclass
+from decimal import ROUND_CEILING, Decimal
+
+from toothprint._conformal import upper_order_index
 
 
 @dataclass(frozen=True)
@@ -40,30 +42,36 @@ class BudgetResult:
     n_needed: int
 
 
-def _coverage_satisfiable(n: int, target_coverage: float) -> bool:
+def _coverage_satisfiable(n: int, target_coverage: float | Decimal) -> bool:
     """Return True iff *n* calibration points can support *target_coverage*.
 
     Split-conformal prediction requires
     ``ceil((n + 1) * (1 - alpha)) <= n``
     to obtain a finite interval at miscoverage level ``alpha = 1 - target_coverage``.
-    Equivalently: ``n >= ceil((n+1)*(1-alpha))`` which holds when
-    ``n*(1 - (1-alpha)) >= 1 - alpha``, i.e. ``n >= 1 / alpha - 1``
-    (approximately). We compute it exactly.
+    A finite order statistic exists exactly when ``(n + 1) * alpha >= 1``,
+    where ``alpha = 1 - target_coverage``.
     """
-    alpha = 1.0 - target_coverage
-    if alpha <= 0.0:
+    if n < 0:
+        raise ValueError("n must be non-negative")
+    exact_coverage = Decimal(str(target_coverage))
+    exact_alpha = Decimal(1) - exact_coverage
+    if not Decimal(0) < exact_coverage < Decimal(1):
         return False  # perfect coverage impossible
-    required_index = math.ceil((n + 1) * (1.0 - alpha)) - 1
-    return required_index < n
+    required_index = upper_order_index(n, exact_alpha)
+    return 0 <= required_index < n
 
 
 def _n_needed(target_coverage: float) -> int:
     """Return the minimum n such that ``_coverage_satisfiable(n, target_coverage)`` is True."""
-    alpha = 1.0 - target_coverage
-    if alpha <= 0.0:
+    exact_coverage = Decimal(str(target_coverage))
+    if not Decimal(0) < exact_coverage < Decimal(1):
         return int(1e9)
-    # n >= ceil(1/alpha) is the standard bound; search from there
-    candidate = max(1, math.ceil(1.0 / alpha))
+    alpha = Decimal(1) - exact_coverage
+    # Finite radius exists exactly when (n + 1) * alpha >= 1.
+    reciprocal_ceiling = (Decimal(1) / alpha).to_integral_value(
+        rounding=ROUND_CEILING
+    )
+    candidate = max(1, int(reciprocal_ceiling) - 1)
     while not _coverage_satisfiable(candidate, target_coverage):  # pragma: no cover
         candidate += 1
         if candidate > 100_000:
@@ -77,7 +85,7 @@ def check_calibration_budget(
     target_coverage: float = 0.9,
     records: list[CalibrationRecord] | None = None,
     budget: CalibrationBudget = CalibrationBudget(),
-) -> "BudgetResult | dict[str, dict[str, int | bool]]":
+) -> BudgetResult | dict[str, dict[str, int | bool]]:
     """Check whether the calibration set is large enough.
 
     Two calling conventions are supported:
@@ -108,12 +116,20 @@ def check_calibration_budget(
     """
     # Simple form: n_cal + alpha kwargs
     if n_cal is not None:
-        effective_coverage = (1.0 - alpha) if alpha is not None else target_coverage
-        satisfiable = _coverage_satisfiable(n_cal, effective_coverage)
-        needed = _n_needed(effective_coverage)
+        if n_cal < 0:
+            raise ValueError("n_cal must be non-negative")
+        if alpha is not None:
+            if not 0.0 < alpha < 1.0:
+                raise ValueError("alpha must be in (0, 1)")
+            exact_coverage = Decimal(1) - Decimal(str(alpha))
+        else:
+            exact_coverage = Decimal(str(target_coverage))
+        effective_coverage = float(exact_coverage)
+        satisfiable = _coverage_satisfiable(n_cal, exact_coverage)
+        needed = _n_needed(exact_coverage)
         return BudgetResult(
             n_cal=n_cal,
-            alpha=alpha if alpha is not None else (1.0 - target_coverage),
+            alpha=float(Decimal(1) - exact_coverage),
             target_coverage=effective_coverage,
             coverage_satisfiable=satisfiable,
             n_needed=needed,

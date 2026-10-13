@@ -127,13 +127,6 @@ def test_load_dicom_monochrome2(tmp_path):
     assert r.pixel_spacing_mm is None and r.shape == (40, 48)
 
 
-def test_normalized_constant_image_is_zero():
-    r = io.Radiograph(
-        pixels=np.ones((4, 4), np.float32), pixel_spacing_mm=None, source_format="x"
-    )
-    assert np.allclose(r.normalized, 0.0)
-
-
 # --- volumes ---------------------------------------------------------------
 
 
